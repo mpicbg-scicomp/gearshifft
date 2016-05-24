@@ -7,11 +7,22 @@ This project is in development, but benchmarks are already possible for cuFFT an
 
 Timer and allocation statistics of a benchmark are stored into a csv file.
 
+## Build
+CUDA: Check src/CMakeLists.txt for device architectures
+```
+mkdir build && cd build
+cmake
+make -j 4
+```
+CMake tries to find the libraries and enables the corresponding make targets.
+After make finished you can run e.g. `./gearshifft_cufft_float`.
+
 ## Requirements
 - cmake 2.8+
 - C++14 capable compiler
 - CUDA FFT library cuFFT or clFFT for OpenCL
 - FFTW
+- boost version 1.56+
 
 ## Tested on ...
 - gcc 5.3.0
@@ -20,6 +31,10 @@ Timer and allocation statistics of a benchmark are stored into a csv file.
 - clFFT 2.12.0 (against FFTW 3.3.4)
 - OpenCL 1.2-4.4.0.117 (Nvidia)
 - Nvidia Kepler K80 GPU and Kepler K20X GPU
+
+## Issues
+- clFFT does not support arbitrary transform sizes. The benchmark will print only these tests as failed.
+- at the moment this is for single-GPUs, batches are not considered
 
 ## Roadmap
 - [x] cuFFT
