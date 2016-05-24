@@ -44,7 +44,9 @@ struct Output {
       std::stringstream ss;
       int i_stats = results.stats.getLength()-1;
       std::cout << test_suite_name << " " << title << " "
-                << extents.size() << "D @ " << results.alloc_mem_in_bytes / 1048576.0 << " MiB"
+                << extents.size() << "D @ " << results.alloc_mem_in_bytes / 1048576.0
+                << "+" << results.plan_mem_in_bytes / 1048576.0
+                << " MiB"
                 << " took " << results.stats.getAverage(i_stats) << results.stats.getUnit(i_stats)
                 << " (" << results.stats.getLabel(i_stats) << ")"
                 << std::endl;
