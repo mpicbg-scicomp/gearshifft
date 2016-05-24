@@ -11,11 +11,12 @@ Timer and allocation statistics of a benchmark are stored into a csv file.
 CUDA: Check src/CMakeLists.txt for device architectures
 ```
 mkdir build && cd build
-cmake
+cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
 After make finished you can run e.g. `./gearshifft_cufft_float`.
+The result file is called e.g. `gearshifft_cufft_float.csv`.
 
 ## Requirements
 - cmake 2.8+
@@ -40,5 +41,6 @@ After make finished you can run e.g. `./gearshifft_cufft_float`.
 - [x] cuFFT
 - [ ] clFFT: emulation of arbitrary transform sizes / non-supported radices
 - [ ] liFFT: include library independent FFT framework
+- [ ] integration into test environment (ctest)
 - [ ] scripts for creating benchmark summary of the individual results
 - [ ] callbacks to benchmark a typical FFT use case
