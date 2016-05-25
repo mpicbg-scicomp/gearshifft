@@ -38,23 +38,30 @@ struct Results
   };
 
 struct Output {
-    // @todo output filename as parameter
+    // @todo output filename as parameter and verbosity flag
     template<typename TExtent>
     static void write(const Results& results, const TExtent& extents, const std::string& title, const std::string& test_suite_name) {
       std::stringstream ss;
       int i_stats = results.stats.getLength()-1;
+      // output on console
       std::cout << test_suite_name << " " << title << " "
-                << extents.size() << "D @ " << results.alloc_mem_in_bytes / 1048576.0
-                << "+" << results.plan_mem_in_bytes / 1048576.0
-                << " MiB"
-                << " took " << results.stats.getAverage(i_stats) << results.stats.getUnit(i_stats)
-                << " (" << results.stats.getLabel(i_stats) << ")"
+                << extents.size()
+                << "D";
+      for(const auto& e : extents)
+        std::cout << ", "<<e;
+      std::cout << ", DevAllocs " << results.alloc_mem_in_bytes / 1048576.0
+                << '+' << results.plan_mem_in_bytes / 1048576.0
+                << " MiB, "
+                << results.stats.getLabel(i_stats) << " = "
+                << results.stats.getAverage(i_stats) << results.stats.getUnit(i_stats)
                 << std::endl;
 
       ss <<'\"'<< test_suite_name  << '\"'
          << ",\"" <<  title <<"_"<< extents.size() << "D" << '\"'
+         << ",\"Precision\"," << BOOST_PP_STRINGIZE(BENCH_PRECISION)
          << ",\"AllocBuffer\"," <<  results.alloc_mem_in_bytes / 1048576.0 << ",\"MiB\""
-         << ",\"AllocPlan\"," <<  results.plan_mem_in_bytes / 1048576.0 << ",\"MiB\"";
+         << ",\"AllocPlan\"," <<  results.plan_mem_in_bytes / 1048576.0 << ",\"MiB\""
+         << ",\"Extent\"";
       for(const auto& e : extents)
         ss  << ',' << e;
       ss << std::endl;
