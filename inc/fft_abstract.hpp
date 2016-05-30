@@ -43,18 +43,6 @@ namespace gearshifft
   struct Precision<T, false> { using type = T; };
 
 /**
- * Instantiates user-defined FFT class.
- */
-  template<typename TPrecision,
-           typename TFFT,
-           template <typename,typename,size_t> typename TPlan,
-           size_t NDim>
-  constexpr
-  auto makePlan(const std::array<unsigned,NDim>& cextents)
-  {
-    return TPlan<TFFT, TPrecision, NDim> (cextents);
-  }
-/**
  * Functor being called from FixtureBenchmark::benchmark()
  */
   template<typename TFFT, // FFT_*_* [inplace.., real..]
@@ -86,7 +74,7 @@ namespace gearshifft
 
         // prepare plan object
         // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-        auto plan = makePlan<TPrecision, TFFT, TPlan>( cextents );
+        auto plan = TPlan<TFFT, TPrecision, NDim> (cextents);
         results.alloc_mem_in_bytes = plan.getAllocSize();
         results.plan_mem_in_bytes  = plan.getPlanSize();
 
