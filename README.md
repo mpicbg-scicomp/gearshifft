@@ -24,6 +24,8 @@ The result file is called e.g. `gearshifft_cufft_float.csv`.
 - CUDA FFT library cuFFT or clFFT for OpenCL
 - FFTW
 - boost version 1.56+
+  - should be compiled with same compiler version or ...
+  - ... enable compiler definition `-D_GLIBCXX_USE_CXX11_ABI=0` in ./CMakeLists.txt
 
 ## Tested on ...
 - gcc 5.3.0

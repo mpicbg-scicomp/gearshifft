@@ -22,6 +22,10 @@ IF(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 ENDIF(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message(">> Setting up ${CMAKE_BUILD_TYPE} build")
 
+# if libraries are compiled with different ABI, then set the matching version here
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+# or
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 add_subdirectory(lib/helper/src)
 add_subdirectory(src)
