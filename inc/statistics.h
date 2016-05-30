@@ -6,12 +6,15 @@
 #include <iostream>
 #include <iomanip>
 
-class Statistics
-{
+namespace gearshifft {
+namespace helper {
+
+  class Statistics
+  {
   public:
     Statistics();
     virtual
-    ~Statistics();
+      ~Statistics();
 
     int add(const std::string& label, const std::string& unit="", bool invert=false, double factor=1.0);
     int append(const std::string& label, const std::string& unit="", bool invert=false, double factor=1.0);
@@ -46,46 +49,46 @@ class Statistics
     std::vector<double> _max;
     std::vector<double> _sum;
     std::vector<double> _sumsq;
-};
+  };
 
-std::ostream& operator<<(std::ostream& os, const Statistics& stats);
+  std::ostream& operator<<(std::ostream& os, const Statistics& stats);
 
 //-----------------------------------------------------------------------------
 
+  inline int Statistics::getLength() const {
+    return _labels.size();
+  }
 
-inline int Statistics::getLength() const {
-  return _labels.size();
-}
+  inline const std::string& Statistics::getLabel(int i) const {
+    check_index(i);
+    return _labels[i];
+  }
 
-inline const std::string& Statistics::getLabel(int i) const {
-  check_index(i);
-  return _labels[i];
-}
+  inline const std::string& Statistics::getUnit(int i) const {
+    check_index(i);
+    return _units[i];
+  }
 
-inline const std::string& Statistics::getUnit(int i) const {
-  check_index(i);
-  return _units[i];
-}
+  inline double Statistics::getMin(int i) const {
+    check_index(i);
+    return _min[i];
+  }
+  inline double Statistics::getMax(int i) const {
+    check_index(i);
+    return _max[i];
+  }
 
-inline double Statistics::getMin(int i) const {
-  check_index(i);
-  return _min[i];
-}
-inline double Statistics::getMax(int i) const {
-  check_index(i);
-  return _max[i];
-}
+  inline int
+  Statistics::getCount (int i) const {
+    check_index(i);
+    return _count[i];
+  }
 
-inline int
-Statistics::getCount (int i) const
-{
-	check_index(i);
-	return _count[i];
-}
+  inline double Statistics::getAverage(int i) const {
+    check_index(i);
+    return _sum[i]/_count[i];
+  }
 
-inline double Statistics::getAverage(int i) const {
-  check_index(i);
-  return _sum[i]/_count[i];
-}
-
+} // helper
+} // gearshifft
 #endif /* STATISTICS_H_ */

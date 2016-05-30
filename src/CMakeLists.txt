@@ -1,6 +1,3 @@
-# todo: set number of runs as cmake option?
-# todo: special set of dimensions?
-
 cmake_minimum_required(VERSION 2.8)
 
 project(gearshifft CXX)
@@ -81,15 +78,16 @@ function(add_exec Tlib Ttype)
       PROPERTIES COMPILE_FLAGS "-DOPENCL_ENABLED ${PROJECT_EXEC_FLAGS}")
     set(LIBS ${LIBS} ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
   endif()
-  target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} helper)
+  target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
 endfunction()
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-include_directories(${helper_INCLUDE_DIRS} ../inc)
-set(SOURCES "benchmark.cpp")
+include_directories(../inc)
+set(SOURCES benchmark.cpp statistics.cpp)
+
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)

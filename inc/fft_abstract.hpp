@@ -59,10 +59,10 @@ namespace gearshifft
         using TPrecision = typename Precision<typename TVector::value_type,
                                               TFFT::IsComplex >::type;
         assert(vec.data());
-        Statistics& stats = results.stats;
+        helper::Statistics& stats = results.stats;
 
-        TimeStatistics<TDeviceTimer> timer_dev(&stats); // or OpenCL timer
-        TimeStatistics<TimerCPU> timer_cpu(&stats);
+        helper::TimeStatistics<TDeviceTimer> timer_dev(&stats);
+        helper::TimeStatistics<helper::TimerCPU> timer_cpu(&stats);
         int i_gpu = timer_dev.append("Device Runtime");
         int i_cpu_alloc = timer_cpu.append("CPU Alloc");
         int i_gpu_upload = timer_dev.append("Device Upload");

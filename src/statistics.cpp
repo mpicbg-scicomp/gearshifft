@@ -7,7 +7,9 @@
 #include <stdexcept>
 
 using namespace std;
-std::ostream& operator<<(std::ostream& os, const Statistics& stats)
+using namespace gearshifft::helper;
+
+std::ostream& gearshifft::helper::operator<<(std::ostream& os, const Statistics& stats)
 {
   const char sep = ',';
   os

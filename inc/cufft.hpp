@@ -186,11 +186,11 @@ namespace CuFFT {
 
     void malloc() {
       if(IsInplace){
-        CHECK_ERROR(cudaMalloc(&data_, data_size_));
+        CHECK_CUDA(cudaMalloc(&data_, data_size_));
         data_transform_ = reinterpret_cast<ComplexType*>(data_);
       }else{
-        CHECK_ERROR(cudaMalloc(&data_, data_size_));
-        CHECK_ERROR(cudaMalloc(&data_transform_, data_transform_size_));
+        CHECK_CUDA(cudaMalloc(&data_, data_size_));
+        CHECK_CUDA(cudaMalloc(&data_transform_, data_transform_size_));
       }
     }
 
@@ -222,9 +222,9 @@ namespace CuFFT {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
-        CHECK_ERROR(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice));
+        CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice));
       }else{
-        CHECK_ERROR(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice));
+        CHECK_CUDA(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice));
       }
     }
 
@@ -235,24 +235,24 @@ namespace CuFFT {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
-        CHECK_ERROR(cudaMemcpy2D(output, w, data_, pitch, w, h, cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy2D(output, w, data_, pitch, w, h, cudaMemcpyDeviceToHost));
       }else{
-        CHECK_ERROR(cudaMemcpy(output, data_, data_size_, cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy(output, data_, data_size_, cudaMemcpyDeviceToHost));
       }
     }
 
     void destroy() {
-      CHECK_ERROR( cudaFree(data_) );
+      CHECK_CUDA( cudaFree(data_) );
       if(IsInplace==false)
-        CHECK_ERROR( cudaFree(data_transform_) );
+        CHECK_CUDA( cudaFree(data_transform_) );
       CHECK_CUFFT( cufftDestroy(plan_) );
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, TimerGPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, TimerGPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, TimerGPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, TimerGPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, helper::TimerGPU> Inplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, helper::TimerGPU> Outplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, helper::TimerGPU> Inplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, helper::TimerGPU> Outplace_Complex;
 
 } // namespace CuFFT
 } // namespace gearshifft

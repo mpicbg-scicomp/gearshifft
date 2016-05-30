@@ -8,9 +8,8 @@
 #include <vector>
 #include <utility> // pair
 
-#define clSafeCall( err ) gearshifft::ClFFT::__clSafeCall( err, __FILE__, __LINE__ )
-#define clFFTSafeCall( err ) gearshifft::ClFFT::__clSafeCall( err, __FILE__, __LINE__ )
-#define clCheckError(err) gearshifft::ClFFT::__clSafeCall( err, __FILE__, __LINE__ )
+#define CHECK_CL( err ) gearshifft::ClFFT::check_error( err, __FILE__, __LINE__ )
+
 #define STRINGIFY(A) #A
 #define clFFTStatusCase(s) case s: return STRINGIFY(s)
 
@@ -105,11 +104,11 @@ namespace gearshifft {
       }
     }
     template<typename T>
-    inline void __clSafeCall( T err, const char *file, const int line )
+    inline void check_error( T err, const char *file, const int line )
     {
       if ( CL_SUCCESS != err )
       {
-        fprintf( stderr, "clSafeCall() failed at %s:%i : %s\n",
+        fprintf( stderr, "OpenCL error at %s:%i : %s\n",
                  file, line, getOpenCLErrorString( err ) );
 
         throw std::runtime_error("OpenCL Error: " + std::string(getOpenCLErrorString(err))+ " "+std::to_string(err));
@@ -189,8 +188,8 @@ namespace gearshifft {
           break;
         }
       if(!found){
-        clSafeCall(clGetPlatformIDs( 1, platform, NULL ));
-        clSafeCall(clGetDeviceIDs( *platform, CL_DEVICE_TYPE_DEFAULT, 1, device, NULL ));
+        CHECK_CL(clGetPlatformIDs( 1, platform, NULL ));
+        CHECK_CL(clGetDeviceIDs( *platform, CL_DEVICE_TYPE_DEFAULT, 1, device, NULL ));
       }
       return 0;
     }

@@ -10,7 +10,7 @@
 
 #ifdef OPENCL_ENABLED
 #include "clfft.hpp"
-
+using namespace gearshifft::helper;
 /**
  * Global setup for context (application lifetime).
  */

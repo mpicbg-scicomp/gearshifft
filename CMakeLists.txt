@@ -27,5 +27,4 @@ message(">> Setting up ${CMAKE_BUILD_TYPE} build")
 # or
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
-add_subdirectory(lib/helper/src)
 add_subdirectory(src)

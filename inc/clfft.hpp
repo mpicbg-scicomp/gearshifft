@@ -64,17 +64,17 @@ namespace ClFFT
       findClDevice(CL_DEVICE_TYPE_GPU, &platform, &device);
       props[1] = (cl_context_properties)platform;
       ctx = clCreateContext( props, 1, &device, nullptr, nullptr, &err );
-      clCheckError(err);
+      CHECK_CL(err);
       clfftSetupData fftSetup;
-      clSafeCall(clfftInitSetupData(&fftSetup));
-      clSafeCall(clfftSetup(&fftSetup));
+      CHECK_CL(clfftInitSetupData(&fftSetup));
+      CHECK_CL(clfftSetup(&fftSetup));
 
     }
     void destroy() {
       if(ctx) {
         std::cout << "Destroying clFFT and OpenCL Context ..." << std::endl;
-        clSafeCall( clfftTeardown( ) );
-        clSafeCall(clReleaseContext( ctx ));
+        CHECK_CL( clfftTeardown( ) );
+        CHECK_CL(clReleaseContext( ctx ));
         ctx = 0;
       }
     }
@@ -90,7 +90,7 @@ namespace ClFFT
   template<clfftDim FFTDim, size_t Ndim>
   constexpr void makePlan(clfftPlanHandle& plan, const std::array<unsigned,Ndim>& e){
     size_t clLengths[3] = {e[0], Ndim==2?e[1]:1, Ndim==3?e[2]:1};
-    clSafeCall(clfftCreateDefaultPlan(&plan, context.ctx, FFTDim, clLengths));
+    CHECK_CL(clfftCreateDefaultPlan(&plan, context.ctx, FFTDim, clLengths));
   }
 
   /**
@@ -141,7 +141,7 @@ namespace ClFFT
       if(context.ctx==0)
         context.create();
       queue_ = clCreateCommandQueue( context.ctx, context.device, 0, &err );
-      clCheckError(err);
+      CHECK_CL(err);
 
 
       n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
@@ -180,10 +180,10 @@ namespace ClFFT
       size_t size1 = 0;
       size_t size2 = 0;
       init_forward();
-      clSafeCall(clfftGetTmpBufSize( plan_, &size1 ));
+      CHECK_CL(clfftGetTmpBufSize( plan_, &size1 ));
       init_backward();
-      clSafeCall(clfftGetTmpBufSize( plan_, &size2 ));
-      clSafeCall(clfftDestroyPlan( &plan_ ));
+      CHECK_CL(clfftGetTmpBufSize( plan_, &size2 ));
+      CHECK_CL(clfftDestroyPlan( &plan_ ));
       return std::max(size1,size2);
     }
 
@@ -210,17 +210,17 @@ namespace ClFFT
     // create FFT plan handle
     void init_forward() {
       makePlan<FFTDim>(plan_, extents_);
-      clSafeCall(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
-      clSafeCall(clfftSetLayout(plan_,
+      CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
+      CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
                                 traits::FFTLayout<IsComplex>::value_transformed));
-      clSafeCall(clfftSetResultLocation(plan_, traits::FFTInplace<IsInplace>::value));
+      CHECK_CL(clfftSetResultLocation(plan_, traits::FFTInplace<IsInplace>::value));
       if(Padding){
-        clSafeCall(clfftSetPlanInStride(plan_, FFTDim, strides));
-        clSafeCall(clfftSetPlanOutStride(plan_, FFTDim, transform_strides));
-        clSafeCall(clfftSetPlanDistance(plan_, dist, transform_dist));
+        CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, strides));
+        CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, transform_strides));
+        CHECK_CL(clfftSetPlanDistance(plan_, dist, transform_dist));
       }
-      clSafeCall(clfftBakePlan(plan_,
+      CHECK_CL(clfftBakePlan(plan_,
                                1, // number of queues
                                &queue_,
                                nullptr, // callback
@@ -230,16 +230,16 @@ namespace ClFFT
     // recreates plan if needed
     void init_backward() {
       if(IsComplex==false){
-        clSafeCall(clfftSetLayout(plan_,
+        CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,
                                   traits::FFTLayout<IsComplex>::value));
         if(Padding){
-          clSafeCall(clfftSetPlanOutStride(plan_, FFTDim, strides));
-          clSafeCall(clfftSetPlanInStride(plan_, FFTDim, transform_strides));
-          clSafeCall(clfftSetPlanDistance(plan_, transform_dist, dist));
+          CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, strides));
+          CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, transform_strides));
+          CHECK_CL(clfftSetPlanDistance(plan_, transform_dist, dist));
         }
 
-        clSafeCall(clfftBakePlan(plan_,
+        CHECK_CL(clfftBakePlan(plan_,
                                  1, // number of queues
                                  &queue_,
                                  0, // callback
@@ -248,7 +248,7 @@ namespace ClFFT
     }
 
     void execute_forward() {
-      clSafeCall(clfftEnqueueTransform(plan_,
+      CHECK_CL(clfftEnqueueTransform(plan_,
                                        CLFFT_FORWARD,
                                        1, // numQueuesAndEvents
                                        &queue_,
@@ -258,10 +258,10 @@ namespace ClFFT
                                        &data_,  // input
                                        IsInplace ? &data_ : &data_transform_, // output
                                        0)); // tmpBuffer
-      clSafeCall(clFinish(queue_));
+      CHECK_CL(clFinish(queue_));
     }
     void execute_backward() {
-      clSafeCall(clfftEnqueueTransform(plan_,
+      CHECK_CL(clfftEnqueueTransform(plan_,
                                        CLFFT_BACKWARD,
                                        1, // numQueuesAndEvents
                                        &queue_,
@@ -271,14 +271,14 @@ namespace ClFFT
                                        IsInplace ? &data_ : &data_transform_, // input
                                        IsInplace ? &data_ : &data_, // output
                                        nullptr)); // tmpBuffer
-      clSafeCall(clFinish(queue_));
+      CHECK_CL(clFinish(queue_));
     }
     template<typename THostData>
     void upload(THostData* input) {
       if(Padding && NDim>1)
       {
         //printf("pitch=%zu w=%zu h=%zu\n", pitch, w, h);
-        clSafeCall(clEnqueueWriteBufferRect( queue_,
+        CHECK_CL(clEnqueueWriteBufferRect( queue_,
                                              data_,
                                              CL_TRUE, // blocking_write
                                              offset, // buffer origin
@@ -293,7 +293,7 @@ namespace ClFFT
                                              nullptr, // event_wait_list
                                              nullptr )); // event
       }else{
-        clSafeCall(clEnqueueWriteBuffer( queue_,
+        CHECK_CL(clEnqueueWriteBuffer( queue_,
                                          data_,
                                          CL_TRUE, // blocking_write
                                          0, // offset
@@ -308,7 +308,7 @@ namespace ClFFT
     void download(THostData* output) {
       if(Padding && NDim>1)
       {
-        clSafeCall(clEnqueueReadBufferRect( queue_,
+        CHECK_CL(clEnqueueReadBufferRect( queue_,
                                             data_,
                                             CL_TRUE, // blocking_write
                                             offset, // buffer origin
@@ -323,7 +323,7 @@ namespace ClFFT
                                             nullptr, // event_wait_list
                                             nullptr )); // event
       }else{
-        clSafeCall(clEnqueueReadBuffer( queue_,
+        CHECK_CL(clEnqueueReadBuffer( queue_,
                                         data_,
                                         CL_TRUE, // blocking_write
                                         0, // offset
@@ -336,13 +336,13 @@ namespace ClFFT
     }
 
     void destroy() {
-      clSafeCall( clFinish(queue_) );
-      clSafeCall( clReleaseMemObject( data_ ) );
+      CHECK_CL( clFinish(queue_) );
+      CHECK_CL( clReleaseMemObject( data_ ) );
       if(IsInplace==false)
-        clSafeCall( clReleaseMemObject( data_transform_ ) );
+        CHECK_CL( clReleaseMemObject( data_transform_ ) );
 
-      clSafeCall(clfftDestroyPlan( &plan_ ));
-      clSafeCall( clReleaseCommandQueue( queue_ ) );
+      CHECK_CL(clfftDestroyPlan( &plan_ ));
+      CHECK_CL( clReleaseCommandQueue( queue_ ) );
       data_ = 0;
       data_transform_ = 0;
       plan_ = 0;
@@ -350,10 +350,10 @@ namespace ClFFT
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, TimerCPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerCPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerCPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerCPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, helper::TimerCPU> Inplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, helper::TimerCPU> Outplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, helper::TimerCPU> Inplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, helper::TimerCPU> Outplace_Complex;
 
 } // namespace ClFFT
 } // gearshifft

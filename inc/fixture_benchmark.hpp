@@ -32,7 +32,7 @@ namespace gearshifft
 {
 struct Results
   {
-    Statistics stats;
+    helper::Statistics stats;
     size_t alloc_mem_in_bytes = 0;
     size_t plan_mem_in_bytes = 0;
   };

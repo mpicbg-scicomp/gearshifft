@@ -1,14 +1,46 @@
 #ifndef CUFFT_HELPER_HPP_
 #define CUFFT_HELPER_HPP_
 
-#include "helper.h"
-
+#include <cuda_runtime.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cufft.h>
 
-#define CHECK_CUFFT(ans) gearshifft::CuFFT::check_error((ans), #ans, __FILE__, __LINE__)
+#ifndef CUDA_DISABLE_ERROR_CHECKING
+#define CHECK_CUDA(ans) gearshifft::CuFFT::check_cuda((ans), #ans, __FILE__, __LINE__)
+#define CHECK_CUFFT(ans) gearshifft::CuFFT::check_cufft((ans), #ans, __FILE__, __LINE__)
+#define CHECK_LAST(msg) gearshifft::CuFFT::check_cuda_last(msg, __FILE__, __LINE__)
+#else
+#define CHECK_CUDA(ans) {}
+#define CHECK_CUFFT(ans) {}
+#define CHECK_LAST(msg) {}
+#endif
 
 namespace gearshifft {
 namespace CuFFT {
+
+  inline
+  void check_cuda(cudaError_t code, const char *func, const char *file, int line)
+  {
+    if (code != cudaSuccess)
+    {
+      fprintf(stderr,"CUDA Error '%s' at %s:%d (%s)\n", cudaGetErrorString(code), file, line, func);
+      cudaDeviceReset();
+      exit(static_cast<unsigned int>(code));
+    }
+  }
+  inline
+  void check_cuda_last(const char *msg, const char *file, int line)
+  {
+    cudaError_t code = cudaGetLastError();
+    if (code != cudaSuccess)
+    {
+      fprintf(stderr,"CUDA Error '%s' at %s:%d (%s)\n", cudaGetErrorString(code), file, line, msg);
+
+      cudaDeviceReset();
+      exit(static_cast<unsigned int>(code));
+    }
+  }
 
   static const char* cufftResultToString(cufftResult error)
   {
@@ -47,7 +79,8 @@ namespace CuFFT {
 
     return "<unknown>";
   }
-  void check_error(cufftResult code, const char *func, const char *file, int line)
+  inline
+  void check_cufft(cufftResult code, const char *func, const char *file, int line)
   {
     if (code)
     {
