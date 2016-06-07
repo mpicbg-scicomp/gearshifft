@@ -28,6 +28,7 @@ The result file is called e.g. `gearshifft_cufft_float.csv`.
   - ... enable compiler definition `-D_GLIBCXX_USE_CXX11_ABI=0` in ./CMakeLists.txt
 
 ## Tested on ...
+
 - gcc 5.3.0
 - CUDA 7.5.18
 - cuFFT from CUDA 7.5.18
@@ -36,12 +37,15 @@ The result file is called e.g. `gearshifft_cufft_float.csv`.
 - Nvidia Kepler K80 GPU and Kepler K20X GPU
 
 ## Issues
+
 - clFFT does not support arbitrary transform sizes. The benchmark will print only these tests as failed.
 - at the moment this is for single-GPUs, batches are not considered
 
 ## Roadmap
+
 - [x] cuFFT
 - [ ] clFFT: emulation of arbitrary transform sizes / non-supported radices
+- [ ] hcFFT: ROC based hcFFT library
 - [ ] liFFT: include library independent FFT framework
 - [ ] integration into test environment (ctest)
 - [ ] scripts for creating benchmark summary of the individual results
