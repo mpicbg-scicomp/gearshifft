@@ -143,12 +143,11 @@ namespace ClFFT
       queue_ = clCreateCommandQueue( context.ctx, context.device, 0, &err );
       CHECK_CL(err);
 
-
       n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
       if(Padding){
         n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
         w      = extents_[0] * sizeof(RealType);
-        h      = n_ * sizeof(RealType) / w;
+        h      = n_ / extents_[0];
         pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
         region[0] = w; // in bytes
         region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
@@ -163,8 +162,6 @@ namespace ClFFT
 
       data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
       data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
-
-
     }
 
     /**
