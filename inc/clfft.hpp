@@ -355,13 +355,6 @@ namespace ClFFT
 } // namespace ClFFT
 } // gearshifft
 
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_NORMALIZED_FFT(ClFFT,
-                              gearshifft::ClFFT::Inplace_Real,
-                              gearshifft::ClFFT::Outplace_Real,
-                              gearshifft::ClFFT::Inplace_Complex,
-                              gearshifft::ClFFT::Outplace_Complex
-                              )
 
 
 #endif /* CLFFT_HPP_ */

@@ -256,11 +256,6 @@ namespace CuFFT {
 
 } // namespace CuFFT
 } // namespace gearshifft
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
-                                gearshifft::CuFFT::Inplace_Real,
-                                gearshifft::CuFFT::Outplace_Real,
-                                gearshifft::CuFFT::Inplace_Complex,
-                                gearshifft::CuFFT::Outplace_Complex)
+
 
 #endif /* CUFFT_HPP_ */
