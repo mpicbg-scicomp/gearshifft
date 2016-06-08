@@ -17,10 +17,20 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build)
 # set project build type
-IF(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
-ENDIF(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message(">> Setting up ${CMAKE_BUILD_TYPE} build")
+
+option(USE_CXX11_ABI "enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if(${USE_CXX11_ABI})
+    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+  else()
+    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+  endif()
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 # if libraries are compiled with different ABI, then set the matching version here
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
