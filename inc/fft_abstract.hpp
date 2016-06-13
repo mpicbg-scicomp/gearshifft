@@ -1,6 +1,7 @@
 #ifndef FFT_ABSTRACT_HPP_
 #define FFT_ABSTRACT_HPP_
 
+#include "timer.hpp"
 #include <type_traits>
 
 namespace gearshifft
@@ -42,6 +43,18 @@ namespace gearshifft
   template<typename T>
   struct Precision<T, false> { using type = T; };
 
+  enum struct Time {
+    Device = 0,
+    Allocation,
+    Upload,
+    FFT,
+    FFTInverse,
+    Download,
+    Cleanup,
+    Total,
+    _Times
+  };
+
 /**
  * Functor being called from FixtureBenchmark::benchmark()
  */
@@ -51,71 +64,70 @@ namespace gearshifft
            >
   struct FFT : public TFFT
   {
-    template<typename TVector, size_t NDim>
-    void operator()(TVector& vec,
-                    const std::array<unsigned,NDim>& cextents,
-                    Results& results)
+    template<typename T_Result, typename T_Vector, size_t NDim>
+    void operator()(T_Result& result,
+                    T_Vector& vec,
+                    const std::array<unsigned,NDim>& extents
+      )
       {
-        using TPrecision = typename Precision<typename TVector::value_type,
+        using PrecisionT = typename Precision<typename T_Vector::value_type,
                                               TFFT::IsComplex >::type;
         assert(vec.data());
-        helper::Statistics& stats = results.stats;
-
-        helper::TimeStatistics<TDeviceTimer> timer_dev(&stats);
-        helper::TimeStatistics<helper::TimerCPU> timer_cpu(&stats);
-        int i_gpu = timer_dev.append("Device Runtime");
-        int i_cpu_alloc = timer_cpu.append("CPU Alloc");
-        int i_gpu_upload = timer_dev.append("Device Upload");
-        int i_gpu_fft = timer_dev.append("Device FFT");
-        int i_gpu_ifft = timer_dev.append("Device iFFT");
-        int i_gpu_download = timer_dev.append("Device Download");
-        int i_cpu_cleanup = timer_cpu.append("CPU Cleanup");
-        int i_cpu = timer_cpu.append("CPU Runtime");
 
         // prepare plan object
         // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-        auto plan = TPlan<TFFT, TPrecision, NDim> (cextents);
-        results.alloc_mem_in_bytes = plan.getAllocSize();
-        results.plan_mem_in_bytes  = plan.getPlanSize();
+        auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
+        result.addSizeDeviceDataBuffer(plan.getAllocSize());
+        result.addSizeDevicePlanBuffer(plan.getPlanSize());
 
+        TimerCPU ttotal;
+        TimerCPU talloc;
+        TimerCPU tcleanup;
+        TDeviceTimer tdevupload;
+        TDeviceTimer tdevdownload;
+        TDeviceTimer tdevfft;
+        TDeviceTimer tdevfftinverse;
+        TDeviceTimer tdevtotal;
         /// --- Total CPU ---
-        timer_cpu.start(i_cpu);
+        ttotal.startTimer();
         /// --- Malloc ---
-        timer_cpu.start(i_cpu_alloc);
-        plan.malloc();
-        timer_cpu.stop(i_cpu_alloc);
+        talloc.startTimer();
+         plan.malloc();
+        result.addValue(Time::Allocation, talloc.stopTimer());
 
         /// --- Create plan ---
         plan.init_forward();
 
         /// --- FFT+iFFT GPU ---
-        timer_dev.start(i_gpu);
-        timer_dev.start(i_gpu_upload);
-        plan.upload(vec.data());
-        timer_dev.stop(i_gpu_upload);
+        tdevtotal.startTimer();
 
-        timer_dev.start(i_gpu_fft);
-        plan.execute_forward();
-        timer_dev.stop(i_gpu_fft);
+        tdevupload.startTimer();
+         plan.upload(vec.data());
+        result.addValue(Time::Upload, tdevupload.stopTimer());
+
+        tdevfft.startTimer();
+         plan.execute_forward();
+        result.addValue(Time::FFT, tdevfft.stopTimer());
 
         plan.init_backward();
 
-        timer_dev.start(i_gpu_ifft);
-        plan.execute_backward();
-        timer_dev.stop(i_gpu_ifft);
+        tdevfftinverse.startTimer();
+         plan.execute_backward();
+        result.addValue(Time::FFTInverse, tdevfftinverse.stopTimer());
 
-        timer_dev.start(i_gpu_download);
-        plan.download(vec.data());
-        timer_dev.stop(i_gpu_download);
-        timer_dev.stop(i_gpu);
+        tdevdownload.startTimer();
+         plan.download(vec.data());
+        result.addValue(Time::Download, tdevdownload.stopTimer());
+
+        result.addValue(Time::Device, tdevtotal.stopTimer());
 
 
         /// --- Cleanup ---
-        timer_cpu.start(i_cpu_cleanup);
-        plan.destroy();
-        timer_cpu.stop(i_cpu_cleanup);
+        tcleanup.startTimer();
+         plan.destroy();
+        result.addValue(Time::Cleanup, tcleanup.stopTimer());
 
-        timer_cpu.stop(i_cpu);
+        result.addValue(Time::Total, ttotal.stopTimer());
       }
   };
 

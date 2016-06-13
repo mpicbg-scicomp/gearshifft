@@ -1,7 +1,7 @@
 #ifndef CUFFT_HPP_
 #define CUFFT_HPP_
 
-#include "helper.h"
+#include "timer.hpp"
 #include "fft_abstract.hpp"
 #include "fixture_test_suite.hpp"
 #include "cufft_helper.hpp"
@@ -249,10 +249,10 @@ namespace CuFFT {
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, helper::TimerGPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, helper::TimerGPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, helper::TimerGPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, helper::TimerGPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, TimerGPU> Inplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, TimerGPU> Outplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, TimerGPU> Inplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, TimerGPU> Outplace_Complex;
 
 } // namespace CuFFT
 } // namespace gearshifft

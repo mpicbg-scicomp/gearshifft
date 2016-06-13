@@ -6,6 +6,7 @@
 #ifdef CUDA_ENABLED
 //@todo measure init and reset time
 #include "cufft.hpp"
+#include "timer.hpp"
 
 // -- Execute Benchmarks --
 RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
@@ -18,32 +19,31 @@ RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
 
 #ifdef OPENCL_ENABLED
 #include "clfft.hpp"
-using namespace gearshifft::helper;
+using namespace gearshifft;
 /**
  * Global setup for context (application lifetime).
  */
 struct MyConfig {
-  Statistics stats;
-  std::stringstream ss;
+//  std::stringstream ss;
   MyConfig()   {
-    TimeStatistics<TimerCPU> timer(&stats);
-    int i_create = timer.add("Init OpenCL+clFFT");
-    timer.start(i_create);
+    TimerCPU timer;
+//    int i_create = timer.add("Init OpenCL+clFFT");
+    timer.startTimer();
     gearshifft::ClFFT::context.create();
-    timer.stop(i_create);
+    timer.stopTimer();
   }
   ~MyConfig()  {
-    TimeStatistics<TimerCPU> timer(&stats);
-    int i_teardown = timer.add("Teardown OpenCL+clFFT");
-    timer.start(i_teardown);
+    TimerCPU timer;
+//    int i_teardown = timer.add("Teardown OpenCL+clFFT");
+    timer.startTimer();
     gearshifft::ClFFT::context.destroy();
-    timer.stop(i_teardown);
+    timer.stopTimer();
     // information on OpenCL device
-    ss << gearshifft::ClFFT::getClDeviceInformations(
+/*    ss << gearshifft::ClFFT::getClDeviceInformations(
       gearshifft::ClFFT::context.device ).str()
        << std::endl;
     ss << stats;
-    gearshifft::Output::write(ss.str());
+    gearshifft::Output::write(ss.str());*/
   }
 };
 BOOST_GLOBAL_FIXTURE( MyConfig );

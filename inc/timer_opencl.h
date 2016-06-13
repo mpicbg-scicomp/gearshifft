@@ -5,7 +5,6 @@
 #include <CL/cl.h>
 
 namespace gearshifft {
-namespace helper {
   /**
    * @todo OpenCL Timer
    */
@@ -19,6 +18,5 @@ namespace helper {
     }
 
   };
-}
 }
 #endif /* TIMER_OPENCL_H_ */

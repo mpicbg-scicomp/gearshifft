@@ -34,6 +34,7 @@ namespace helper {
     double getMax(int i) const;
     double getAverage(int i) const;
     double getStdDeviation(int i) const;
+    double getValue(int i, int j) const;
 
   private:
     void check_index(int index) const;
@@ -49,6 +50,7 @@ namespace helper {
     std::vector<double> _max;
     std::vector<double> _sum;
     std::vector<double> _sumsq;
+    std::vector<std::vector<double> > _values;
   };
 
   std::ostream& operator<<(std::ostream& os, const Statistics& stats);

@@ -22,8 +22,8 @@
 //____________________________
 
 // dimension test cases for benchmark (append or modify if needed)
-#define EXTENTS ((512,512,512))
-//#define EXTENTS ((4,4,4))
+//#define EXTENTS ((512,512,512))
+#define EXTENTS ((4,4,4))
 
 // if EXTENTS Tuple is not defined, then use the predefined ones
 #ifndef EXTENTS

@@ -1,7 +1,7 @@
 #ifndef CLFFT_HPP_
 #define CLFFT_HPP_
 
-#include "helper.h"
+#include "timer.hpp"
 #include "fft_abstract.hpp"
 #include "fixture_test_suite.hpp"
 #include "clfft_helper.hpp"
@@ -29,7 +29,6 @@ namespace ClFFT
         using ComplexType = cl_double2;
         using RealType = cl_double;
     };
-
 
     template< typename TPrecision=float >
     struct FFTPrecision: std::integral_constant< clfftPrecision, CLFFT_SINGLE >{};
@@ -225,11 +224,12 @@ namespace ClFFT
     }
 
     // recreates plan if needed
+    // @todo set strides for C2R
     void init_backward() {
       if(IsComplex==false){
         CHECK_CL(clfftSetLayout(plan_,
-                                  traits::FFTLayout<IsComplex>::value_transformed,
-                                  traits::FFTLayout<IsComplex>::value));
+                                traits::FFTLayout<IsComplex>::value_transformed,
+                                traits::FFTLayout<IsComplex>::value));
         if(Padding){
           CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, strides));
           CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, transform_strides));
@@ -347,10 +347,10 @@ namespace ClFFT
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, helper::TimerCPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, helper::TimerCPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, helper::TimerCPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, helper::TimerCPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, TimerCPU> Inplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerCPU> Outplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerCPU> Inplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerCPU> Outplace_Complex;
 
 } // namespace ClFFT
 } // gearshifft

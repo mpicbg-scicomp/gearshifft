@@ -5,7 +5,6 @@
 #include <cuda_runtime.h>
 
 namespace gearshifft {
-namespace helper {
 
   struct TimerCUDA_ {
     double time = 0.0;
@@ -37,6 +36,5 @@ namespace helper {
     }
   };
 
-} //
 } // gearshifft
 #endif /* TIMER_CUDA_H_ */

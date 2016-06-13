@@ -86,7 +86,7 @@ endfunction()
 #
 #------------------------------------------------------------------------------
 include_directories(../inc)
-set(SOURCES benchmark.cpp statistics.cpp)
+set(SOURCES benchmark.cpp)
 
 
 enable_testing()

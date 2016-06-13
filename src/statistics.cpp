@@ -60,6 +60,7 @@ void Statistics::resetAll() {
   _sum.clear();
   _sumsq.clear();
   _count.clear();
+  _values.clear();
 }
 
 void Statistics::init(int i)
@@ -73,6 +74,8 @@ void Statistics::init(int i)
   _factors.resize(len);
   _inverts.resize(len);
   _count.resize(len);
+  _values.resize(len);
+
   _min[i] = std::numeric_limits<double>::max();
   _max[i] = std::numeric_limits<double>::min();
   _sum[i] = 0.0;
@@ -134,6 +137,8 @@ Statistics::process(int index, double val)
 
   val *= _factors[_current_index];
 
+  int val_index = _count[_current_index]++;
+  _values[_current_index].push_back(val);
   if(_min[_current_index] > val){
     _min[_current_index] = val;
   }
@@ -142,7 +147,6 @@ Statistics::process(int index, double val)
   }
   _sum[_current_index] += val;
   _sumsq[_current_index] += val*val;
-  ++_count[_current_index];
 }
 double Statistics::getStdDeviation(int i) const {
   check_index(i);
@@ -156,6 +160,12 @@ void Statistics::check_index(int index) const {
     fprintf(stderr,"Index out of range (%d/%d).\n", index, getLength());
     throw std::out_of_range("");
   }
+}
+
+double Statistics::getValue(int i, int j) const {
+  check_index(i);
+  if(j>=0 && j<getCount(i))
+    return _values[i][j];
 }
 
 //@todo use cout
