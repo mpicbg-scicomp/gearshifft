@@ -1,11 +1,13 @@
 #ifndef CLFFT_HPP_
 #define CLFFT_HPP_
 
+#include "application.hpp"
 #include "timer.hpp"
 #include "fft_abstract.hpp"
 #include "fixture_test_suite.hpp"
 #include "clfft_helper.hpp"
 #include <clFFT.h>
+#include <stdexcept>
 
 namespace gearshifft
 {
@@ -56,8 +58,12 @@ namespace ClFFT
     cl_platform_id platform = 0;
     cl_device_id device = 0;
     cl_context ctx = 0;
+
+    static const std::string title() {
+      return "ClFFT";
+    }
+
     void create() {
-      std::cout<<"Create OpenCL and clFFT context ..."<<std::endl;
       cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
       cl_int err = CL_SUCCESS;
       findClDevice(CL_DEVICE_TYPE_GPU, &platform, &device);
@@ -69,27 +75,23 @@ namespace ClFFT
       CHECK_CL(clfftSetup(&fftSetup));
 
     }
+
     void destroy() {
       if(ctx) {
-        std::cout << "Destroying clFFT and OpenCL Context ..." << std::endl;
         CHECK_CL( clfftTeardown( ) );
         CHECK_CL(clReleaseContext( ctx ));
         ctx = 0;
       }
     }
-    ~Context()
-    {
-      destroy();
-    }
-  } context;
+  };
 
   /**
    * Plan Creator depending on FFT transform type.
    */
   template<clfftDim FFTDim, size_t Ndim>
-  constexpr void makePlan(clfftPlanHandle& plan, const std::array<unsigned,Ndim>& e){
+  constexpr void makePlan(cl_context ctx, clfftPlanHandle& plan, const std::array<unsigned,Ndim>& e){
     size_t clLengths[3] = {e[0], Ndim==2?e[1]:1, Ndim==3?e[2]:1};
-    CHECK_CL(clfftCreateDefaultPlan(&plan, context.ctx, FFTDim, clLengths));
+    CHECK_CL(clfftCreateDefaultPlan(&plan, ctx, FFTDim, clLengths));
   }
 
   /**
@@ -117,6 +119,7 @@ namespace ClFFT
     size_t n_padded_;
     Extent extents_;
 
+    Context context_;
     cl_command_queue queue_ = 0;
     clfftPlanHandle plan_   = 0;
     cl_mem data_            = 0;
@@ -137,9 +140,10 @@ namespace ClFFT
       : extents_(cextents)
     {
       cl_int err;
-      if(context.ctx==0)
-        context.create();
-      queue_ = clCreateCommandQueue( context.ctx, context.device, 0, &err );
+      context_ = Application<Context>::getContext();
+      if(context_.ctx==0)
+        throw std::runtime_error("Context has not been created.");
+      queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
       CHECK_CL(err);
 
       n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
@@ -187,14 +191,14 @@ namespace ClFFT
 
     void malloc() {
       cl_int err;
-      data_ = clCreateBuffer( context.ctx,
+      data_ = clCreateBuffer( context_.ctx,
                               CL_MEM_READ_WRITE,
                               data_size_,
                               nullptr, // host pointer @todo
                               &err );
       //std::cout << " data " << data_size_ << std::endl;
       if(IsInplace==false){
-        data_transform_ = clCreateBuffer( context.ctx,
+        data_transform_ = clCreateBuffer( context_.ctx,
                                           CL_MEM_READ_WRITE,
                                           data_transform_size_,
                                           nullptr, // host pointer
@@ -205,7 +209,7 @@ namespace ClFFT
 
     // create FFT plan handle
     void init_forward() {
-      makePlan<FFTDim>(plan_, extents_);
+      makePlan<FFTDim>(context_.ctx, plan_, extents_);
       CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
       CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
@@ -224,7 +228,6 @@ namespace ClFFT
     }
 
     // recreates plan if needed
-    // @todo set strides for C2R
     void init_backward() {
       if(IsComplex==false){
         CHECK_CL(clfftSetLayout(plan_,

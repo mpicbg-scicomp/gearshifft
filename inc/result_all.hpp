@@ -1,6 +1,7 @@
 #ifndef RESULT_ALL_HPP_
 #define RESULT_ALL_HPP_
 
+#include "application.hpp"
 #include "result_benchmark.hpp"
 #include <sstream>
 #include <fstream>
@@ -34,23 +35,6 @@ namespace gearshifft {
 
     void add(const ResultBenchmarkT& result) {
       results_.push_back(result);
-      /*
-      static size_t index = 0;
-      item.key = index++;
-      item.fftlibrary = test_suite_name;
-      item.fftkind = title;
-      item.dimkind = getDimKind(extent);
-      item.dim = extent.size();
-      item.totalCount = 1;
-      for(size_t i=0; i<item.dim; ++i) {
-        item.extent[i] = extent[i];
-        item.totalCount *= extent[i];
-      }
-      item.precision = BOOST_PP_STRINGIZE(BENCH_PRECISION);
-      item.sizeDeviceDataBuffer = results.alloc_mem_in_bytes;
-      item.sizeDevicePlanBuffer = results.plan_mem_in_bytes;
-      item.statistic = results.stats;
-      items.push_back(item);*/
     }
     /*
      * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz -> run
@@ -68,29 +52,31 @@ namespace gearshifft {
                         );
         });
     }*/
-    ResultAll() = default;
-    ~ResultAll() {
-      write();
-    }
 
     /**
      * Store results in csv file.
      * If verbosity flag 'v' is set, then std::cout receives result view.
      */
-    void write() {
-      // get test suite name
-      std::string test_suite_name = (boost::unit_test::framework::get<boost::unit_test::test_suite>(boost::unit_test::framework::current_test_case().p_parent_id)).p_name;
-
+    void write(std::string apptitle) {
       std::string fname = BOOST_PP_STRINGIZE(DEFAULT_RESULT_FILE)".csv";
       std::ofstream fs;
-      char sep=',';
+      const char sep=',';
       fs.open(fname, std::ofstream::out);
+      // header
+      fs << "\"library\",\"inplace\",\"complex\",\"precision\",\"dim\",\"kind\""
+         << ",\"nx\",\"ny\",\"nz\",\"run\"";
+      for(auto ival=0; ival<T_NumberValues; ++ival) {
+        fs << sep << '"' << static_cast<RecordType>(ival) << '"';
+      }
+      fs << std::endl;
+
+      // data
       for(auto result : results_) {
         std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
         std::string complex = result.isComplex() ? "Complex" : "Real";
         for(auto run=0; run<T_NumberRuns; ++run) {
           result.setRun(run);
-          fs << test_suite_name << sep
+          fs << apptitle << sep
              << inplace << sep
              << complex << sep
              << BENCH_PRECISION_STRING << sep
@@ -98,12 +84,10 @@ namespace gearshifft {
              << result.getDimKind() << sep
              << result.getExtents()[0] << sep
              << result.getExtents()[1] << sep
-             << result.getExtents()[2]
-             << run << sep
-             << result.getSizeDeviceDataBuffer() << sep
-             << result.getSizeDevicePlanBuffer() << sep;
+             << result.getExtents()[2] << sep
+             << run;
           for(auto ival=0; ival<T_NumberValues; ++ival) {
-            fs << result.getValue(ival);
+            fs << sep << result.getValue(ival);
           }
           fs << std::endl;
         } // run
@@ -128,7 +112,7 @@ namespace gearshifft {
         for(auto result : results_) {
           std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
           std::string complex = result.isComplex() ? "Complex" : "Real";
-          ss << test_suite_name
+          ss << apptitle
              << inplace
              << complex
              << BENCH_PRECISION_STRING
@@ -139,9 +123,7 @@ namespace gearshifft {
              << result.getExtents()[2];
           for(auto run=0; run<T_NumberRuns; ++run) {
             result.setRun(run);
-            ss << run
-               << result.getSizeDeviceDataBuffer()
-               << result.getSizeDevicePlanBuffer();
+            ss << run;
             for(auto ival=0; ival<T_NumberValues; ++ival) {
               ss << result.getValue(ival);
             }

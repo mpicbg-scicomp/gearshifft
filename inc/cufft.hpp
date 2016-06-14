@@ -1,6 +1,7 @@
 #ifndef CUFFT_HPP_
 #define CUFFT_HPP_
 
+#include "application.hpp"
 #include "timer.hpp"
 #include "fft_abstract.hpp"
 #include "fixture_test_suite.hpp"
@@ -68,6 +69,25 @@ namespace CuFFT {
     };
 
   }  // namespace traits
+
+  /**
+   * CUDA implicit context init and reset wrapper. Time is benchmarked.
+   */
+  struct Context {
+
+    static const std::string title() {
+      return "CuFFT";
+    }
+
+    void create() {
+      CHECK_CUDA(cudaSetDevice(0));
+    }
+
+    void destroy() {
+      CHECK_CUDA(cudaDeviceReset());
+    }
+  };
+
 
   /**
    * Estimates memory reserved by cufft plan depending on FFT transform type

@@ -2,7 +2,10 @@
 #define FFT_ABSTRACT_HPP_
 
 #include "timer.hpp"
+#include <assert.h>
+#include <array>
 #include <type_traits>
+#include <ostream>
 
 namespace gearshifft
 {
@@ -43,7 +46,7 @@ namespace gearshifft
   template<typename T>
   struct Precision<T, false> { using type = T; };
 
-  enum struct Time {
+  enum struct RecordType{
     Device = 0,
     Allocation,
     Upload,
@@ -52,8 +55,27 @@ namespace gearshifft
     Download,
     Cleanup,
     Total,
-    _Times
+    DevBufferSize,
+    DevPlanSize,
+    _NrRecords
   };
+  std::ostream& operator<< (std::ostream & os, RecordType r)
+  {
+    switch (r)
+    {
+    case RecordType::Device: return os << "Time_Device [ms]";
+    case RecordType::Allocation: return os << "Time_Allocation [ms]";
+    case RecordType::Upload: return os << "Time_Upload [ms]";
+    case RecordType::FFT: return os << "Time_FFT [ms]";
+    case RecordType::FFTInverse: return os << "Time_iFFT [ms]";
+    case RecordType::Download: return os << "Time_Download [ms]";
+    case RecordType::Cleanup: return os << "Time_Cleanup [ms]";
+    case RecordType::Total: return os << "Time_Total [ms]";
+    case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
+    case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
+    };
+    return os << static_cast<int>(r);
+  }
 
 /**
  * Functor being called from FixtureBenchmark::benchmark()
@@ -77,8 +99,8 @@ namespace gearshifft
         // prepare plan object
         // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
         auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
-        result.addSizeDeviceDataBuffer(plan.getAllocSize());
-        result.addSizeDevicePlanBuffer(plan.getPlanSize());
+        result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
+        result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
 
         TimerCPU ttotal;
         TimerCPU talloc;
@@ -93,7 +115,7 @@ namespace gearshifft
         /// --- Malloc ---
         talloc.startTimer();
          plan.malloc();
-        result.addValue(Time::Allocation, talloc.stopTimer());
+        result.setValue(RecordType::Allocation, talloc.stopTimer());
 
         /// --- Create plan ---
         plan.init_forward();
@@ -103,31 +125,31 @@ namespace gearshifft
 
         tdevupload.startTimer();
          plan.upload(vec.data());
-        result.addValue(Time::Upload, tdevupload.stopTimer());
+        result.setValue(RecordType::Upload, tdevupload.stopTimer());
 
         tdevfft.startTimer();
          plan.execute_forward();
-        result.addValue(Time::FFT, tdevfft.stopTimer());
+        result.setValue(RecordType::FFT, tdevfft.stopTimer());
 
         plan.init_backward();
 
         tdevfftinverse.startTimer();
          plan.execute_backward();
-        result.addValue(Time::FFTInverse, tdevfftinverse.stopTimer());
+        result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
 
         tdevdownload.startTimer();
          plan.download(vec.data());
-        result.addValue(Time::Download, tdevdownload.stopTimer());
+        result.setValue(RecordType::Download, tdevdownload.stopTimer());
 
-        result.addValue(Time::Device, tdevtotal.stopTimer());
+        result.setValue(RecordType::Device, tdevtotal.stopTimer());
 
 
         /// --- Cleanup ---
         tcleanup.startTimer();
          plan.destroy();
-        result.addValue(Time::Cleanup, tcleanup.stopTimer());
+        result.setValue(RecordType::Cleanup, tcleanup.stopTimer());
 
-        result.addValue(Time::Total, ttotal.stopTimer());
+        result.setValue(RecordType::Total, ttotal.stopTimer());
       }
   };
 
