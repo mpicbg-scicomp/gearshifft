@@ -20,7 +20,7 @@ namespace gearshifft
         extents_[i] = ce[i];
       }
       dim_ = T_NDim;
-      dimkind_ = 0; //@todo dimkind
+      dimkind_ = 0;
       run_ = 0;
       isInplace_ = isInplace;
       isComplex_ = isComplex;

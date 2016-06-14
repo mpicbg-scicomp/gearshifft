@@ -46,7 +46,10 @@ namespace gearshifft {
     }
 
     void dumpResults() {
-      resultAll_.write(T_ContextImpl::title());
+      resultAll_.write(T_ContextImpl::title(),
+                       context_.getDeviceInfos(),
+                       timeContextCreate_,
+                       timeContextDestroy_);
     }
 
   private:

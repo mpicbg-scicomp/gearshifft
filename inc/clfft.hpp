@@ -63,6 +63,11 @@ namespace ClFFT
       return "ClFFT";
     }
 
+    std::string getDeviceInfos() {
+      auto ss = getClDeviceInformations(device);
+      return ss.str();
+    }
+
     void create() {
       cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
       cl_int err = CL_SUCCESS;

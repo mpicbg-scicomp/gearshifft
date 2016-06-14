@@ -79,6 +79,11 @@ namespace CuFFT {
       return "CuFFT";
     }
 
+    std::string getDeviceInfos() {
+      auto ss = getCUDADeviceInformations(0);
+      return ss.str();
+    }
+
     void create() {
       CHECK_CUDA(cudaSetDevice(0));
     }
