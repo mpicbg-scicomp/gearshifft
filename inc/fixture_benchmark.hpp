@@ -54,14 +54,18 @@ fftkind, precision, dimkind, dim, nx, ny, nz, run, AllocBuffer (bytes), AllocPla
       result.template init<T_Functor::IsComplex,
                            T_Functor::IsInplace,
                            T_NDim>(extents);
-      // warmup
-      fft(result, data_buffer, extents);
-
-      for(int r=0; r<NR_RUNS; ++r)
-      {
-        result.setRun(r);
-        data_set->copyTo(data_buffer);
+      try {
+        // warmup
         fft(result, data_buffer, extents);
+        for(int r=0; r<NR_RUNS; ++r)
+        {
+          result.setRun(r);
+          data_set->copyTo(data_buffer);
+          fft(result, data_buffer, extents);
+        }
+      } catch(const std::runtime_error& e) {
+        delete data_buffer_p;
+        BOOST_FAIL( e.what() );
       }
       auto deviation = data_set->template check_deviation<NormalizeResult>(data_buffer);
       const double error_bound = ERROR_BOUND;

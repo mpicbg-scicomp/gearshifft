@@ -8,7 +8,7 @@
 #include <vector>
 #include <utility> // pair
 
-#define CHECK_CL( err ) gearshifft::ClFFT::check_error( err, __FILE__, __LINE__ )
+#define CHECK_CL( err ) gearshifft::ClFFT::check_error( err, #err,  __FILE__, __LINE__ )
 
 #define STRINGIFY(A) #A
 #define clFFTStatusCase(s) case s: return STRINGIFY(s)
@@ -16,8 +16,7 @@
 namespace gearshifft {
   namespace ClFFT {
 
-    inline const char *getOpenCLErrorString(cl_int error)
-    {
+    inline const char *getOpenCLErrorString(cl_int error) {
       switch(error){
         // run-time and JIT compiler errors
       case 0: return "CL_SUCCESS";
@@ -103,20 +102,21 @@ namespace gearshifft {
       default: return "Unknown OpenCL error";
       }
     }
-    template<typename T>
-    inline void check_error( T err, const char *file, const int line )
-    {
-      if ( CL_SUCCESS != err )
-      {
-        fprintf( stderr, "OpenCL error at %s:%i : %s\n",
-                 file, line, getOpenCLErrorString( err ) );
 
-        throw std::runtime_error("OpenCL Error: " + std::string(getOpenCLErrorString(err))+ " "+std::to_string(err));
+    template<typename T>
+    inline void check_error( T err, const char* func, const char *file, const int line ) {
+      if ( CL_SUCCESS != err ) {
+        throw std::runtime_error("OpenCL error "
+                                 + std::string(getOpenCLErrorString(err))
+                                 +" ["+std::to_string(err)+"]"
+                                 +" "+std::string(file)
+                                 +":"+std::to_string(line)
+                                 +" "+std::string(func)
+          );
       }
     }
 
-    inline std::stringstream getClDeviceInformations(cl_device_id dev_id)
-    {
+    inline std::stringstream getClDeviceInformations(cl_device_id dev_id) {
       std::stringstream info;
       std::vector<std::pair<std::string,std::string> > values;
       char* value = nullptr;

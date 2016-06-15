@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <cufft.h>
 #include <sstream>
+#include <stdexcept>
 
 #ifndef CUDA_DISABLE_ERROR_CHECKING
-#define CHECK_CUDA(ans) gearshifft::CuFFT::check_cuda((ans), #ans, __FILE__, __LINE__)
+#define CHECK_CUDA(ans) gearshifft::CuFFT::check_cuda((ans), "", #ans, __FILE__, __LINE__)
 #define CHECK_CUFFT(ans) gearshifft::CuFFT::check_cufft((ans), #ans, __FILE__, __LINE__)
-#define CHECK_LAST(msg) gearshifft::CuFFT::check_cuda_last(msg, __FILE__, __LINE__)
+#define CHECK_LAST(msg) gearshifft::CuFFT::check_cuda(cudaGetLastError(), msg, __FILE__, __LINE__)
 #else
 #define CHECK_CUDA(ans) {}
 #define CHECK_CUFFT(ans) {}
@@ -21,32 +22,33 @@ namespace gearshifft {
 namespace CuFFT {
 
   inline
-  void check_cuda(cudaError_t code, const char *func, const char *file, int line)
-  {
-    if (code != cudaSuccess)
-    {
-      fprintf(stderr,"CUDA Error '%s' at %s:%d (%s)\n", cudaGetErrorString(code), file, line, func);
-      cudaDeviceReset();
-      exit(static_cast<unsigned int>(code));
-    }
+  void throw_error(int code,
+                   const char* error_string,
+                   const char* msg,
+                   const char* func,
+                   const char* file,
+                   int line) {
+    cudaDeviceReset();
+    throw std::runtime_error("CUDA error "
+                             +std::string(msg)
+                             +" "+std::string(error_string)
+                             +" ["+std::to_string(code)+"]"
+                             +" "+std::string(file)
+                             +":"+std::to_string(line)
+                             +" "+std::string(func)
+      );
   }
+
   inline
-  void check_cuda_last(const char *msg, const char *file, int line)
-  {
-    cudaError_t code = cudaGetLastError();
-    if (code != cudaSuccess)
-    {
-      fprintf(stderr,"CUDA Error '%s' at %s:%d (%s)\n", cudaGetErrorString(code), file, line, msg);
-
-      cudaDeviceReset();
-      exit(static_cast<unsigned int>(code));
+  void check_cuda(cudaError_t code, const char* msg, const char *func, const char *file, int line) {
+    if (code != cudaSuccess) {
+      throw_error(static_cast<int>(code),
+                  cudaGetErrorString(code), msg, func, file, line);
     }
   }
 
-  static const char* cufftResultToString(cufftResult error)
-  {
-    switch (error)
-    {
+  static const char* cufftResultToString(cufftResult error) {
+    switch (error) {
     case CUFFT_SUCCESS:
       return "CUFFT_SUCCESS";
 
@@ -77,20 +79,17 @@ namespace CuFFT {
     case CUFFT_UNALIGNED_DATA:
       return "CUFFT_UNALIGNED_DATA";
     }
-
     return "<unknown>";
   }
-  inline
-  void check_cufft(cufftResult code, const char *func, const char *file, int line)
-  {
-    if (code)
-    {
-      fprintf(stderr,"CUDA Lib Error '%s' ('%d') at %s:%d (%s)\n", cufftResultToString(code), static_cast<unsigned int>(code), file, line, func);
 
-      cudaDeviceReset();
-      exit(static_cast<unsigned int>(code));
+  inline
+  void check_cufft(cufftResult code, const char *func, const char *file, int line) {
+    if(code) {
+      throw_error(static_cast<int>(code),
+                  cufftResultToString(code), "cuFFT", func, file, line);
     }
   }
+
   inline
   std::stringstream getCUDADeviceInformations(int dev) {
     std::stringstream info;
