@@ -64,10 +64,10 @@ namespace gearshifft
 
 
     template<typename T_Index>
-    auto getValue(T_Index idx_val) const {
+    double getValue(T_Index idx_val) const {
       int idx = static_cast<int>(idx_val);
       assert(idx<T_NumberValues);
-      return values_[run_][idx_val];
+      return values_[run_][idx];
     }
 
     size_t getDim() const { return dim_; }
