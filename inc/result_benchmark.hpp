@@ -1,6 +1,8 @@
 #ifndef RESULT_BENCHMARK_HPP_
 #define RESULT_BENCHMARK_HPP_
 
+#include <math.h>
+#include <iostream>
 #include <array>
 #include <vector>
 #include <assert.h>
@@ -20,10 +22,27 @@ namespace gearshifft
         extents_[i] = ce[i];
       }
       dim_ = T_NDim;
-      dimkind_ = 0;
+      dimkind_ = computeDimkind();
       run_ = 0;
       isInplace_ = isInplace;
       isComplex_ = isComplex;
+    }
+
+    /**
+     * @retval 1 arbitrary extents
+     * @retval 2 power-of-two extents
+     * @retval 3 power-of-other extents ( {3,5,7}^p )
+     */
+    size_t computeDimkind() {
+      bool p2 = true;
+      bool p3 = false;
+      for(const auto e : extents_)
+        p2 = p2 && PowerOf(e,2.0);
+      if(!p2) {
+        for(const auto e : extents_)
+          p3 = p3 || PowerOf(e,3.0) || PowerOf(e,5.0) || PowerOf(e,7.0);
+      }
+      return p2 ? 2 : p3 ? 3 : 1;
     }
 
     /* setters */
@@ -72,6 +91,15 @@ namespace gearshifft
     bool isInplace_ = false;
     /// FFT Kind Complex
     bool isComplex_ = false;
+
+  private:
+    bool PowerOf(unsigned e, double b) {
+      if(!e)
+        return false;
+      double p = floor(log(e)/log(b)+0.5);
+      return fabs(pow(b,p)-e)<0.000001;
+    }
+
   };
 }
 
