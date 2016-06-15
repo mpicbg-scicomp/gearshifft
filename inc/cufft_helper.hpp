@@ -96,12 +96,18 @@ namespace CuFFT {
     std::stringstream info;
     cudaDeviceProp prop;
     int runtimeVersion = 0;
+    size_t f=0, t=0;
     CHECK_CUDA( cudaRuntimeGetVersion(&runtimeVersion) );
     CHECK_CUDA( cudaGetDeviceProperties(&prop, dev) );
+    CHECK_CUDA( cudaMemGetInfo(&f, &t) );
     info << '"' << prop.name << '"'
-         << ',' << prop.major << '.' << prop.minor
+         << ", \"CC\", " << prop.major << '.' << prop.minor
+         << ", \"Multiprocessors\", "<< prop.multiProcessorCount
+         << ", \"Memory [MiB]\", "<< t/1048576
+         << ", \"MemoryFree [MiB]\", " << f/1048576
          << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
-         << ",\"CUDA\", " << runtimeVersion
+         << ", \"GPUClock [MHz]\", " << prop.clockRate/1000
+         << ", \"CUDA Runtime\", " << runtimeVersion
       ;
     return info;
   }
