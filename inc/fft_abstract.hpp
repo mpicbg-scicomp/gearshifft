@@ -49,11 +49,12 @@ namespace gearshifft
   enum struct RecordType{
     Device = 0,
     Allocation,
+    PlanInit,
     Upload,
     FFT,
     FFTInverse,
     Download,
-    Cleanup,
+    PlanDestroy,
     Total,
     DevBufferSize,
     DevPlanSize,
@@ -65,11 +66,12 @@ namespace gearshifft
     {
     case RecordType::Device: return os << "Time_Device [ms]";
     case RecordType::Allocation: return os << "Time_Allocation [ms]";
+    case RecordType::PlanInit: return os << "Time_PlanInit [ms]";
     case RecordType::Upload: return os << "Time_Upload [ms]";
     case RecordType::FFT: return os << "Time_FFT [ms]";
     case RecordType::FFTInverse: return os << "Time_iFFT [ms]";
     case RecordType::Download: return os << "Time_Download [ms]";
-    case RecordType::Cleanup: return os << "Time_Cleanup [ms]";
+    case RecordType::PlanDestroy: return os << "Time_PlanDestroy [ms]";
     case RecordType::Total: return os << "Time_Total [ms]";
     case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
     case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
@@ -104,7 +106,8 @@ namespace gearshifft
 
         TimerCPU ttotal;
         TimerCPU talloc;
-        TimerCPU tcleanup;
+        TimerCPU tplaninit;
+        TimerCPU tplandestroy;
         TDeviceTimer tdevupload;
         TDeviceTimer tdevdownload;
         TDeviceTimer tdevfft;
@@ -118,7 +121,9 @@ namespace gearshifft
         result.setValue(RecordType::Allocation, talloc.stopTimer());
 
         /// --- Create plan ---
-        plan.init_forward();
+        tplaninit.startTimer();
+         plan.init_forward();
+        result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
 
         /// --- FFT+iFFT GPU ---
         tdevtotal.startTimer();
@@ -145,9 +150,9 @@ namespace gearshifft
 
 
         /// --- Cleanup ---
-        tcleanup.startTimer();
+        tplandestroy.startTimer();
          plan.destroy();
-        result.setValue(RecordType::Cleanup, tcleanup.stopTimer());
+        result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
 
         result.setValue(RecordType::Total, ttotal.stopTimer());
       }
