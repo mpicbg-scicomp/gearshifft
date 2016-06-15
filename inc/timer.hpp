@@ -1,13 +1,26 @@
 
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef TIMER_HPP_
+#define TIMER_HPP_
 
 #include <chrono>
 #include <stdexcept>
 
-namespace gearshifft {
-namespace helper {
+#if defined(CUDA_ENABLED) && defined(OPENCL_ENABLED)
+#error "Either CUDA_ENABLED or OPENCL_ENABLED can be set, but not both."
+#endif
 
+#ifdef CUDA_ENABLED
+#include "timer_cuda.h"
+#endif
+#ifdef OPENCL_ENABLED
+#include "timer_opencl.h"
+#endif
+
+namespace gearshifft {
+
+  /**
+   * Timer Base Class
+   */
   template<typename TimerImpl>
     struct Timer : public TimerImpl {
     bool started = false;
@@ -23,7 +36,8 @@ namespace helper {
     }
   };
 
-// Wall time
+  /** CPU Wall timer
+   */
   struct TimerCPU_ {
     typedef std::chrono::high_resolution_clock clock;
 
@@ -40,6 +54,14 @@ namespace helper {
     }
   };
 
-} // helper
+typedef Timer<TimerCPU_> TimerCPU;
+#ifdef CUDA_ENABLED
+typedef Timer<TimerCUDA_> TimerGPU;
+#endif
+#ifdef OPENCL_ENABLED
+typedef Timer<TimerOpenCL_> TimerGPU;
+#endif
+
 } // gearshifft
-#endif /* TIMER_H_ */
+
+#endif /* TIMER_HPP_ */

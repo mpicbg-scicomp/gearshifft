@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cufft.h>
+#include <sstream>
 
 #ifndef CUDA_DISABLE_ERROR_CHECKING
 #define CHECK_CUDA(ans) gearshifft::CuFFT::check_cuda((ans), #ans, __FILE__, __LINE__)
@@ -89,6 +90,26 @@ namespace CuFFT {
       cudaDeviceReset();
       exit(static_cast<unsigned int>(code));
     }
+  }
+  inline
+  std::stringstream getCUDADeviceInformations(int dev) {
+    std::stringstream info;
+    cudaDeviceProp prop;
+    int runtimeVersion = 0;
+    size_t f=0, t=0;
+    CHECK_CUDA( cudaRuntimeGetVersion(&runtimeVersion) );
+    CHECK_CUDA( cudaGetDeviceProperties(&prop, dev) );
+    CHECK_CUDA( cudaMemGetInfo(&f, &t) );
+    info << '"' << prop.name << '"'
+         << ", \"CC\", " << prop.major << '.' << prop.minor
+         << ", \"Multiprocessors\", "<< prop.multiProcessorCount
+         << ", \"Memory [MiB]\", "<< t/1048576
+         << ", \"MemoryFree [MiB]\", " << f/1048576
+         << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
+         << ", \"GPUClock [MHz]\", " << prop.clockRate/1000
+         << ", \"CUDA Runtime\", " << runtimeVersion
+      ;
+    return info;
   }
 } // CuFFT
 } // gearshifft

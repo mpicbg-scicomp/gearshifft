@@ -1,7 +1,8 @@
 #ifndef CUFFT_HPP_
 #define CUFFT_HPP_
 
-#include "helper.h"
+#include "application.hpp"
+#include "timer.hpp"
 #include "fft_abstract.hpp"
 #include "fixture_test_suite.hpp"
 #include "cufft_helper.hpp"
@@ -68,6 +69,30 @@ namespace CuFFT {
     };
 
   }  // namespace traits
+
+  /**
+   * CUDA implicit context init and reset wrapper. Time is benchmarked.
+   */
+  struct Context {
+
+    static const std::string title() {
+      return "CuFFT";
+    }
+
+    std::string getDeviceInfos() {
+      auto ss = getCUDADeviceInformations(0);
+      return ss.str();
+    }
+
+    void create() {
+      CHECK_CUDA(cudaSetDevice(0));
+    }
+
+    void destroy() {
+      CHECK_CUDA(cudaDeviceReset());
+    }
+  };
+
 
   /**
    * Estimates memory reserved by cufft plan depending on FFT transform type
@@ -249,10 +274,10 @@ namespace CuFFT {
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, helper::TimerGPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, helper::TimerGPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, helper::TimerGPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, helper::TimerGPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, TimerGPU> Inplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, TimerGPU> Outplace_Real;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, TimerGPU> Inplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, TimerGPU> Outplace_Complex;
 
 } // namespace CuFFT
 } // namespace gearshifft

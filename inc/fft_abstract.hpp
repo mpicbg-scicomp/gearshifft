@@ -1,7 +1,11 @@
 #ifndef FFT_ABSTRACT_HPP_
 #define FFT_ABSTRACT_HPP_
 
+#include "timer.hpp"
+#include <assert.h>
+#include <array>
 #include <type_traits>
+#include <ostream>
 
 namespace gearshifft
 {
@@ -42,6 +46,39 @@ namespace gearshifft
   template<typename T>
   struct Precision<T, false> { using type = T; };
 
+  enum struct RecordType{
+    Device = 0,
+    Allocation,
+    PlanInit,
+    Upload,
+    FFT,
+    FFTInverse,
+    Download,
+    PlanDestroy,
+    Total,
+    DevBufferSize,
+    DevPlanSize,
+    _NrRecords
+  };
+  std::ostream& operator<< (std::ostream & os, RecordType r)
+  {
+    switch (r)
+    {
+    case RecordType::Device: return os << "Time_Device [ms]";
+    case RecordType::Allocation: return os << "Time_Allocation [ms]";
+    case RecordType::PlanInit: return os << "Time_PlanInit [ms]";
+    case RecordType::Upload: return os << "Time_Upload [ms]";
+    case RecordType::FFT: return os << "Time_FFT [ms]";
+    case RecordType::FFTInverse: return os << "Time_iFFT [ms]";
+    case RecordType::Download: return os << "Time_Download [ms]";
+    case RecordType::PlanDestroy: return os << "Time_PlanDestroy [ms]";
+    case RecordType::Total: return os << "Time_Total [ms]";
+    case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
+    case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
+    };
+    return os << static_cast<int>(r);
+  }
+
 /**
  * Functor being called from FixtureBenchmark::benchmark()
  */
@@ -51,71 +88,73 @@ namespace gearshifft
            >
   struct FFT : public TFFT
   {
-    template<typename TVector, size_t NDim>
-    void operator()(TVector& vec,
-                    const std::array<unsigned,NDim>& cextents,
-                    Results& results)
+    template<typename T_Result, typename T_Vector, size_t NDim>
+    void operator()(T_Result& result,
+                    T_Vector& vec,
+                    const std::array<unsigned,NDim>& extents
+      )
       {
-        using TPrecision = typename Precision<typename TVector::value_type,
+        using PrecisionT = typename Precision<typename T_Vector::value_type,
                                               TFFT::IsComplex >::type;
         assert(vec.data());
-        helper::Statistics& stats = results.stats;
-
-        helper::TimeStatistics<TDeviceTimer> timer_dev(&stats);
-        helper::TimeStatistics<helper::TimerCPU> timer_cpu(&stats);
-        int i_gpu = timer_dev.append("Device Runtime");
-        int i_cpu_alloc = timer_cpu.append("CPU Alloc");
-        int i_gpu_upload = timer_dev.append("Device Upload");
-        int i_gpu_fft = timer_dev.append("Device FFT");
-        int i_gpu_ifft = timer_dev.append("Device iFFT");
-        int i_gpu_download = timer_dev.append("Device Download");
-        int i_cpu_cleanup = timer_cpu.append("CPU Cleanup");
-        int i_cpu = timer_cpu.append("CPU Runtime");
 
         // prepare plan object
         // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-        auto plan = TPlan<TFFT, TPrecision, NDim> (cextents);
-        results.alloc_mem_in_bytes = plan.getAllocSize();
-        results.plan_mem_in_bytes  = plan.getPlanSize();
+        auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
+        result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
+        result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
 
+        TimerCPU ttotal;
+        TimerCPU talloc;
+        TimerCPU tplaninit;
+        TimerCPU tplandestroy;
+        TDeviceTimer tdevupload;
+        TDeviceTimer tdevdownload;
+        TDeviceTimer tdevfft;
+        TDeviceTimer tdevfftinverse;
+        TDeviceTimer tdevtotal;
         /// --- Total CPU ---
-        timer_cpu.start(i_cpu);
+        ttotal.startTimer();
         /// --- Malloc ---
-        timer_cpu.start(i_cpu_alloc);
-        plan.malloc();
-        timer_cpu.stop(i_cpu_alloc);
+        talloc.startTimer();
+         plan.malloc();
+        result.setValue(RecordType::Allocation, talloc.stopTimer());
 
         /// --- Create plan ---
-        plan.init_forward();
+        tplaninit.startTimer();
+         plan.init_forward();
+        result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
 
         /// --- FFT+iFFT GPU ---
-        timer_dev.start(i_gpu);
-        timer_dev.start(i_gpu_upload);
-        plan.upload(vec.data());
-        timer_dev.stop(i_gpu_upload);
+        tdevtotal.startTimer();
 
-        timer_dev.start(i_gpu_fft);
-        plan.execute_forward();
-        timer_dev.stop(i_gpu_fft);
+        tdevupload.startTimer();
+         plan.upload(vec.data());
+        result.setValue(RecordType::Upload, tdevupload.stopTimer());
+
+        tdevfft.startTimer();
+         plan.execute_forward();
+        result.setValue(RecordType::FFT, tdevfft.stopTimer());
 
         plan.init_backward();
 
-        timer_dev.start(i_gpu_ifft);
-        plan.execute_backward();
-        timer_dev.stop(i_gpu_ifft);
+        tdevfftinverse.startTimer();
+         plan.execute_backward();
+        result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
 
-        timer_dev.start(i_gpu_download);
-        plan.download(vec.data());
-        timer_dev.stop(i_gpu_download);
-        timer_dev.stop(i_gpu);
+        tdevdownload.startTimer();
+         plan.download(vec.data());
+        result.setValue(RecordType::Download, tdevdownload.stopTimer());
+
+        result.setValue(RecordType::Device, tdevtotal.stopTimer());
 
 
         /// --- Cleanup ---
-        timer_cpu.start(i_cpu_cleanup);
-        plan.destroy();
-        timer_cpu.stop(i_cpu_cleanup);
+        tplandestroy.startTimer();
+         plan.destroy();
+        result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
 
-        timer_cpu.stop(i_cpu);
+        result.setValue(RecordType::Total, ttotal.stopTimer());
       }
   };
 
