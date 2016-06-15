@@ -57,6 +57,7 @@ namespace ClFFT
   struct Context {
     cl_platform_id platform = 0;
     cl_device_id device = 0;
+    cl_device_id device_used = 0;
     cl_context ctx = 0;
 
     static const std::string title() {
@@ -64,7 +65,8 @@ namespace ClFFT
     }
 
     std::string getDeviceInfos() {
-      auto ss = getClDeviceInformations(device);
+      assert(device_used);
+      auto ss = getClDeviceInformations(device_used);
       return ss.str();
     }
 
@@ -72,19 +74,21 @@ namespace ClFFT
       cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
       cl_int err = CL_SUCCESS;
       findClDevice(CL_DEVICE_TYPE_GPU, &platform, &device);
+      device_used = device;
       props[1] = (cl_context_properties)platform;
       ctx = clCreateContext( props, 1, &device, nullptr, nullptr, &err );
       CHECK_CL(err);
       clfftSetupData fftSetup;
       CHECK_CL(clfftInitSetupData(&fftSetup));
       CHECK_CL(clfftSetup(&fftSetup));
-
     }
 
     void destroy() {
       if(ctx) {
         CHECK_CL( clfftTeardown( ) );
         CHECK_CL(clReleaseContext( ctx ));
+        CHECK_CL(clReleaseDevice(device));
+        device = 0;
         ctx = 0;
       }
     }
