@@ -37,21 +37,27 @@ namespace gearshifft {
       results_.push_back(result);
     }
     /*
-     * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz -> run
+     * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz
      */
-/*    void sortStatistics() {
-      sort( items.begin( ), items.end( ), [ ]( const StatisticItem& lhs, const StatisticItem& rhs ) {
-          return lhs.fftkind.compare(rhs.fftkind)!=0 ||
-            lhs.dimkind<rhs.dimkind ||
-                        (lhs.dimkind==rhs.dimkind &&
-                         (lhs.dim<rhs.dim || lhs.dim==rhs.dim &&
-                          (lhs.totalCount<rhs.totalCount || lhs.totalCount==rhs.totalCount &&
-                           lhs.run<rhs.run
-                          )
-                         )
-                        );
-        });
-    }*/
+    void sort() {
+            std::stable_sort( results_.begin( ), results_.end( ),
+            [ ]( const ResultBenchmarkT& lhs, const ResultBenchmarkT& rhs )
+                 {
+                   if(lhs.isInplace()==rhs.isInplace())
+                     if(lhs.isComplex()==rhs.isComplex())
+                       return lhs.getDimKind()<rhs.getDimKind() ||
+                               lhs.getDimKind()==rhs.getDimKind() &&
+                               (
+                                lhs.getDim()<rhs.getDim() ||
+                                lhs.getDim()==rhs.getDim() &&
+                                 lhs.getExtentsTotal()<rhs.getExtentsTotal()
+                               );
+                     else
+                       return lhs.isComplex();
+                   else
+                     return lhs.isInplace();
+                 });
+    }
 
     /**
      * Store results in csv file.
@@ -64,6 +70,7 @@ namespace gearshifft {
       std::string fname = BOOST_PP_STRINGIZE(DEFAULT_RESULT_FILE)".csv";
       std::ofstream fs;
       const char sep=',';
+      sort();
       fs.open(fname, std::ofstream::out);
       fs << "; " << dev_infos << std::endl
          << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl

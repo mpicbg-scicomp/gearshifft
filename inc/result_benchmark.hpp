@@ -18,8 +18,10 @@ namespace gearshifft
 
     template<bool isComplex, bool isInplace, size_t T_NDim>
     void init(const std::array<unsigned, T_NDim>& ce) {
+      total_ = 1;
       for(auto i=0; i<T_NDim; ++i) {
         extents_[i] = ce[i];
+        total_ *= ce[i];
       }
       dim_ = T_NDim;
       dimkind_ = computeDimkind();
@@ -60,7 +62,6 @@ namespace gearshifft
 
     /* getters */
 
-    size_t getDim() const { return dim_; }
 
     template<typename T_Index>
     auto getValue(T_Index idx_val) const {
@@ -69,9 +70,10 @@ namespace gearshifft
       return values_[run_][idx_val];
     }
 
+    size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
     auto getExtents() const { return extents_; }
-
+    size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }
     bool isComplex() const { return isComplex_; }
 
@@ -85,6 +87,8 @@ namespace gearshifft
     size_t dimkind_ = 0;
     /// fft extents
     std::array<unsigned,3> extents_ = { {1} };
+    /// all extents multiplied
+    size_t total_ = 1;
     /// each run w values ( data[idx_run][idx_val] )
     ValuesT values_ = { {{ {0.0} }} };
     /// FFT Kind Inplace
