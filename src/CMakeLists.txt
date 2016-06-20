@@ -83,6 +83,7 @@ if(HCFFT_FOUND)
   include_directories(${HCFFT_INCLUDE_DIRS})
   list(APPEND FFTLIBS "hcfft")
   message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
+  message(">> Warning: no runner for hcfft implemented yet")
 endif()
 
 if(NOT HCFFT_FOUND)
