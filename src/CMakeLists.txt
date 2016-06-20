@@ -74,9 +74,26 @@ endif()
 if(NOT CLFFT_FOUND)
   message("clFFT benchmark disabled.")
 endif()
-if(NOT CLFFT_FOUND AND NOT CUDA_FOUND)
+
+#------------------------------------------------------------------------------
+# ROCM+HCFFT
+#------------------------------------------------------------------------------
+find_package(hcFFT)
+if(HCFFT_FOUND)
+  include_directories(${HCFFT_INCLUDE_DIRS})
+  list(APPEND FFTLIBS "hcfft")
+  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
+  message(">> Warning: no runner for hcfft implemented yet")
+endif()
+
+if(NOT HCFFT_FOUND)
+  message("hcFFT benchmark disabled.")
+endif()
+
+if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND))
   message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
 endif()
+
 
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
