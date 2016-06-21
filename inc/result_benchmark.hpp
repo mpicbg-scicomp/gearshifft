@@ -72,7 +72,7 @@ namespace gearshifft
 
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
-    auto getExtents() const { return extents_; }
+    std::array<unsigned,3> getExtents() const { return extents_; }
     size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }
     bool isComplex() const { return isComplex_; }
