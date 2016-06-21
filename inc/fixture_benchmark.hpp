@@ -37,9 +37,9 @@ fftkind, precision, dimkind, dim, nx, ny, nz, run, AllocBuffer (bytes), AllocPla
      */
     template<typename T_Functor, bool NormalizeResult, size_t T_NDim=3>
     void benchmark(const std::array<unsigned, T_NDim>& extents) {
-      using VectorT = std::conditional_t<T_Functor::IsComplex,
-                                         typename FixtureData<T_Precision,T_NDim>::ComplexVector,
-                                         typename FixtureData<T_Precision,T_NDim>::RealVector>;
+      using VectorT = typename std::conditional<T_Functor::IsComplex,
+						typename FixtureData<T_Precision,T_NDim>::ComplexVector,
+						typename FixtureData<T_Precision,T_NDim>::RealVector>::type;
 
       static_assert(T_NDim<=3,"T_NDim<=3");
 
