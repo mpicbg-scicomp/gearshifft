@@ -2,6 +2,7 @@
 #define FFT_ABSTRACT_HPP_
 
 #include "timer.hpp"
+#include "traits.hpp"
 #include <assert.h>
 #include <array>
 #include <type_traits>
@@ -36,16 +37,6 @@ namespace gearshifft
     static constexpr auto IsInplace = false;
   };
 
-/**
- * Trait to get precision type of Real or Complex data type.
- */
-  template<typename T, bool IsComplex>
-  struct Precision;
-  template<typename T>
-  struct Precision<T, true> { using type = typename T::type; };
-  template<typename T>
-  struct Precision<T, false> { using type = T; };
-
   enum struct RecordType{
     Device = 0,
     Allocation,
@@ -60,6 +51,8 @@ namespace gearshifft
     DevPlanSize,
     _NrRecords
   };
+
+  inline
   std::ostream& operator<< (std::ostream & os, RecordType r)
   {
     switch (r)
@@ -88,6 +81,12 @@ namespace gearshifft
            >
   struct FFT : public TFFT
   {
+    /**
+     * Called by FixtureBenchmark
+     * \tparam T_Result ResultBenchmark<NR_RUNS, NR_RECORDS>, also see class Application.
+     * \tparam T_Vector
+     * \tparam NDim Number of FFT dimensions
+     */
     template<typename T_Result, typename T_Vector, size_t NDim>
     void operator()(T_Result& result,
                     T_Vector& vec,

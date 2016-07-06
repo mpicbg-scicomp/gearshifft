@@ -3,6 +3,8 @@
 
 #include "application.hpp"
 #include "result_benchmark.hpp"
+#include "traits.hpp"
+
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -13,16 +15,9 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
-// compiler flags, set by cmake
-#ifndef BENCH_PRECISION
- #define BENCH_PRECISION float
-#endif
-#define BENCH_PRECISION_STRING BOOST_PP_STRINGIZE(BENCH_PRECISION)
 #ifndef DEFAULT_RESULT_FILE
  #define DEFAULT_RESULT_FILE results
 #endif
-
-
 
 namespace gearshifft {
 
@@ -40,23 +35,27 @@ namespace gearshifft {
      * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz
      */
     void sort() {
-            std::stable_sort( results_.begin( ), results_.end( ),
-            [ ]( const ResultBenchmarkT& lhs, const ResultBenchmarkT& rhs )
-                 {
-                   if(lhs.isInplace()==rhs.isInplace())
-                     if(lhs.isComplex()==rhs.isComplex())
-                       return lhs.getDimKind()<rhs.getDimKind() ||
-                               lhs.getDimKind()==rhs.getDimKind() &&
-                               (
-                                lhs.getDim()<rhs.getDim() ||
-                                lhs.getDim()==rhs.getDim() &&
-                                 lhs.getExtentsTotal()<rhs.getExtentsTotal()
-                               );
-                     else
-                       return lhs.isComplex();
-                   else
-                     return lhs.isInplace();
-                 });
+      std::stable_sort(
+        results_.begin( ), results_.end( ),
+        [ ]( const ResultBenchmarkT& lhs, const ResultBenchmarkT& rhs )
+        {
+          if(lhs.getPrecision()==rhs.getPrecision())
+          if(lhs.isInplace()==rhs.isInplace())
+            if(lhs.isComplex()==rhs.isComplex())
+              return lhs.getDimKind()<rhs.getDimKind() ||
+                     lhs.getDimKind()==rhs.getDimKind() &&
+                     (
+                       lhs.getDim()<rhs.getDim() ||
+                       lhs.getDim()==rhs.getDim() &&
+                       lhs.getExtentsTotal()<rhs.getExtentsTotal()
+                     );
+            else
+              return lhs.isComplex();
+          else
+            return lhs.isInplace();
+          else
+            return false;
+        });
     }
 
     /**
@@ -92,7 +91,7 @@ namespace gearshifft {
           fs << apptitle << sep
              << inplace << sep
              << complex << sep
-             << BENCH_PRECISION_STRING << sep
+             << result.getPrecision() << sep
              << result.getDim() << sep
              << result.getDimKind() << sep
              << result.getExtents()[0] << sep
@@ -125,7 +124,6 @@ namespace gearshifft {
            << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
            << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
         ss << apptitle
-           << ", "<<BENCH_PRECISION_STRING
            << ", RunsPerBenchmark="<<T_NumberRuns
            << std::endl;
         for(auto result : results_) {
@@ -133,6 +131,7 @@ namespace gearshifft {
           std::string complex = result.isComplex() ? "Complex" : "Real";
           ss << inplace
              << ", "<<complex
+             << ", "<<result.getPrecision()
              << ", Dim="<<result.getDim()
              << ", Kind="<<result.getDimKind()
              << ", Ext="<<result.getExtents()[0]
@@ -153,7 +152,7 @@ namespace gearshifft {
         }
         std::cout << ss.str() << std::endl;
       }
-    }
+    } // write
 
   private:
     std::vector< ResultBenchmarkT > results_;

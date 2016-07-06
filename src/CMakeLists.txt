@@ -24,7 +24,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-set(PRECISION "" CACHE STRING "Specify precision [float,double].")
+set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
+if(DEV_TESTS)
+  message(">> Test mode")
+  add_definitions(-DDEV_TESTS)
+endif()
 #------------------------------------------------------------------------------
 # CUDA+CUFFT
 #------------------------------------------------------------------------------
@@ -94,15 +98,19 @@ if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND))
   message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
 endif()
 
-
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
 #------------------------------------------------------------------------------
-function(add_exec Tlib Ttype)
-  message(">> Target: ${Tlib} ${Ttype}")
-  set(PROJECT_EXEC ${PROJECT_NAME}_${Tlib}_${Ttype})
-  set(PROJECT_EXEC_FLAGS "-DBENCH_PRECISION=${Ttype} -DDEFAULT_RESULT_FILE=${PROJECT_EXEC}")
-  add_executable(${PROJECT_EXEC} ${SOURCES})
+function(add_exec Tlib)
+  message(">> Target: ${Tlib}")
+  if(DEV_TESTS)
+    set(PROJECT_EXEC test_${Tlib})
+    add_executable(${PROJECT_EXEC} ${TESTS})
+  else()
+    set(PROJECT_EXEC gearshifft_${Tlib})
+    set(PROJECT_EXEC_FLAGS "-DDEFAULT_RESULT_FILE=${PROJECT_EXEC}")
+    add_executable(${PROJECT_EXEC} ${SOURCES})
+  endif()
   if (Tlib STREQUAL "cufft")
     set_target_properties(${PROJECT_EXEC}
       PROPERTIES COMPILE_FLAGS "-DCUDA_ENABLED ${PROJECT_EXEC_FLAGS}")
@@ -122,15 +130,11 @@ endfunction()
 #------------------------------------------------------------------------------
 include_directories(../inc)
 set(SOURCES benchmark.cpp)
+set(TESTS tests.cpp)
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
 
 foreach(FFTLIB ${FFTLIBS})
-  if(PRECISION)
-    add_exec(${FFTLIB} ${PRECISION})
-  else()
-    add_exec(${FFTLIB} "float")
-    add_exec(${FFTLIB} "double")
-  endif()
+  add_exec(${FFTLIB})
 endforeach()

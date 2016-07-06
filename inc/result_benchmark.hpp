@@ -17,7 +17,7 @@ namespace gearshifft
     using ValuesT = std::array<std::array<double, T_NumberValues >, T_NumberRuns >;
 
     template<bool isComplex, bool isInplace, size_t T_NDim>
-    void init(const std::array<unsigned, T_NDim>& ce) {
+    void init(const std::array<unsigned, T_NDim>& ce, const char* precision) {
       total_ = 1;
       for(auto i=0; i<T_NDim; ++i) {
         extents_[i] = ce[i];
@@ -28,6 +28,7 @@ namespace gearshifft
       run_ = 0;
       isInplace_ = isInplace;
       isComplex_ = isComplex;
+      precision_.assign(precision);
     }
 
     /**
@@ -38,11 +39,10 @@ namespace gearshifft
     size_t computeDimkind() {
       bool p2 = true;
       bool p3 = false;
-      for(const auto e : extents_)
+      for(auto i=0; i<dim_; ++i) {
+        unsigned e = extents_[i];
         p2 = p2 && PowerOf(e,2.0);
-      if(!p2) {
-        for(const auto e : extents_)
-          p3 = p3 || PowerOf(e,3.0) || PowerOf(e,5.0) || PowerOf(e,7.0);
+        p3 = p3 || PowerOf(e,3.0) || PowerOf(e,5.0) || PowerOf(e,7.0);
       }
       return p2 ? 2 : p3 ? 3 : 1;
     }
@@ -69,7 +69,7 @@ namespace gearshifft
       assert(idx<T_NumberValues);
       return values_[run_][idx];
     }
-
+    std::string getPrecision() const { return precision_; }
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
     std::array<unsigned,3> getExtents() const { return extents_; }
@@ -95,13 +95,16 @@ namespace gearshifft
     bool isInplace_ = false;
     /// FFT Kind Complex
     bool isComplex_ = false;
+    /// Precision as string
+    std::string precision_;
 
   private:
     bool PowerOf(unsigned e, double b) {
-      if(!e)
+      if(e==0)
         return false;
-      double p = floor(log(e)/log(b)+0.5);
-      return fabs(pow(b,p)-e)<0.000001;
+      double a = static_cast<double>(e);
+      double p = floor(log(a)/log(b)+0.5);
+      return fabs(pow(b,p)-a)<0.0001;
     }
 
   };

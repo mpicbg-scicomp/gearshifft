@@ -85,9 +85,9 @@ namespace ClFFT
 
     void destroy() {
       if(ctx) {
-        CHECK_CL( clfftTeardown( ) );
         CHECK_CL(clReleaseContext( ctx ));
         CHECK_CL(clReleaseDevice(device));
+        CHECK_CL( clfftTeardown( ) );
         device = 0;
         ctx = 0;
       }
@@ -363,7 +363,6 @@ namespace ClFFT
   typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerCPU> Outplace_Real;
   typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerCPU> Inplace_Complex;
   typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerCPU> Outplace_Complex;
-
 } // namespace ClFFT
 } // gearshifft
 

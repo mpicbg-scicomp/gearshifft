@@ -6,9 +6,12 @@
 #include "result_all.hpp"
 #include "timer.hpp"
 
+#include <vector>
+#include <array>
+
 namespace gearshifft {
 
-  template<typename T_ContextImpl>
+  template<typename T_Context>
   class Application {
   public:
     /// Number of benchmark runs after warmup
@@ -18,12 +21,18 @@ namespace gearshifft {
     using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
     /// Boost tests will fail when deviation(iFFT(FFT(data)),data) returns a greater value
     static constexpr double ERROR_BOUND = 0.00001;
+    using Extents1D = std::array<unsigned,1>;
+    using Extents2D = std::array<unsigned,2>;
+    using Extents3D = std::array<unsigned,3>;
+    using Extents1DVec = std::vector< Extents1D >;
+    using Extents2DVec = std::vector< Extents2D >;
+    using Extents3DVec = std::vector< Extents3D >;
 
     static Application& getInstance() {
       static Application app;
       return app;
     }
-    static T_ContextImpl& getContext() {
+    static T_Context& getContext() {
       return getInstance().context_;
     }
 
@@ -34,10 +43,6 @@ namespace gearshifft {
       timeContextCreate_ = timer.stopTimer();
     }
 
-    void addRecord(ResultT r) {
-      resultAll_.add(r);
-    }
-
     void destroyContext() {
       TimerCPU timer;
       timer.startTimer();
@@ -45,15 +50,38 @@ namespace gearshifft {
       timeContextDestroy_ = timer.stopTimer();
     }
 
+    void addRecord(ResultT r) {
+      resultAll_.add(r);
+    }
+
     void dumpResults() {
-      resultAll_.write(T_ContextImpl::title(),
+      resultAll_.write(T_Context::title(),
                        context_.getDeviceInfos(),
                        timeContextCreate_,
                        timeContextDestroy_);
     }
 
+    Extents1DVec getExtents1D() {
+      Extents1D extents = {1024};
+      Extents1DVec vector;
+      vector.push_back(extents);
+      return vector;
+    }
+    Extents2DVec getExtents2D() {
+      Extents2D extents = {1024,1024};
+      Extents2DVec vector;
+      vector.push_back(extents);
+      return vector;
+    }
+    Extents3DVec getExtents3D() {
+      Extents3D extents = {64,64,64};
+      Extents3DVec vector;
+      vector.push_back(extents);
+      return vector;
+    }
+
   private:
-    T_ContextImpl context_;
+    T_Context context_;
     ResultAllT resultAll_;
     ResultT result_;
     double timeContextCreate_ = 0.0;
@@ -65,13 +93,14 @@ namespace gearshifft {
     }
   };
 
-  template<typename T_ContextImpl>
-  struct ApplicationFixture {
-    using ApplicationT = Application<T_ContextImpl>;
-    ApplicationFixture() {
+  template<typename T_Context>
+  struct FixtureApplication {
+    using ApplicationT = Application<T_Context>;
+
+    FixtureApplication() {
       ApplicationT::getInstance().createContext();
     }
-    ~ApplicationFixture() {
+    ~FixtureApplication() {
       ApplicationT::getInstance().destroyContext();
       ApplicationT::getInstance().dumpResults();
     }

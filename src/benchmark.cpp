@@ -1,35 +1,41 @@
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-
+/// @todo
+#include "fixture_test_suite.hpp"
 #include "application.hpp"
-#include "fixture_benchmark.hpp"
-
+#include <boost/test/included/unit_test.hpp>
 
 #ifdef CUDA_ENABLED
-//@todo measure init and reset time
 #include "cufft.hpp"
+using namespace gearshifft::CuFFT;
+using FFTs       = gearshifft::List<Inplace_Real,
+                                    Inplace_Complex,
+                                    Outplace_Real,
+                                    Outplace_Complex>;
+using Precisions = gearshifft::List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
-                                gearshifft::CuFFT::Context,
-                                gearshifft::CuFFT::Inplace_Real,
-                                gearshifft::CuFFT::Outplace_Real,
-                                gearshifft::CuFFT::Inplace_Complex,
-                                gearshifft::CuFFT::Outplace_Complex)
-
-#endif
-
-#ifdef OPENCL_ENABLED
+#elif defined(OPENCL_ENABLED)
 #include "clfft.hpp"
-
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_NORMALIZED_FFT(ClFFT,
-                              gearshifft::ClFFT::Context,
-                              gearshifft::ClFFT::Inplace_Real,
-                              gearshifft::ClFFT::Outplace_Real,
-                              gearshifft::ClFFT::Inplace_Complex,
-                              gearshifft::ClFFT::Outplace_Complex
-                              )
-
+using namespace gearshifft::ClFFT;
+using FFTs       = gearshifft::List<Inplace_Real,
+                                    Inplace_Complex,
+                                    Outplace_Real,
+                                    Outplace_Complex>;
+using Precisions = gearshifft::List<float, double>;
+using FFT_Is_Normalized = std::true_type;
 #endif
 
+/**
+ *
+ */
+gearshifft::Run<Context, FFT_Is_Normalized, FFTs, Precisions> instance;
+
+
+using AppT = gearshifft::FixtureApplication<Context>;
+BOOST_GLOBAL_FIXTURE(AppT);
+
+using namespace boost::unit_test;
+test_suite*
+init_unit_test_suite( int argc, char* argv[] )
+{
+  return instance();
+}
