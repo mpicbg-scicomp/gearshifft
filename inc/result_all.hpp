@@ -107,15 +107,6 @@ namespace gearshifft {
       fs.close();
 
       // if verbosity flag then print results to std::cout
-      int argc = boost::unit_test::framework::master_test_suite().argc;
-      char** argv = boost::unit_test::framework::master_test_suite().argv;
-      int verbose = 0;
-      for(int k=0; k<argc; ++k) {
-        if(strcmp(argv[k],"v")==0){
-          verbose = 1;
-          break;
-        }
-      }
       if(verbose)
       {
         std::stringstream ss;

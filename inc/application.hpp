@@ -11,6 +11,30 @@
 
 namespace gearshifft {
 
+  class Settings {
+  public:
+    static Settings& getInstance() {
+      static Settings settings;
+      return settings;
+    }
+  private:
+    Settings() {
+      int argc = boost::unit_test::framework::master_test_suite().argc;
+      char** argv = boost::unit_test::framework::master_test_suite().argv;
+      int verbose = 0;
+      for(int k=0; k<argc; ++k) {
+        if(strcmp(argv[k],"v")==0) {
+          verbose_ = true;
+          break;
+        }
+
+      }
+    }
+  private:
+    bool verbose_;
+    std::string fileExtents_;
+  };
+
   template<typename T_Context>
   class Application {
   public:

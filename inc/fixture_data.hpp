@@ -123,13 +123,8 @@ namespace gearshifft {
         }
       }
 
-    FixtureData() {
-      //std::cout << "FFTFixtureData created" << std::endl;// with " << __PRETTY_FUNCTION__ << std::endl;
-    }
-
-    ~FixtureData(){
-      //std::cout << "FFTFixtureData destroyed." << std::endl;
-    }
+    FixtureData() = default;
+    ~FixtureData() = default;
   };
 } // gearshifft
 #endif

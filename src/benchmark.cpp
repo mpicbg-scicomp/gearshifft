@@ -3,6 +3,8 @@
 #include "application.hpp"
 #include <boost/test/included/unit_test.hpp>
 
+// ----------------------------------------------------------------------------
+
 #ifdef CUDA_ENABLED
 #include "cufft.hpp"
 using namespace gearshifft::CuFFT;
@@ -24,18 +26,18 @@ using Precisions = gearshifft::List<float, double>;
 using FFT_Is_Normalized = std::true_type;
 #endif
 
-/**
- *
- */
+// ----------------------------------------------------------------------------
+
+/// functor to run gearshifft benchmarks
 gearshifft::Run<Context, FFT_Is_Normalized, FFTs, Precisions> instance;
 
-
+/// global application handler
 using AppT = gearshifft::FixtureApplication<Context>;
 BOOST_GLOBAL_FIXTURE(AppT);
 
 using namespace boost::unit_test;
-test_suite*
-init_unit_test_suite( int argc, char* argv[] )
+/// hooked by Boost UTF
+test_suite* init_unit_test_suite( int argc, char* argv[] )
 {
   return instance();
 }
