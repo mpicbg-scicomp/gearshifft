@@ -83,8 +83,8 @@ int Options::process(int argc, char* argv[]) {
     }
     // no file and no extent given, use default config
     if( !vm.count("file") && !vm.count("extent") ) {
-      if( std::ifstream("../config/extents.txt").good() ) {
-        parseFile("../config/extents.txt");
+      if( std::ifstream("../config/extents.csv").good() ) {
+        parseFile("../config/extents.csv");
       }else{ // if default config file is missing, then use these extents
         std::cerr << "Could not find '../config/extents.txt' so using default." << std::endl;
         parseExtent("32");
