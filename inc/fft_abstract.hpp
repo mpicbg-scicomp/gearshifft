@@ -3,6 +3,8 @@
 
 #include "timer.hpp"
 #include "traits.hpp"
+#include "types.hpp"
+
 #include <assert.h>
 #include <array>
 #include <type_traits>
@@ -36,41 +38,6 @@ namespace gearshifft
     static constexpr auto Title = "Outplace_Complex";
     static constexpr auto IsInplace = false;
   };
-
-  enum struct RecordType{
-    Device = 0,
-    Allocation,
-    PlanInit,
-    Upload,
-    FFT,
-    FFTInverse,
-    Download,
-    PlanDestroy,
-    Total,
-    DevBufferSize,
-    DevPlanSize,
-    _NrRecords
-  };
-
-  inline
-  std::ostream& operator<< (std::ostream & os, RecordType r)
-  {
-    switch (r)
-    {
-    case RecordType::Device: return os << "Time_Device [ms]";
-    case RecordType::Allocation: return os << "Time_Allocation [ms]";
-    case RecordType::PlanInit: return os << "Time_PlanInit [ms]";
-    case RecordType::Upload: return os << "Time_Upload [ms]";
-    case RecordType::FFT: return os << "Time_FFT [ms]";
-    case RecordType::FFTInverse: return os << "Time_iFFT [ms]";
-    case RecordType::Download: return os << "Time_Download [ms]";
-    case RecordType::PlanDestroy: return os << "Time_PlanDestroy [ms]";
-    case RecordType::Total: return os << "Time_Total [ms]";
-    case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
-    case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
-    };
-    return os << static_cast<int>(r);
-  }
 
 /**
  * Functor being called from FixtureBenchmark::benchmark()

@@ -1,7 +1,7 @@
 #ifndef RESULT_ALL_HPP_
 #define RESULT_ALL_HPP_
 
-#include "application.hpp"
+#include "options.hpp"
 #include "result_benchmark.hpp"
 #include "traits.hpp"
 
@@ -9,15 +9,9 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <string>
 #include <algorithm>
 
-#include <boost/test/unit_test.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/stringize.hpp>
-
-#ifndef DEFAULT_RESULT_FILE
- #define DEFAULT_RESULT_FILE results
-#endif
 
 namespace gearshifft {
 
@@ -31,6 +25,7 @@ namespace gearshifft {
     void add(const ResultBenchmarkT& result) {
       results_.push_back(result);
     }
+
     /*
      * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz
      */
@@ -40,19 +35,19 @@ namespace gearshifft {
         [ ]( const ResultBenchmarkT& lhs, const ResultBenchmarkT& rhs )
         {
           if(lhs.getPrecision()==rhs.getPrecision())
-          if(lhs.isInplace()==rhs.isInplace())
-            if(lhs.isComplex()==rhs.isComplex())
-              return lhs.getDimKind()<rhs.getDimKind() ||
-                     lhs.getDimKind()==rhs.getDimKind() &&
-                     (
-                       lhs.getDim()<rhs.getDim() ||
-                       lhs.getDim()==rhs.getDim() &&
-                       lhs.getExtentsTotal()<rhs.getExtentsTotal()
-                     );
+            if(lhs.isInplace()==rhs.isInplace())
+              if(lhs.isComplex()==rhs.isComplex())
+                return lhs.getDimKind()<rhs.getDimKind() ||
+                                        lhs.getDimKind()==rhs.getDimKind() &&
+                                        (
+                                          lhs.getDim()<rhs.getDim() ||
+                                          lhs.getDim()==rhs.getDim() &&
+                                          lhs.getExtentsTotal()<rhs.getExtentsTotal()
+                                          );
+              else
+                return lhs.isComplex();
             else
-              return lhs.isComplex();
-          else
-            return lhs.isInplace();
+              return lhs.isInplace();
           else
             return false;
         });
@@ -60,16 +55,18 @@ namespace gearshifft {
 
     /**
      * Store results in csv file.
-     * If verbosity flag 'v' is set, then std::cout receives result view.
+     * If verbosity flag is set, then std::cout receives result view.
      */
     void write(const std::string& apptitle,
                const std::string& dev_infos,
                double timerContextCreate,
                double timerContextDestroy) {
-      std::string fname = BOOST_PP_STRINGIZE(DEFAULT_RESULT_FILE)".csv";
+      std::string fname = Options::getInstance().getOutputFile();
       std::ofstream fs;
       const char sep=',';
+
       sort();
+
       fs.open(fname, std::ofstream::out);
       fs << "; " << dev_infos << std::endl
          << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
@@ -107,7 +104,7 @@ namespace gearshifft {
       fs.close();
 
       // if verbosity flag then print results to std::cout
-      if(verbose)
+      if(gearshifft::Options::getInstance().getVerbose())
       {
         std::stringstream ss;
 
@@ -147,6 +144,7 @@ namespace gearshifft {
 
   private:
     std::vector< ResultBenchmarkT > results_;
+
   };
 
 }

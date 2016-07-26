@@ -18,7 +18,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif()
 
-find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -129,7 +129,7 @@ endfunction()
 #
 #------------------------------------------------------------------------------
 include_directories(../inc)
-set(SOURCES benchmark.cpp)
+set(SOURCES benchmark.cpp options.cpp)
 set(TESTS tests.cpp)
 
 enable_testing()
