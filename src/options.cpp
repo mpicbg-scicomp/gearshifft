@@ -77,7 +77,9 @@ int Options::process(int argc, char* argv[]) {
       }
     }
     if( vm.count("verbose")  ) {
-      verbose_ = vm["verbose"].as<bool>();
+      verbose_ = true;
+    }else{
+      verbose_ = false;
     }
     // no file and no extent given, use default config
     if( !vm.count("file") && !vm.count("extent") ) {
