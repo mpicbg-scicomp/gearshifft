@@ -21,7 +21,17 @@ namespace gearshifft {
       os << "x" << e[k];
   }
 
-  enum struct RecordType{
+  /**
+   * Basic 2D vector with template type.
+   * Used for test data for complex FFTs
+   */
+  template<typename REAL>
+  struct Real2D {
+    using type = REAL;
+    REAL x, y;
+  };
+
+  enum struct RecordType {
     Device = 0,
     Allocation,
     PlanInit,
@@ -37,10 +47,8 @@ namespace gearshifft {
   };
 
   inline
-  std::ostream& operator<< (std::ostream & os, RecordType r)
-  {
-    switch (r)
-    {
+  std::ostream& operator<< (std::ostream & os, RecordType r) {
+    switch (r) {
     case RecordType::Device: return os << "Time_Device [ms]";
     case RecordType::Allocation: return os << "Time_Allocation [ms]";
     case RecordType::PlanInit: return os << "Time_PlanInit [ms]";

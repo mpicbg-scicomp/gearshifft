@@ -1,10 +1,10 @@
 #ifndef APPLICATION_HPP_
 #define APPLICATION_HPP_
 
-#include "fft_abstract.hpp"
 #include "result_benchmark.hpp"
 #include "result_all.hpp"
 #include "timer.hpp"
+#include "types.hpp"
 
 #include <vector>
 #include <array>
@@ -15,8 +15,8 @@ namespace gearshifft {
   class Application {
   public:
     /// Number of benchmark runs after warmup
-    static constexpr int NR_RUNS    = 5;
-    static const int NR_RECORDS = static_cast<int>(RecordType::_NrRecords);
+    static constexpr int NR_RUNS = 5;
+    static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
     using ResultAllT = ResultAll<NR_RUNS, NR_RECORDS>;
     using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
     /// Boost tests will fail when deviation(iFFT(FFT(data)),data) returns a greater value

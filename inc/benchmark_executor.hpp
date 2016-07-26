@@ -1,17 +1,15 @@
-#ifndef FIXTURE_BENCHMARK_HPP_
-#define FIXTURE_BENCHMARK_HPP_
+#ifndef BENCHMARK_EXECUTOR_HPP_
+#define BENCHMARK_EXECUTOR_HPP_
 
 #include "application.hpp"
-#include "fixture_data.hpp"
+#include "benchmark_data.hpp"
 #include "traits.hpp"
 
-#include <stdlib.h>
-#include <math.h>
 #include <type_traits>
+
 #include <boost/test/unit_test.hpp>
 
-namespace gearshifft
-{
+namespace gearshifft {
   /**
    * Benchmark body with 1 warmup and NR_RUNS repetitions of iFFT(FFT()) implementation.
    * Implementation is given with TFunctor.
@@ -24,19 +22,19 @@ namespace gearshifft
            typename T_Precision,
            typename T_Extents
            >
-  struct FixtureBenchmark {
+  struct BenchmarkExecutor {
     using ApplicationT = Application<T_Context>;
     using ResultT = typename ApplicationT::ResultT;
     static constexpr int NR_RUNS = ApplicationT::NR_RUNS;
     static constexpr double ERROR_BOUND = ApplicationT::ERROR_BOUND;
     static constexpr size_t NDim = std::tuple_size<T_Extents>::value;
     using VectorT = typename std::conditional<T_Functor::IsComplex,
-                                              typename FixtureData<T_Precision,NDim>::ComplexVector,
-                                              typename FixtureData<T_Precision,NDim>::RealVector>::type;
+                                              typename BenchmarkData<T_Precision,NDim>::ComplexVector,
+                                              typename BenchmarkData<T_Precision,NDim>::RealVector>::type;
     static_assert(NDim<=3,"NDim<=3");
 
     void operator()(const T_Extents& extents) {
-      auto data_set = FixtureData<T_Precision,NDim>::getInstancePtr(extents);
+      auto data_set = BenchmarkData<T_Precision,NDim>::getInstancePtr(extents);
       VectorT data_buffer;
       data_set->copyTo(data_buffer);
       assert(data_buffer.data());

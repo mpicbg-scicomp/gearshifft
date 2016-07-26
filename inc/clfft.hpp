@@ -3,8 +3,8 @@
 
 #include "application.hpp"
 #include "timer.hpp"
-#include "fft_abstract.hpp"
-#include "fixture_test_suite.hpp"
+#include "fft.hpp"
+#include "benchmark_suite.hpp"
 #include "clfft_helper.hpp"
 #include <clFFT.h>
 #include <stdexcept>

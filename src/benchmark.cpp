@@ -1,4 +1,4 @@
-#include "fixture_test_suite.hpp"
+#include "benchmark_suite.hpp"
 #include "application.hpp"
 #include "options.hpp"
 

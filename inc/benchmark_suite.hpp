@@ -1,14 +1,15 @@
-#ifndef FIXTURE_TEST_SUITE_HPP_
-#define FIXTURE_TEST_SUITE_HPP_
+#ifndef BENCHMARK_SUITE_HPP_
+#define BENCHMARK_SUITE_HPP_
 
 #include "application.hpp"
 #include "options.hpp"
-#include "fixture_benchmark.hpp"
+#include "benchmark_executor.hpp"
 #include "traits.hpp"
+#include "types.hpp"
 
-#include <ostream>
 #include <array>
 
+/*?*/
 #include <boost/type_traits/function_traits.hpp>
 #include <boost/bind.hpp>
 #include <boost/test/unit_test.hpp>
@@ -37,14 +38,15 @@ namespace gearshifft {
       template<typename FFT>
       void operator()(FFT) {
         static_assert( has_title<FFT>::value, "FFT Implementation has no static title method.");
-        using FixtureBenchmarkT = FixtureBenchmark<T_Context,
-                                                   FFT,
-                                                   T_FFT_Normalized,
-                                                   T_Precision,
-                                                   T_Extents>;
-        FixtureBenchmarkT benchmark;
+        using BenchmarkExecutorT = BenchmarkExecutor<T_Context,
+                                                     FFT,
+                                                     T_FFT_Normalized,
+                                                     T_Precision,
+                                                     T_Extents>;
+        BenchmarkExecutorT benchmark;
         boost::unit_test::test_case* s = BOOST_TEST_CASE(
-          boost::bind((&FixtureBenchmarkT::operator()),benchmark, e_));
+            boost::bind((&BenchmarkExecutorT::operator()), benchmark, e_)
+          );
         s->p_name.value = FFT::Title;
         ts_->add(s);
       }
