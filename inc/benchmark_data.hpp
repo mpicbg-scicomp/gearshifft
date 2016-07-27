@@ -94,7 +94,6 @@ namespace gearshifft {
       {
         if(extents_ == extents) // nothing changed
           return;
-        //std::cout << "Create inital data"<<std::endl;
         extents_ = extents;
         size_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
 

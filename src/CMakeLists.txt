@@ -13,9 +13,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
   set(CMAKE_CXX_FLAGS "--std=gnu++14" ${CMAKE_CXX_FLAGS})
   #gcc4.8+ uses dwarf-4. If you have gdb <7.0 then use this line
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
   #gdb 7.0-7.5 may require
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif()
 
 find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
@@ -28,7 +28,9 @@ set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
 if(DEV_TESTS)
   message(">> Test mode")
   add_definitions(-DDEV_TESTS)
+  set(TESTS tests.cpp)
 endif()
+
 #------------------------------------------------------------------------------
 # CUDA+CUFFT
 #------------------------------------------------------------------------------
@@ -130,7 +132,6 @@ endfunction()
 #------------------------------------------------------------------------------
 include_directories(../inc)
 set(SOURCES benchmark.cpp options.cpp)
-set(TESTS tests.cpp)
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
