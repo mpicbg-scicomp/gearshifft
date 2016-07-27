@@ -4,6 +4,7 @@
 #include "options.hpp"
 #include "result_benchmark.hpp"
 #include "traits.hpp"
+#include "types.hpp"
 
 #include <sstream>
 #include <fstream>
@@ -122,9 +123,7 @@ namespace gearshifft {
              << ", "<<result.getPrecision()
              << ", Dim="<<result.getDim()
              << ", Kind="<<result.getDimKind()
-             << ", Ext="<<result.getExtents()[0]
-             << "x"<<result.getExtents()[1]
-             << "x"<<result.getExtents()[2]
+             << ", Ext="<<result.getExtents()
              << std::endl;
           double sum;
           for(auto ival=0; ival<T_NumberValues; ++ival) {

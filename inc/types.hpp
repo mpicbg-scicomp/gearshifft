@@ -17,8 +17,12 @@ namespace gearshifft {
   inline
   std::ostream& operator<<(std::ostream& os, const std::array<unsigned,NDim>& e) {
     os << e[0];
-    for(size_t k=1; k<NDim; ++k)
+    for(size_t k=1; k<NDim; ++k) {
+      if(e[k]==0)
+        break;
       os << "x" << e[k];
+    }
+    return os;
   }
 
   /**
