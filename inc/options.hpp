@@ -1,0 +1,59 @@
+#ifndef OPTIONS_HPP_
+#define OPTIONS_HPP_
+
+#include "types.hpp"
+#include <string>
+#include <vector>
+
+namespace gearshifft {
+
+  /**
+   * Extract and provide options given by command line arguments like extents,
+   * input files and verbosity.
+   */
+  class Options {
+
+  public:
+
+    static Options& getInstance() {
+      static Options options;
+      return options;
+    }
+
+    bool getVerbose() const {
+      return verbose_;
+    }
+    const std::string& getOutputFile() const {
+      return outputFile_;
+    }
+
+    void parseFile(const std::string& file);
+
+    void parseExtent( const std::string& extent );
+
+    /// processes command line arguments and apply the values to the variables
+    int process(int argc, char* argv[]);
+
+    const Extents1DVec& getExtents1D() const {
+      return vector1D_;
+    }
+    const Extents2DVec& getExtents2D() const {
+      return vector2D_;
+    }
+    const Extents3DVec& getExtents3D() const {
+      return vector3D_;
+    }
+
+  private:
+    Options() = default;
+
+  private:
+    bool verbose_ = false;
+    std::string outputFile_;
+    Extents1DVec vector1D_;
+    Extents2DVec vector2D_;
+    Extents3DVec vector3D_;
+  };
+}
+
+#endif

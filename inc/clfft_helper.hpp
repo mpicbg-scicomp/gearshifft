@@ -177,6 +177,7 @@ namespace gearshifft {
       if (clGetPlatformIDs(num_of_platforms, platform_ids, NULL) != CL_SUCCESS)
       {
         fprintf(stderr,"Unable to get platform_id\n");
+        delete[] platform_ids;
         return 1;
       }
       bool found = false;
@@ -191,6 +192,7 @@ namespace gearshifft {
         CHECK_CL(clGetPlatformIDs( 1, platform, NULL ));
         CHECK_CL(clGetDeviceIDs( *platform, CL_DEVICE_TYPE_DEFAULT, 1, device, NULL ));
       }
+      delete[] platform_ids;
       return 0;
     }
 

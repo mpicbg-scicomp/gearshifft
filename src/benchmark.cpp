@@ -1,35 +1,53 @@
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-
+#include "benchmark_suite.hpp"
 #include "application.hpp"
-#include "fixture_benchmark.hpp"
+#include "options.hpp"
 
+#include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
+
+/// List alias
+template<typename... Types>
+using List = boost::mpl::list<Types...>;
+
+// ----------------------------------------------------------------------------
 
 #ifdef CUDA_ENABLED
-//@todo measure init and reset time
 #include "cufft.hpp"
+using namespace gearshifft::CuFFT;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
-                                gearshifft::CuFFT::Context,
-                                gearshifft::CuFFT::Inplace_Real,
-                                gearshifft::CuFFT::Outplace_Real,
-                                gearshifft::CuFFT::Inplace_Complex,
-                                gearshifft::CuFFT::Outplace_Complex)
-
-#endif
-
-#ifdef OPENCL_ENABLED
+#elif defined(OPENCL_ENABLED)
 #include "clfft.hpp"
-
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_NORMALIZED_FFT(ClFFT,
-                              gearshifft::ClFFT::Context,
-                              gearshifft::ClFFT::Inplace_Real,
-                              gearshifft::ClFFT::Outplace_Real,
-                              gearshifft::ClFFT::Inplace_Complex,
-                              gearshifft::ClFFT::Outplace_Complex
-                              )
-
+using namespace gearshifft::ClFFT;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::true_type;
 #endif
 
+// ----------------------------------------------------------------------------
+
+/// functor for gearshifft benchmarks
+gearshifft::Run<Context, FFT_Is_Normalized, FFTs, Precisions> instance;
+
+/// global application handler as global fixture
+using AppT = gearshifft::FixtureApplication<Context>;
+BOOST_GLOBAL_FIXTURE(AppT);
+
+/// called by Boost UTF
+boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] )
+{
+  // process extra command line arguments for gearshifft
+  //  if error or help is shown then do not run any benchmarks
+  if( gearshifft::Options::getInstance().process(argc, argv) == 0 )
+    return instance();
+  else
+    return nullptr;
+}

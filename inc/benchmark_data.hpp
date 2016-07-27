@@ -1,18 +1,13 @@
-/**
- * Creates data and generic functions for benchmarks.
- * Class is a singleton to control data allocations. 
- */
-#ifndef FIXTURE_DATA_HPP_
-#define FIXTURE_DATA_HPP_
+#ifndef BENCHMARK_DATA_HPP_
+#define BENCHMARK_DATA_HPP_
 
+#include "types.hpp"
+
+#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <iostream>
-#include <array>
 #include <numeric>
 #include <vector>
+
 // http://www.boost.org/doc/libs/1_56_0/doc/html/align/tutorial.html
 #include <boost/align/aligned_allocator.hpp>
 #include <boost/range/counting_range.hpp>
@@ -20,15 +15,6 @@
 #include <boost/noncopyable.hpp>
 
 namespace gearshifft {
-/**
- * Basic 2D vector with template type.
- * Used for test data for complex FFTs 
- */
-  template<typename REAL>
-  struct Real2D {
-    using type = REAL;
-    REAL x, y;
-  };
 
 /**
  * Singleton test data helper and container.
@@ -38,28 +24,23 @@ namespace gearshifft {
  * @note max(data)-min(data) should fit into realtypes precision.
  */
   template<typename RealType, size_t Dimensions>
-  class FixtureData : boost::noncopyable
-  {
+  class BenchmarkData : boost::noncopyable {
   public:
-    using ComplexType = Real2D<RealType>;
-    using FixtureDataT = FixtureData<RealType, Dimensions>;
-    using Extent = std::array<unsigned, Dimensions>;
-    using RealVector = std::vector<RealType, boost::alignment::
-                                   aligned_allocator<RealType, alignof(RealType)> >;
-    using ComplexVector = std::vector<ComplexType, boost::alignment::
-                                      aligned_allocator<ComplexType, alignof(ComplexType)> >;
+    using ComplexType    = Real2D<RealType>;
+    using BenchmarkDataT = BenchmarkData<RealType, Dimensions>;
+    using Extent         = std::array<unsigned, Dimensions>;
+    using RealVector     = std::vector<RealType, boost::alignment::
+                                       aligned_allocator<RealType,
+                                                         alignof(RealType)> >;
+    using ComplexVector  = std::vector<ComplexType, boost::alignment::
+                                       aligned_allocator<ComplexType,
+                                                         alignof(ComplexType)> >;
 
-  private:
-    RealVector data_linear_;
-    Extent extents_;
-    size_t size_ = 0;
-
-  public:
     size_t getSize() const { return size_; }
     const Extent getExtents() const { return extents_; }
 
-    static FixtureDataT* getInstancePtr(const Extent& extents) {
-      static FixtureDataT instance;
+    static BenchmarkDataT* getInstancePtr(const Extent& extents) {
+      static BenchmarkDataT instance;
       instance.init_if_dim_changed(extents);
       return &instance;
     }
@@ -70,6 +51,7 @@ namespace gearshifft {
         vec[i] = data_linear_[i];
       }
     }
+
     void copyTo(ComplexVector& vec) {
       vec.reserve(size_);
       for( unsigned i : boost::counting_range(size_t(0), size_) ){
@@ -77,6 +59,7 @@ namespace gearshifft {
         vec[i].y = 0;
       }
     }
+
     template<bool Normalize, typename TVector>
     double check_deviation(const TVector& data) const
       {
@@ -90,6 +73,7 @@ namespace gearshifft {
       }
 
   private:
+
     template<bool Normalize>
     constexpr double sub(const ComplexVector& vector, unsigned i) const {
       if(Normalize)
@@ -97,6 +81,7 @@ namespace gearshifft {
       else
         return static_cast<double>( vector[i].x - data_linear_[i] );
     }
+
     template<bool Normalize>
     constexpr double sub(const RealVector& vector, unsigned i) const {
       if(Normalize)
@@ -123,13 +108,14 @@ namespace gearshifft {
         }
       }
 
-    FixtureData() {
-      //std::cout << "FFTFixtureData created" << std::endl;// with " << __PRETTY_FUNCTION__ << std::endl;
-    }
+    BenchmarkData() = default;
+    ~BenchmarkData() = default;
 
-    ~FixtureData(){
-      //std::cout << "FFTFixtureData destroyed." << std::endl;
-    }
+  private:
+    RealVector data_linear_;
+    Extent extents_;
+    size_t size_ = 0;
+
   };
 } // gearshifft
 #endif
