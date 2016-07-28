@@ -12,7 +12,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message(FATAL_ERROR "${PROJECT_NAME} requires g++ 5.0 or greater.")
   endif()
   set(CMAKE_CXX_FLAGS "--std=gnu++14" ${CMAKE_CXX_FLAGS})
-  #gcc4.8+ uses dwarf-4. If you have gdb <7.0 then use this line
+  #gcc4.8+ uses dwarf-4. If you have gdb <7.5 then use this line
   #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
   #gdb 7.0-7.5 may require
   #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
