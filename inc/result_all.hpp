@@ -9,6 +9,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -86,10 +87,10 @@ namespace gearshifft {
         std::string complex = result.isComplex() ? "Complex" : "Real";
         for(auto run=0; run<T_NumberRuns; ++run) {
           result.setRun(run);
-          fs << apptitle << sep
-             << inplace << sep
-             << complex << sep
-             << result.getPrecision() << sep
+          fs << "\"" << apptitle << "\"" << sep
+             << "\"" << inplace  << "\"" << sep
+             << "\"" << complex  << "\"" << sep
+             << "\"" << result.getPrecision() << "\"" << sep
              << result.getDim() << sep
              << result.getDimKind() << sep
              << result.getExtents()[0] << sep
@@ -129,6 +130,8 @@ namespace gearshifft {
           int nruns = T_NumberRuns;
           std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
           std::string complex = result.isComplex() ? "Complex" : "Real";
+
+          ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
           ss << inplace
              << ", "<<complex
              << ", "<<result.getPrecision()
@@ -142,7 +145,8 @@ namespace gearshifft {
                << std::endl;
             nruns = result.getErrorRun()+1;
           }
-
+          ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
+          ss << std::setfill(' ');
           double sum;
           for(int ival=0; ival<T_NumberValues; ++ival) {
             sum = 0.0;
@@ -150,8 +154,10 @@ namespace gearshifft {
               result.setRun(run);
               sum += result.getValue(ival);
             }
-            ss << " " << static_cast<RecordType>(ival)
-               << ": ~" << sum/nruns
+            ss << std::setw(28)
+               << static_cast<RecordType>(ival)
+               << ": " << std::setw(16) << sum/nruns
+               << " [avg]"
                << std::endl;
           }
         }
