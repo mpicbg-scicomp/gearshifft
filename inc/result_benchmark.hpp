@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 #include <assert.h>
+#include <regex>
 
 namespace gearshifft
 {
@@ -29,6 +30,8 @@ namespace gearshifft
       isInplace_ = isInplace;
       isComplex_ = isComplex;
       precision_.assign(precision);
+      error_.clear();
+      errorRun_ = -1;
     }
 
     /**
@@ -60,6 +63,15 @@ namespace gearshifft
       values_[run_][idx] = val;
     }
 
+    void setError(int run, const std::string& what) {
+      assert(errorRun_<T_NumberRuns);
+      errorRun_ = run;
+      error_ = what;
+      // remove path informations of source file location
+      std::regex e ("([^ ]*/|[^ ]*\\\\)([^/\\\\]*)(hpp|cpp)");
+      error_ = std::regex_replace(error_,e,"$2$3");
+    }
+
     /* getters */
 
 
@@ -76,6 +88,9 @@ namespace gearshifft
     size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }
     bool isComplex() const { return isComplex_; }
+    bool hasError() const { return error_.empty()==false; }
+    const std::string& getError() const { return error_; }
+    int getErrorRun() const { return errorRun_; }
 
   private:
     /// result object id
@@ -97,6 +112,10 @@ namespace gearshifft
     bool isComplex_ = false;
     /// Precision as string
     std::string precision_;
+    /// Error message
+    std::string error_;
+    /// Run where error occurred
+    int errorRun_;
 
   private:
     bool PowerOf(unsigned e, double b) {

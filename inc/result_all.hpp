@@ -74,7 +74,7 @@ namespace gearshifft {
          << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
       // header
       fs << "\"library\",\"inplace\",\"complex\",\"precision\",\"dim\",\"kind\""
-         << ",\"nx\",\"ny\",\"nz\",\"run\"";
+         << ",\"nx\",\"ny\",\"nz\",\"run\",\"Success\"";
       for(auto ival=0; ival<T_NumberValues; ++ival) {
         fs << sep << '"' << static_cast<RecordType>(ival) << '"';
       }
@@ -96,6 +96,16 @@ namespace gearshifft {
              << result.getExtents()[1] << sep
              << result.getExtents()[2] << sep
              << run;
+          // was run successfull?
+          if(result.hasError() && result.getErrorRun()<=run) {
+            if(result.getErrorRun()==run)
+              fs << sep << "\"" <<result.getError() << "\"";
+            else
+              fs << sep << "\"Skipped\""; // subsequent runs did not run
+          } else {
+            fs << sep << "\"" << "Success" << "\"";
+          }
+          // measured time and size values
           for(auto ival=0; ival<T_NumberValues; ++ival) {
             fs << sep << result.getValue(ival);
           }
@@ -108,14 +118,15 @@ namespace gearshifft {
       if(gearshifft::Options::getInstance().getVerbose())
       {
         std::stringstream ss;
-
         ss << "; " << dev_infos << std::endl
            << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
            << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
         ss << apptitle
            << ", RunsPerBenchmark="<<T_NumberRuns
            << std::endl;
+
         for(auto result : results_) {
+          int nruns = T_NumberRuns;
           std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
           std::string complex = result.isComplex() ? "Complex" : "Real";
           ss << inplace
@@ -125,15 +136,22 @@ namespace gearshifft {
              << ", Kind="<<result.getDimKind()
              << ", Ext="<<result.getExtents()
              << std::endl;
+          if(result.hasError()) {
+            ss << " Error at run="<<result.getErrorRun()
+               << ": "<<result.getError()
+               << std::endl;
+            nruns = result.getErrorRun()+1;
+          }
+
           double sum;
-          for(auto ival=0; ival<T_NumberValues; ++ival) {
+          for(int ival=0; ival<T_NumberValues; ++ival) {
             sum = 0.0;
-            for(auto run=0; run<T_NumberRuns; ++run) {
+            for(int run=0; run<nruns; ++run) {
               result.setRun(run);
               sum += result.getValue(ival);
             }
             ss << " " << static_cast<RecordType>(ival)
-               << ": ~" << sum/T_NumberRuns
+               << ": ~" << sum/nruns
                << std::endl;
           }
         }

@@ -34,11 +34,11 @@ namespace gearshifft {
     static_assert(NDim<=3,"NDim<=3");
 
     void operator()(const T_Extents& extents) {
-      auto data_set = BenchmarkData<T_Precision,NDim>::getInstancePtr(extents);
+      int r = 0;
       VectorT data_buffer;
+      auto data_set = BenchmarkData<T_Precision,NDim>::getInstancePtr(extents);
       data_set->copyTo(data_buffer);
       assert(data_buffer.data());
-
       auto fft = T_Functor();
       ResultT result;
       result.template init<T_Functor::IsComplex, T_Functor::IsInplace >
@@ -46,19 +46,26 @@ namespace gearshifft {
       try {
         // warmup
         fft(result, data_buffer, extents);
-        for(int r=0; r<NR_RUNS; ++r)
+        for(r=0; r<NR_RUNS; ++r)
         {
           result.setRun(r);
           data_set->copyTo(data_buffer);
           fft(result, data_buffer, extents);
+
+          auto deviation = data_set->template check_deviation
+            <!T_FFT_Normalized::value> (data_buffer);
+          if(deviation > ERROR_BOUND) {
+            std::stringstream msg;
+            msg << "Results mismatch: deviation=" << deviation << " [" << ERROR_BOUND << "]";
+            result.setError(r, msg.str());
+            throw std::runtime_error(msg.str());
+          }
         }
       } catch(const std::runtime_error& e) {
+        result.setError(r, e.what());
+        ApplicationT::getInstance().addRecord(result);
         BOOST_FAIL( e.what() );
       }
-      auto deviation = data_set->template check_deviation
-        <!T_FFT_Normalized::value> (data_buffer);
-      const double error_bound = ERROR_BOUND;
-      BOOST_CHECK_LE( deviation, error_bound );
 
       ApplicationT::getInstance().addRecord(result);
     }
