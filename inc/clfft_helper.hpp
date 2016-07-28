@@ -158,6 +158,11 @@ namespace gearshifft {
       for(auto pair : values) {
         info << ",\"" << pair.first << "\",\"" << pair.second << '"';
       }
+
+      // clFFT version
+      cl_uint  major, minor, patch;
+      clfftGetVersion(&major, &minor, &patch);
+      info << ",\"clFFT\",\"" << major << "." << minor << "." << patch <<"\"";
       return info;
     }
 
