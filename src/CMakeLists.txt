@@ -96,7 +96,20 @@ if(NOT HCFFT_FOUND)
   message("hcFFT benchmark disabled.")
 endif()
 
-if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND))
+#------------------------------------------------------------------------------
+# FFTW
+#------------------------------------------------------------------------------
+find_package(FFTW)
+if(FFTW_FOUND)
+  include_directories(${HCFFT_INCLUDES})
+  list(APPEND FFTLIBS "fftw")
+  message(">> FFTW -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDES})
+else()
+  message("fftw benchmark disabled.")
+endif()
+
+
+if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND OR FFTW_FOUND))
   message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
 endif()
 
@@ -122,6 +135,11 @@ function(add_exec Tlib)
     set_target_properties(${PROJECT_EXEC}
       PROPERTIES COMPILE_FLAGS "-DOPENCL_ENABLED ${PROJECT_EXEC_FLAGS}")
     set(LIBS ${LIBS} ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
+  endif()
+  if (Tlib STREQUAL "fftw")
+    set_target_properties(${PROJECT_EXEC}
+      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED ${PROJECT_EXEC_FLAGS}")
+    set(LIBS ${LIBS} ${FFTW_LIBRARIES})
   endif()
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
