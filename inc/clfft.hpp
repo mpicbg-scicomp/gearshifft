@@ -182,6 +182,7 @@ namespace gearshifft
       size_t getAllocSize() {
         return data_size_ + data_transform_size_;
       }
+
       /**
        * Returns estimated allocated memory on device for FFT plan
        */
@@ -239,6 +240,8 @@ namespace gearshifft
       // recreates plan if needed
       void init_backward() {
         if(IsComplex==false){
+          CHECK_CL(clfftDestroyPlan( &plan_ ));
+          makePlan<FFTDim>(context_.ctx, plan_, extents_);
           CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,
                                   traits::FFTLayout<IsComplex>::value));
@@ -269,6 +272,7 @@ namespace gearshifft
                                        0)); // tmpBuffer
         CHECK_CL(clFinish(queue_));
       }
+
       void execute_backward() {
         CHECK_CL(clfftEnqueueTransform(plan_,
                                        CLFFT_BACKWARD,
@@ -278,10 +282,11 @@ namespace gearshifft
                                        nullptr, // waitEvents
                                        nullptr, // outEvents
                                        IsInplace ? &data_ : &data_transform_, // input
-                                       IsInplace ? &data_ : &data_, // output
+                                       &data_, // output
                                        nullptr)); // tmpBuffer
         CHECK_CL(clFinish(queue_));
       }
+
       template<typename THostData>
       void upload(THostData* input) {
         if(Padding && NDim>1)
@@ -313,10 +318,10 @@ namespace gearshifft
                                          nullptr )); // event
         }
       }
+
       template<typename THostData>
       void download(THostData* output) {
-        if(Padding && NDim>1)
-        {
+        if(Padding && NDim>1) {
           CHECK_CL(clEnqueueReadBufferRect( queue_,
                                             data_,
                                             CL_TRUE, // blocking_write
