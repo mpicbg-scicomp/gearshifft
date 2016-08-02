@@ -37,7 +37,7 @@ namespace gearshifft
     /**
      * @retval 1 arbitrary extents
      * @retval 2 power-of-two extents
-     * @retval 3 last dim: combination of powers of (3,5,7) {3^r * 5^s * 7^t}
+     * @retval 3 combination of powers of (3,5,7) {3^r * 5^s * 7^t}
      */
     size_t computeDimkind() {
       bool p2=true;
@@ -45,19 +45,19 @@ namespace gearshifft
         p2 &= powerOf(extents_[k], 2.0);
       if(p2)
         return 2;
-      unsigned e = extents_[dim_-1];
-      unsigned sqr = static_cast<unsigned>(sqrt(e));
-      for( unsigned k=2; k<=sqr; k+=1 ) {
-        while( e%k == 0 ) {
-          e /= k;
+      for(unsigned k=0; k<dim_; ++k) {
+        unsigned e = extents_[k];
+        unsigned sqr = static_cast<unsigned>(sqrt(e));
+        for( unsigned k=2; k<=sqr; k+=1 ) {
+          while( e%k == 0 ) {
+            e /= k;
+          }
         }
+        if(e>7)
+          return 1;
       }
-      if(e>7)
-        return 1;
-      else
-        return 3;
+      return 3;
     }
-
     /* setters */
 
     void setRun(int run) {
