@@ -20,8 +20,8 @@ endif()
 
 find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
-include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
 set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
@@ -34,45 +34,10 @@ endif()
 #------------------------------------------------------------------------------
 # CUDA+CUFFT
 #------------------------------------------------------------------------------
-set(CUDA_CC "" CACHE STRING "Specify your CUDA ComputeCapability")
 find_package(CUDA)
 if(CUDA_FOUND)
   include(FindCUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    #for gcc5.x and cuda
-    list(APPEND CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED")
-  endif()
-  # --- CUDA device architectures ---
-  if(CUDA_CC)
-    message(">> Set CUDA gencode for ComputeCapability ${CUDA_CC}")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${CUDA_CC},code=sm_${CUDA_CC}")
-  else()
-    
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_20,code=sm_20")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_30,code=sm_30")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_32,code=sm_32")#not found in cuda 7.5 & 8.0 SDK!
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_35,code=sm_35")
-
-    if(${CUDA_VERSION_STRING} VERSION_GREATER "5.5")#starting with 6.0
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_37,code=sm_37")
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_50,code=sm_50")
-    endif()
-
-    if(${CUDA_VERSION_STRING} VERSION_GREATER "6.5")#starting with 7.0
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_52,code=sm_52")
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=sm_53")#not found in cuda 7.5 & 8.0 SDK!
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=compute_53")#not found in cuda 7.5 & 8.0 SDK!
-    endif()
-
-    if(${CUDA_VERSION_STRING} VERSION_GREATER "7.5")#starting with 8.0
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_60,code=sm_60")
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_61,code=sm_61")
-      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_61,code=compute_61")
-    endif()
-    
-    message(">> CUDA gencodes auto-generated")
-  endif(CUDA_CC)
   list(APPEND FFTLIBS "cufft")
   message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
 else()
@@ -120,23 +85,14 @@ endif()
 #------------------------------------------------------------------------------
 function(add_exec Tlib)
   message(">> Target: ${Tlib}")
-  if(DEV_TESTS)
-    set(PROJECT_EXEC test_${Tlib})
-    add_executable(${PROJECT_EXEC} ${TESTS})
-  else()
-    set(PROJECT_EXEC gearshifft_${Tlib})
-    set(PROJECT_EXEC_FLAGS "-DDEFAULT_RESULT_FILE=${PROJECT_EXEC}")
-    add_executable(${PROJECT_EXEC} ${SOURCES})
-  endif()
+  set(PROJECT_EXEC gearshifft_${Tlib})
+  add_executable(${PROJECT_EXEC} ${SOURCES})
   if (Tlib STREQUAL "cufft")
-    set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DCUDA_ENABLED ${PROJECT_EXEC_FLAGS}")
-    set(LIBS ${LIBS} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
-  endif()
-  if (Tlib STREQUAL "clfft")
-    set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DOPENCL_ENABLED ${PROJECT_EXEC_FLAGS}")
-    set(LIBS ${LIBS} ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DCUDA_ENABLED)
+    set(LIBS ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+  elseif(Tlib STREQUAL "clfft" OR Tlib STREQUAL "test")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DOPENCL_ENABLED)
+    set(LIBS ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
   endif()
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
@@ -146,11 +102,16 @@ endfunction()
 #
 #------------------------------------------------------------------------------
 include_directories(../inc)
-set(SOURCES benchmark.cpp options.cpp)
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
 
-foreach(FFTLIB ${FFTLIBS})
-  add_exec(${FFTLIB})
-endforeach()
+if(DEV_TESTS)
+  set(SOURCES ${TESTS})
+  add_exec("test")
+else()
+  set(SOURCES benchmark.cpp options.cpp)
+  foreach(FFTLIB ${FFTLIBS})
+    add_exec(${FFTLIB})
+  endforeach()
+endif()
