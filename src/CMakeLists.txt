@@ -48,15 +48,30 @@ if(CUDA_FOUND)
     message(">> Set CUDA gencode for ComputeCapability ${CUDA_CC}")
     list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${CUDA_CC},code=sm_${CUDA_CC}")
   else()
-    message(">> All CUDA gencodes are created")
+    
     list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_20,code=sm_20")
     list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_30,code=sm_30")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_32,code=sm_32")
+    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_32,code=sm_32")#not found in cuda 7.5 & 8.0 SDK!
     list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_35,code=sm_35")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_50,code=sm_50")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_52,code=sm_52")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=sm_53")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=compute_53")
+
+    if(${CUDA_VERSION_STRING} VERSION_GREATER "5.5")#starting with 6.0
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_37,code=sm_37")
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_50,code=sm_50")
+    endif()
+
+    if(${CUDA_VERSION_STRING} VERSION_GREATER "6.5")#starting with 7.0
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_52,code=sm_52")
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=sm_53")#not found in cuda 7.5 & 8.0 SDK!
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=compute_53")#not found in cuda 7.5 & 8.0 SDK!
+    endif()
+
+    if(${CUDA_VERSION_STRING} VERSION_GREATER "7.5")#starting with 8.0
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_60,code=sm_60")
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_61,code=sm_61")
+      list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_61,code=compute_61")
+    endif()
+    
+    message(">> CUDA gencodes auto-generated")
   endif(CUDA_CC)
   list(APPEND FFTLIBS "cufft")
   message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
