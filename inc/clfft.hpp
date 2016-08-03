@@ -138,38 +138,41 @@ namespace gearshifft
       size_t dist;
       size_t transform_dist;
 
-      ClFFTImpl(const Extent& cextents)
-        : extents_(cextents)
-        {
-          cl_int err;
-          context_ = Application<Context>::getContext();
-          if(context_.ctx==0)
-            throw std::runtime_error("Context has not been created.");
-          queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
-          CHECK_CL(err);
+      ClFFTImpl(const Extent& cextents) {
+        cl_int err;
+        context_ = Application<Context>::getContext();
+        if(context_.ctx==0)
+          throw std::runtime_error("Context has not been created.");
+        queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
+        CHECK_CL(err);
+        // switch order since clFFT exposes [Nz][Ny][Nx],
+        //  but convention is [Nx][Ny][Nz]
+        //  (both row-major order)
+        for(auto j=NDim; j>0; --j)
+          extents_[NDim-j] = cextents[j-1];
 
-          n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
-          if(Padding){
-            n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
-            w      = extents_[0] * sizeof(RealType);
-            h      = n_ / extents_[0];
-            pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
-            region[0] = w; // in bytes
-            region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
-            region[2] = 1; // in counts (same)
-            strides[1] = 2*(extents_[0]/2+1);
-            strides[2] = 2 * n_padded_ / extents_[NDim-1];
-            transform_strides[1] = extents_[0]/2+1;
-            transform_strides[2] = n_padded_ / extents_[NDim-1];
-            dist = 2 * n_padded_;
-            transform_dist = n_padded_;
-          }
-          clLengths[0] = extents_[0];
-          clLengths[1] = NDim==2 ? extents_[1] : 1;
-          clLengths[2] = NDim==3 ? extents_[2] : 1;
-          data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
-          data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+        n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
+        if(Padding){
+          n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
+          w      = extents_[0] * sizeof(RealType);
+          h      = n_ / extents_[0];
+          pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
+          region[0] = w; // in bytes
+          region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
+          region[2] = 1; // in counts (same)
+          strides[1] = 2*(extents_[0]/2+1);
+          strides[2] = 2 * n_padded_ / extents_[NDim-1];
+          transform_strides[1] = extents_[0]/2+1;
+          transform_strides[2] = n_padded_ / extents_[NDim-1];
+          dist = 2 * n_padded_;
+          transform_dist = n_padded_;
         }
+        clLengths[0] = extents_[0];
+        clLengths[1] = NDim==2 ? extents_[1] : 1;
+        clLengths[2] = NDim==3 ? extents_[2] : 1;
+        data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
+        data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+      }
 
       /**
        * Returns allocated memory on device for FFT
