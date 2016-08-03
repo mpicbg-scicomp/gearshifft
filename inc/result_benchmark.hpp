@@ -48,12 +48,14 @@ namespace gearshifft
       for(unsigned k=0; k<dim_; ++k) {
         unsigned e = extents_[k];
         unsigned sqr = static_cast<unsigned>(sqrt(e));
-        for( unsigned k=2; k<=sqr; k+=1 ) {
-          while( e%k == 0 ) {
-            e /= k;
+        for( unsigned d=2; d<=sqr; ++d ) {
+          if( e%d == 0 && d>7 )
+            return 1;
+          while( e%d == 0 ) {
+            e /= d;
           }
         }
-        if(e>7)
+        if( e==extents_[k] )
           return 1;
       }
       return 3;
@@ -92,6 +94,13 @@ namespace gearshifft
     std::string getPrecision() const { return precision_; }
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
+    std::string getDimKindStr() const {
+      switch(dimkind_) {
+      case 1: return "oddshape";
+      case 2: return "powerof2";
+      case 3: return "radix357";
+      }
+    }
     std::array<unsigned,3> getExtents() const { return extents_; }
     size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }

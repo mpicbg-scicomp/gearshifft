@@ -169,25 +169,25 @@ namespace gearshifft {
 /**
  *
  */
-    inline int findClDevice(cl_device_type devkind, cl_platform_id* platform, cl_device_id* device)
+    inline int findClDevice(cl_device_type devtype, cl_platform_id* platform, cl_device_id* device)
     {
       cl_uint num_of_platforms = 0, num_of_devices = 0;
       cl_device_id device_id = 0;
       if (clGetPlatformIDs(0, NULL, &num_of_platforms) != CL_SUCCESS)
       {
-        fprintf(stderr, "Unable to get platform_id\n");
+        std::cerr << "Unable to get platform_id" << std::endl;
         return 1;
       }
       cl_platform_id *platform_ids = new cl_platform_id[num_of_platforms];
       if (clGetPlatformIDs(num_of_platforms, platform_ids, NULL) != CL_SUCCESS)
       {
-        fprintf(stderr,"Unable to get platform_id\n");
+        std::cerr << "Unable to get platform_id" << std::endl;
         delete[] platform_ids;
         return 1;
       }
       bool found = false;
       for(unsigned i=0; i<num_of_platforms; i++)
-        if(clGetDeviceIDs(platform_ids[i], devkind, 1, &device_id, &num_of_devices) == CL_SUCCESS){
+        if(clGetDeviceIDs(platform_ids[i], devtype, 1, &device_id, &num_of_devices) == CL_SUCCESS){
           found = true;
           *platform = platform_ids[i];
           *device = device_id;

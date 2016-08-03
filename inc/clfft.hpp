@@ -6,8 +6,11 @@
 #include "fft.hpp"
 #include "benchmark_suite.hpp"
 #include "clfft_helper.hpp"
+#include "traits.hpp"
+
 #include <clFFT.h>
 #include <stdexcept>
+#include <boost/algorithm/string/predicate.hpp>
 
 namespace gearshifft
 {
@@ -73,7 +76,15 @@ namespace gearshifft
       void create() {
         cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
         cl_int err = CL_SUCCESS;
-        findClDevice(CL_DEVICE_TYPE_GPU, &platform, &device);
+        cl_device_type devtype = CL_DEVICE_TYPE_GPU;
+
+        auto options_devtype = Options::getInstance().getDevice();
+        if(boost::iequals(options_devtype, "cpu")) // case insensitive compare
+          devtype = CL_DEVICE_TYPE_CPU;
+        else if(boost::iequals(options_devtype, "acc"))
+          devtype = CL_DEVICE_TYPE_ACCELERATOR;
+
+        findClDevice(devtype, &platform, &device);
         device_used = device;
         props[1] = (cl_context_properties)platform;
         ctx = clCreateContext( props, 1, &device, nullptr, nullptr, &err );
@@ -117,7 +128,6 @@ namespace gearshifft
 
       size_t n_;
       size_t n_padded_;
-      Extent extents_;
 
       Context context_;
       cl_command_queue queue_ = 0;
@@ -130,10 +140,10 @@ namespace gearshifft
       size_t w;
       size_t h;
       size_t pitch;
-      size_t region[3];
-      size_t offset[3] = {0, 0, 0};
+      size_t region[3] = {0};
+      size_t offset[3] = {0};
       size_t strides[3] = {1};
-      size_t clLengths[3];
+      size_t clLengths[3] = {0};
       size_t transform_strides[3] = {1};
       size_t dist;
       size_t transform_dist;
@@ -145,31 +155,26 @@ namespace gearshifft
           throw std::runtime_error("Context has not been created.");
         queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
         CHECK_CL(err);
-        // switch order since clFFT exposes [Nz][Ny][Nx],
-        //  but convention is [Nx][Ny][Nz]
-        //  (both row-major order)
-        for(auto j=NDim; j>0; --j)
-          extents_[NDim-j] = cextents[j-1];
 
-        n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
+        n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<unsigned>());
+
+        rowmajor::assign(clLengths, cextents);
+
         if(Padding){
-          n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
-          w      = extents_[0] * sizeof(RealType);
-          h      = n_ / extents_[0];
-          pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
+          n_padded_ = n_ / clLengths[0] * (clLengths[0]/2 + 1);
+          w      = clLengths[0] * sizeof(RealType);
+          h      = n_ / clLengths[0];
+          pitch  = (clLengths[0]/2+1) * sizeof(ComplexType);
           region[0] = w; // in bytes
           region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
           region[2] = 1; // in counts (same)
-          strides[1] = 2*(extents_[0]/2+1);
-          strides[2] = 2 * n_padded_ / extents_[NDim-1];
-          transform_strides[1] = extents_[0]/2+1;
-          transform_strides[2] = n_padded_ / extents_[NDim-1];
+          strides[1] = 2*(clLengths[0]/2+1);
+          strides[2] = 2 * n_padded_ / clLengths[NDim-1];
+          transform_strides[1] = clLengths[0]/2+1;
+          transform_strides[2] = n_padded_ / clLengths[NDim-1];
           dist = 2 * n_padded_;
           transform_dist = n_padded_;
         }
-        clLengths[0] = extents_[0];
-        clLengths[1] = NDim==2 ? extents_[1] : 1;
-        clLengths[2] = NDim==3 ? extents_[2] : 1;
         data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
         data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
       }

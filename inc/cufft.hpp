@@ -6,6 +6,7 @@
 #include "fft.hpp"
 #include "benchmark_suite.hpp"
 #include "cufft_helper.hpp"
+#include "traits.hpp"
 
 #include <array>
 #include <cufft.h>
@@ -172,9 +173,8 @@ namespace CuFFT {
     size_t             data_size_;
     size_t             data_transform_size_;
 
-    CuFFTImpl(const Extent& cextents)
-      : extents_(cextents)
-    {
+    CuFFTImpl(const Extent& cextents) {
+      colmajor::assign(extents_, cextents);
       n_ = std::accumulate(extents_.begin(),
                            extents_.end(),
                            1,

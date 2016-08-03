@@ -52,7 +52,9 @@ int Options::process(int argc, char* argv[]) {
     ("file,f", po::value<std::vector<std::string>>()->multitoken()->
      composing(), "file with extents (row-wise csv) [>=1 nr. of args possible]")
     ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file location")
-    ("verbose,v", "for console output");
+    ("verbose,v", "for console output")
+    ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc). If device is not supported by FFT lib, then it is ignored and default is used.")
+    ;
 
   po::variables_map vm;
   try {
