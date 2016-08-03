@@ -30,6 +30,16 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Complex>;
 using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::true_type;
+
+#elif defined(FFTW_ENABLED)
+#include "fftw.hpp"
+using namespace gearshifft::fftw;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::true_type;
 #endif
 
 // ----------------------------------------------------------------------------
