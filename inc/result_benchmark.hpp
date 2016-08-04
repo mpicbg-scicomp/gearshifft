@@ -37,19 +37,27 @@ namespace gearshifft
     /**
      * @retval 1 arbitrary extents
      * @retval 2 power-of-two extents
-     * @retval 3 power-of-other extents ( {3,5,7}^p )
+     * @retval 3 combination of powers of (3,5,7) {3^r * 5^s * 7^t}
      */
     size_t computeDimkind() {
-      bool p2 = true;
-      bool p3 = false;
-      for(auto i=0; i<dim_; ++i) {
-        unsigned e = extents_[i];
-        p2 = p2 && PowerOf(e,2.0);
-        p3 = p3 || PowerOf(e,3.0) || PowerOf(e,5.0) || PowerOf(e,7.0);
+      bool p2=true;
+      for( unsigned k=0; k<dim_; ++k)
+        p2 &= powerOf(extents_[k], 2.0);
+      if(p2)
+        return 2;
+      for(unsigned k=0; k<dim_; ++k) {
+        unsigned e = extents_[k];
+        unsigned sqr = static_cast<unsigned>(sqrt(e));
+        for( unsigned k=2; k<=sqr; k+=1 ) {
+          while( e%k == 0 ) {
+            e /= k;
+          }
+        }
+        if(e>7)
+          return 1;
       }
-      return p2 ? 2 : p3 ? 3 : 1;
+      return 3;
     }
-
     /* setters */
 
     void setRun(int run) {
@@ -118,7 +126,7 @@ namespace gearshifft
     int errorRun_;
 
   private:
-    bool PowerOf(unsigned e, double b) {
+    bool powerOf(unsigned e, double b) {
       if(e==0)
         return false;
       double a = static_cast<double>(e);

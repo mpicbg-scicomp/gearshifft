@@ -95,15 +95,6 @@ namespace gearshifft
     };
 
     /**
-     * Plan Creator depending on FFT transform type.
-     */
-    template<clfftDim FFTDim, size_t Ndim>
-    constexpr void makePlan(cl_context ctx, clfftPlanHandle& plan, const std::array<unsigned,Ndim>& e){
-      size_t clLengths[3] = {e[0], Ndim==2?e[1]:1, Ndim==3?e[2]:1};
-      CHECK_CL(clfftCreateDefaultPlan(&plan, ctx, FFTDim, clLengths));
-    }
-
-    /**
      * ClFFT plan and execution class.
      *
      * This class handles:
@@ -135,46 +126,53 @@ namespace gearshifft
       cl_mem data_transform_  = 0; // intermediate buffer
       size_t data_size_       = 0;
       size_t data_transform_size_ = 0;
+
       size_t w;
       size_t h;
       size_t pitch;
       size_t region[3];
       size_t offset[3] = {0, 0, 0};
       size_t strides[3] = {1};
+      size_t clLengths[3];
       size_t transform_strides[3] = {1};
       size_t dist;
       size_t transform_dist;
 
-      ClFFTImpl(const Extent& cextents)
-        : extents_(cextents)
-        {
-          cl_int err;
-          context_ = Application<Context>::getContext();
-          if(context_.ctx==0)
-            throw std::runtime_error("Context has not been created.");
-          queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
-          CHECK_CL(err);
+      ClFFTImpl(const Extent& cextents) {
+        cl_int err;
+        context_ = Application<Context>::getContext();
+        if(context_.ctx==0)
+          throw std::runtime_error("Context has not been created.");
+        queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
+        CHECK_CL(err);
+        // switch order since clFFT exposes [Nz][Ny][Nx],
+        //  but convention is [Nx][Ny][Nz]
+        //  (both row-major order)
+        for(auto j=NDim; j>0; --j)
+          extents_[NDim-j] = cextents[j-1];
 
-          n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
-          if(Padding){
-            n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
-            w      = extents_[0] * sizeof(RealType);
-            h      = n_ / extents_[0];
-            pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
-            region[0] = w; // in bytes
-            region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
-            region[2] = 1; // in counts (same)
-            strides[1] = 2*(extents_[0]/2+1);
-            strides[2] = 2 * n_padded_ / extents_[NDim-1];
-            transform_strides[1] = extents_[0]/2+1;
-            transform_strides[2] = n_padded_ / extents_[NDim-1];
-            dist = 2 * n_padded_;
-            transform_dist = n_padded_;
-          }
-
-          data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
-          data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+        n_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
+        if(Padding){
+          n_padded_ = n_ / extents_[0] * (extents_[0]/2 + 1);
+          w      = extents_[0] * sizeof(RealType);
+          h      = n_ / extents_[0];
+          pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
+          region[0] = w; // in bytes
+          region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
+          region[2] = 1; // in counts (same)
+          strides[1] = 2*(extents_[0]/2+1);
+          strides[2] = 2 * n_padded_ / extents_[NDim-1];
+          transform_strides[1] = extents_[0]/2+1;
+          transform_strides[2] = n_padded_ / extents_[NDim-1];
+          dist = 2 * n_padded_;
+          transform_dist = n_padded_;
         }
+        clLengths[0] = extents_[0];
+        clLengths[1] = NDim==2 ? extents_[1] : 1;
+        clLengths[2] = NDim==3 ? extents_[2] : 1;
+        data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
+        data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+      }
 
       /**
        * Returns allocated memory on device for FFT
@@ -206,20 +204,18 @@ namespace gearshifft
                                 data_size_,
                                 nullptr, // host pointer @todo
                                 &err );
-        //std::cout << " data " << data_size_ << std::endl;
         if(IsInplace==false){
           data_transform_ = clCreateBuffer( context_.ctx,
                                             CL_MEM_READ_WRITE,
                                             data_transform_size_,
                                             nullptr, // host pointer
                                             &err );
-          //std::cout << " transform " <<data_transform_size_ << std::endl;
         }
       }
 
       // create FFT plan handle
       void init_forward() {
-        makePlan<FFTDim>(context_.ctx, plan_, extents_);
+        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths));
         CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
         CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
@@ -241,7 +237,8 @@ namespace gearshifft
       void init_backward() {
         if(IsComplex==false){
           CHECK_CL(clfftDestroyPlan( &plan_ ));
-          makePlan<FFTDim>(context_.ctx, plan_, extents_);
+          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths));
+          CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
           CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,
                                   traits::FFTLayout<IsComplex>::value));
@@ -289,9 +286,7 @@ namespace gearshifft
 
       template<typename THostData>
       void upload(THostData* input) {
-        if(Padding && NDim>1)
-        {
-          //printf("pitch=%zu w=%zu h=%zu\n", pitch, w, h);
+        if(Padding && NDim>1) {
           CHECK_CL(clEnqueueWriteBufferRect( queue_,
                                              data_,
                                              CL_TRUE, // blocking_write

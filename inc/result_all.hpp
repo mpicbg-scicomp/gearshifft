@@ -75,7 +75,7 @@ namespace gearshifft {
          << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
       // header
       fs << "\"library\",\"inplace\",\"complex\",\"precision\",\"dim\",\"kind\""
-         << ",\"nx\",\"ny\",\"nz\",\"run\",\"Success\"";
+         << ",\"nx\",\"ny\",\"nz\",\"run\",\"success\"";
       for(auto ival=0; ival<T_NumberValues; ++ival) {
         fs << sep << '"' << static_cast<RecordType>(ival) << '"';
       }
