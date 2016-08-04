@@ -41,7 +41,7 @@ if(CUDA_FOUND)
   list(APPEND FFTLIBS "cufft")
   message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
 else()
-  message("cuFFT benchmark disabled.")
+  message("<< cuFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ if(OPENCL_FOUND)
 endif()
 
 if(NOT CLFFT_FOUND)
-  message("clFFT benchmark disabled.")
+  message("<< clFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ if(HCFFT_FOUND)
 endif()
 
 if(NOT HCFFT_FOUND)
-  message("hcFFT benchmark disabled.")
+  message("<< hcFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -106,19 +106,18 @@ if(FFTW_FOUND)
   set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
   message(">> FFTW -> " ${FFTW_LIBRARIES} " " ${FFTW_INCLUDES})
 else()
-  message("fftw benchmark disabled.")
+  message("<< FFTW benchmark disabled.")
 endif()
 
 
 if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND OR FFTW_FOUND))
-  message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
+  message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
 endif()
 
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
 #------------------------------------------------------------------------------
 function(add_exec Tlib)
-  message(">> Target: ${Tlib}")
   set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
   if (Tlib STREQUAL "cufft")
@@ -134,7 +133,7 @@ function(add_exec Tlib)
     
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
   endif()
-  message("BOOST LIB: ${Boost_LIBRARIES}")
+
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
 endfunction()
