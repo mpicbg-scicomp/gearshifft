@@ -5,11 +5,13 @@
 #     
 # It sets the following variables:
 #   FFTW_FOUND          ... true if fftw is found on the system
-#   FFTW_LIBRARIES      ... full path to fftw library (will be filled with serial/openmp/pthreads enabled file names if present)
+#   FFTW_LIBRARIES      ... list of library identifiers that were found (will be filled with serial/openmp/pthreads enabled file names if present, only stubs will be filled in not full paths)
 #   FFTW_INCLUDES       ... fftw include directory
-#   FFTW_SERIAL_LIBS	... full path to serial fftw library
-#   FFTW_THREADS_LIBS	... full path to pthreads fftw library
-#   FFTW_OPENMP_LIBS	... full path to openmp fftw library
+#   FFTW_SERIAL_LIBS	... list of full path(s) to serial fftw library(ies)
+#   FFTW_THREADS_LIBS	... list of full path(s) to pthreads fftw library(ies)
+#   FFTW_OPENMP_LIBS	... list of full path(s) to openmp fftw library(ies)
+#   FFTW_INCLUDE_DIR	... fftw include directory
+#   FFTW_LIBRARY_DIR	... fftw library directory
 #
 # The following variables will be checked by the function
 #   FFTW_USE_STATIC_LIBS    ... if true, only static libraries are found
@@ -17,6 +19,7 @@
 #                               under this path
 #   FFTW_LIBRARY            ... fftw library to use
 #   FFTW_INCLUDE_DIR        ... fftw include directory
+#   FFTW_VERBOSE_FIND       ... print extra messages
 #
 # Besides these command line defines, the environment is searched for FFTWDIR and FFTW_ROOT to be filled
 # if these variables are defined, it's assumed that they point to the FFTW installation root path
@@ -134,7 +137,19 @@ foreach(_LIBSTUB IN LISTS FFTW_LIBRARY_STUBS)
   endif( FFTW_ROOT )
 
   if(EXISTS ${FFTW_SERIAL_STUBLIB})
-    list(APPEND FFTW_SERIAL_LIBS ${FFTW_SERIAL_STUBLIB})
+
+    if( NOT CMAKE_FIND_LIBRARY_SUFFIXES MATCHES ${CMAKE_STATIC_LIBRARY_SUFFIX} )
+      add_library(${_LIBSTUB} STATIC IMPORTED GLOBAL)
+    else()
+      add_library(${_LIBSTUB} SHARED IMPORTED GLOBAL)
+    endif()
+
+    set_target_properties(${_LIBSTUB} PROPERTIES IMPORTED_LOCATION ${FFTW_SERIAL_STUBLIB} )
+
+    list(APPEND FFTW_SERIAL_LIBS_ABSPATH ${FFTW_SERIAL_STUBLIB})
+    list(APPEND FFTW_SERIAL_LIBS ${_LIBSTUB})
+
+    set(FFTW_LIBRARIES "${FFTW_LIBRARIES} ${_LIBSTUB}")
   else()
     if(NOT FFTW_FIND_QUIETLY)
       message("FFTW_SERIAL_STUBLIB empty for ${_LIBSTUB} .. :${FFTW_SERIAL_STUBLIB}:")
@@ -142,7 +157,20 @@ foreach(_LIBSTUB IN LISTS FFTW_LIBRARY_STUBS)
   endif()
 
   if(EXISTS ${FFTW_OPENMP_STUBLIB})
-    list(APPEND FFTW_OPENMP_LIBS ${FFTW_OPENMP_STUBLIB})
+
+    if( NOT CMAKE_FIND_LIBRARY_SUFFIXES MATCHES ${CMAKE_STATIC_LIBRARY_SUFFIX} )
+      add_library(${_LIBSTUB}_omp STATIC IMPORTED GLOBAL)
+    else()
+      add_library(${_LIBSTUB}_omp SHARED IMPORTED GLOBAL)
+    endif()
+
+    set_target_properties(${_LIBSTUB}_omp PROPERTIES IMPORTED_LOCATION ${FFTW_OPENMP_STUBLIB} )
+
+    list(APPEND FFTW_OPENMP_LIBS_ABSPATH ${FFTW_OPENMP_STUBLIB})
+    list(APPEND FFTW_OPENMP_LIBS ${_LIBSTUB}_omp)
+    
+    set(FFTW_LIBRARIES "${FFTW_LIBRARIES} ${_LIBSTUB}_omp")
+
   else()
     if(NOT FFTW_FIND_QUIETLY)
       message("FFTW_OPENMP_STUBLIB empty for ${_LIBSTUB} .. :${FFTW_OPENMP_STUBLIB}:")
@@ -150,7 +178,17 @@ foreach(_LIBSTUB IN LISTS FFTW_LIBRARY_STUBS)
   endif()
 
   if(EXISTS ${FFTW_THREADS_STUBLIB})
-    list(APPEND FFTW_THREADS_LIBS ${FFTW_THREADS_STUBLIB})
+    if( NOT CMAKE_FIND_LIBRARY_SUFFIXES MATCHES ${CMAKE_STATIC_LIBRARY_SUFFIX} )
+      add_library(${_LIBSTUB}_threads STATIC IMPORTED GLOBAL)
+    else()
+      add_library(${_LIBSTUB}_threads SHARED IMPORTED GLOBAL)
+    endif()
+    set_target_properties(${_LIBSTUB}_threads PROPERTIES IMPORTED_LOCATION ${FFTW_THREADS_STUBLIB} )
+
+    list(APPEND FFTW_THREADS_LIBS_ABSPATH ${FFTW_THREADS_STUBLIB})
+    list(APPEND FFTW_THREADS_LIBS ${_LIBSTUB}_threads)
+    
+    set(FFTW_LIBRARIES "${FFTW_LIBRARIES} ${_LIBSTUB}_threads")
   else()
     if(NOT FFTW_FIND_QUIETLY)
       message("FFTW_OPENMP_STUBLIB empty for ${_LIBSTUB} .. :${FFTW_THREADS_STUBLIB}:")
@@ -184,14 +222,23 @@ else()
 
 endif( FFTW_ROOT )
 
-# fill libraries
-set(FFTW_LIBRARIES)
-foreach(_ITEM IN LISTS FFTW_SERIAL_LIBS FFTW_THREADS_LIBS FFTW_OPENMP_LIBS )
+if(EXISTS ${FFTW_INCLUDES})
+  set(FFTW_INCLUDE_DIR ${FFTW_INCLUDES})
+endif()
+
+# fill library dir
+set(FFTW_LIBFILES_LIST)
+
+foreach(_ITEM IN LISTS FFTW_SERIAL_LIBS_ABSPATH FFTW_THREADS_LIBS_ABSPATH FFTW_OPENMP_LIBS_ABSPATH )
   if(EXISTS ${_ITEM})
-    set(FFTW_LIBRARIES "${FFTW_LIBRARIES} ${_ITEM}")
+    list(APPEND FFTW_LIBFILES_LIST ${_ITEM})
   endif()
 endforeach()
 
+if(FFTW_LIBRARIES)
+  list(GET FFTW_LIBFILES_LIST 0 FFTW_LIBFILES_ITEM0)
+  get_filename_component(FFTW_LIBRARY_DIR ${FFTW_LIBFILES_ITEM0} DIRECTORY)
+endif()
 
 #revert CMAKE_FIND_LIBRARY_SUFFIXES
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SAV} )
@@ -200,12 +247,27 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTW DEFAULT_MSG
   FFTW_INCLUDES
   FFTW_LIBRARIES
+#  HANDLE_COMPONENTS
   )
 
-mark_as_advanced(FFTW_INCLUDES #include directory
+if(NOT FFTW_VERBOSE_FIND)
+  message("++ FindFFTW")
+  message("++ FFTW_INCLUDES    : ${FFTW_INCLUDES}")
+  message("++ FFTW_LIBRARIES   : ${FFTW_LIBRARIES}")
+  message("++ FFTW_SERIAL_LIBS : ${FFTW_SERIAL_LIBS_ABSPATH}")
+  message("++ FFTW_THREADS_LIBS: ${FFTW_THREADS_LIBS_ABSPATH}") 
+  message("++ FFTW_OPENMP_LIBS : ${FFTW_OPENMP_LIBS_ABSPATH}")
+  message("++ FFTW_INCLUDE_DIR : ${FFTW_INCLUDE_DIR}")
+  message("++ FFTW_LIBRARY_DIR : ${FFTW_LIBRARY_DIR}")
+endif()
+
+mark_as_advanced(
+  FFTW_INCLUDES #include directory
   FFTW_LIBRARIES
   FFTW_SERIAL_LIBS #individual serial libs
   FFTW_THREADS_LIBS #pthreads libraries
   FFTW_OPENMP_LIBS #openmp libraries
+  FFTW_INCLUDE_DIR
+  FFTW_LIBRARY_DIR
   )
 
