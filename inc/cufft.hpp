@@ -100,7 +100,7 @@ namespace CuFFT {
    * (CUFFT_R2C, ...) and depending on number of dimensions {1,2,3}.
    */
   template<cufftType FFTType, size_t NDim>
-  size_t estimateAllocSize(const std::array<unsigned,NDim>& e, cufftHandle& plan)
+  size_t estimateAllocSize(const std::array<size_t,NDim>& e, cufftHandle& plan)
   {
     size_t s=0;
     if(NDim==1){
@@ -118,15 +118,15 @@ namespace CuFFT {
    * Plan Creator depending on FFT transform type (CUFFT_R2C, ...).
    */
   template<cufftType FFTType>
-  void makePlan(cufftHandle& plan, const std::array<unsigned,3>& e){
+  void makePlan(cufftHandle& plan, const std::array<size_t,3>& e){
     CHECK_CUFFT(cufftPlan3d(&plan, e[0], e[1], e[2], FFTType));
   }
   template<cufftType FFTType>
-  void makePlan(cufftHandle& plan, const std::array<unsigned,1>& e){
+  void makePlan(cufftHandle& plan, const std::array<size_t,1>& e){
     CHECK_CUFFT(cufftPlan1d(&plan, e[0], FFTType, 1));
   }
   template<cufftType FFTType>
-  void makePlan(cufftHandle& plan, const std::array<unsigned,2>& e){
+  void makePlan(cufftHandle& plan, const std::array<size_t,2>& e){
     CHECK_CUFFT(cufftPlan2d(&plan, e[0], e[1], FFTType));
   }
 
@@ -143,7 +143,7 @@ namespace CuFFT {
            >
   struct CuFFTImpl
   {
-    using Extent = std::array<unsigned,NDim>;
+    using Extent = std::array<size_t,NDim>;
     using Types  = typename traits::Types<TPrecision>;
     using ComplexType = typename Types::ComplexType;
     using RealType = typename Types::RealType;
@@ -174,7 +174,7 @@ namespace CuFFT {
     size_t             data_transform_size_;
 
     CuFFTImpl(const Extent& cextents) {
-      colmajor::assign(extents_, cextents);
+      extents_ = interpret_as::column_major(cextents);
       n_ = std::accumulate(extents_.begin(),
                            extents_.end(),
                            1,

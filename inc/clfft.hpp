@@ -8,6 +8,8 @@
 #include "clfft_helper.hpp"
 #include "traits.hpp"
 
+#include <array>
+#include <algorithm>
 #include <clFFT.h>
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp>
@@ -119,7 +121,7 @@ namespace gearshifft
     {
       using ComplexType = typename traits::Types<TPrecision>::ComplexType;
       using RealType = typename traits::Types<TPrecision>::RealType;
-      using Extent = std::array<unsigned,NDim>;
+      using Extent = std::array<size_t,NDim>;
       static constexpr auto IsInplace = TFFT::IsInplace;
       static constexpr auto IsComplex = TFFT::IsComplex;
       static constexpr auto Padding = IsInplace && IsComplex==false;
@@ -143,7 +145,7 @@ namespace gearshifft
       size_t region[3] = {0};
       size_t offset[3] = {0};
       size_t strides[3] = {1};
-      size_t clLengths[3] = {0};
+      std::array<size_t, 3> clLengths = {{0}};
       size_t transform_strides[3] = {1};
       size_t dist;
       size_t transform_dist;
@@ -156,9 +158,10 @@ namespace gearshifft
         queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
         CHECK_CL(err);
 
-        n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<unsigned>());
+        n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<size_t>());
 
-        rowmajor::assign(clLengths, cextents);
+        auto cl_extents = interpret_as::row_major(cextents);
+        std::copy(cl_extents.begin(), cl_extents.end(), clLengths.begin());
 
         if(Padding){
           n_padded_ = n_ / clLengths[0] * (clLengths[0]/2 + 1);
@@ -220,7 +223,7 @@ namespace gearshifft
 
       // create FFT plan handle
       void init_forward() {
-        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths));
+        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths.data()));
         CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
         CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
@@ -242,7 +245,7 @@ namespace gearshifft
       void init_backward() {
         if(IsComplex==false){
           CHECK_CL(clfftDestroyPlan( &plan_ ));
-          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths));
+          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths.data()));
           CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
           CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,

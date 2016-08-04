@@ -3,44 +3,6 @@
 
 namespace gearshifft {
 
-  // Indices for gearshifft extents if array needs row-major order
-  struct rowmajor {
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 1>& e) {
-      array[0] = e[0];
-    }
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 2>& e) {
-      array[0] = e[1];
-      array[1] = e[0];
-    }
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 3>& e) {
-      array[0] = e[2];
-      array[1] = e[1];
-      array[2] = e[0];
-    }
-  };
-
-  // Indices for gearshifft extents if array needs row-major order
-  struct colmajor {
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 1>& e) {
-      array[0] = e[0];
-    }
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 2>& e) {
-      array[0] = e[0];
-      array[1] = e[1];
-    }
-    template<typename T>
-    static void assign(T& array, const std::array<unsigned, 3>& e) {
-      array[0] = e[0];
-      array[1] = e[1];
-      array[2] = e[2];
-    }
-  };
-
   template <typename T_Precision>
   struct ToString;
 

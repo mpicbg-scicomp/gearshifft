@@ -17,26 +17,24 @@ void Options::parseFile(const std::string& file) {
       continue;
     if(line.empty())
       continue;
-
-    std::replace( line.begin(), line.end(), ',', 'x');
     parseExtent(line);
   }
 }
 
 void Options::parseExtent( const std::string& extent ) {
   std::vector<std::string> token;
-  boost::split(token, extent, boost::is_any_of("x"));
+  boost::split(token, extent, boost::is_any_of("x,"));
   if(token.size()==1) {
-    Extents1D array = {static_cast<unsigned>(std::stoi(token[0]))};
+    Extents1D array = {std::stoull(token[0])};
     vector1D_.push_back( array );
   } else if(token.size()==2) {
-    Extents2D array = {static_cast<unsigned>(std::stoi(token[0])),
-                       static_cast<unsigned>(std::stoi(token[1]))};
+    Extents2D array = {std::stoull(token[0]),
+                       std::stoull(token[1])};
     vector2D_.push_back( array );
   } else {
-    Extents3D array = {static_cast<unsigned>(std::stoi(token[0])),
-                       static_cast<unsigned>(std::stoi(token[1])),
-                       static_cast<unsigned>(std::stoi(token[2]))};
+    Extents3D array = {std::stoull(token[0]),
+                       std::stoull(token[1]),
+                       std::stoull(token[2])};
     vector3D_.push_back( array );
   }
 }
