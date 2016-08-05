@@ -37,7 +37,7 @@ using FFT_Is_Normalized = std::true_type;
 
 // ----------------------------------------------------------------------------
 
-/// functor for gearshifft benchmarks
+/// functor for gearshifft benchmarks, TODO: get rid of this global variable!
 gearshifft::Run<Context, FFT_Is_Normalized, FFTs, Precisions> instance;
 
 /// global application handler as global fixture
@@ -60,26 +60,40 @@ namespace utf = boost::unit_test;
 bool init_function()
 {
 
+  //TODO: create instance here locally and update with options coming in through the function parameters
+  
   utf::framework::master_test_suite().add( instance() );
 
-    // do your own initialization here
-    // if it successful return true
-
-    // But, you CAN'T use testing tools here
-
-    return true;
+  return true;
 }
 
 //____________________________________________________________________________//
 
 int main( int argc, char* argv[] )
 {
-  //Options::process may not throw!
-  if( gearshifft::Options::getInstance().process(argc, argv) == 0 ){
+  
+  std::vector<char*> vargv(argv, argv+argc);
+  int parse_return_value = gearshifft::Options::getInstance().parse(vargv);
+  
+  if( parse_return_value == 0 ){
 
     //TODO: remove processed items here
+    //      at best do: auto bound_init_function = std::bind(init_function, _1, opts);
+    //      at best do: ::boost::unit_test::unit_test_main( &bound_init_function, vargc, vargv.data() );
     
-    return ::boost::unit_test::unit_test_main( &init_function, argc, argv );
+    return ::boost::unit_test::unit_test_main( &init_function,
+					       vargv.size(),
+					       vargv.data() );
+  }
+  else if( parse_return_value  == 1){
+
+    //TODO: can I call the utf help message directly?
+    std::cout << "Detailed Benchmark ";
+    return ::boost::unit_test::unit_test_main( &init_function,
+					       vargv.size(),
+					       vargv.data() );
+
+      
   }
   else {
     return 1;
