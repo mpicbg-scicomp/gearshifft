@@ -4,18 +4,30 @@
 #include <array>
 #include <vector>
 #include <iostream>
-
+#include <algorithm>
 namespace gearshifft {
-  using Extents1D = std::array<unsigned,1>;
-  using Extents2D = std::array<unsigned,2>;
-  using Extents3D = std::array<unsigned,3>;
+  using Extents1D = std::array<size_t,1>;
+  using Extents2D = std::array<size_t,2>;
+  using Extents3D = std::array<size_t,3>;
   using Extents1DVec = std::vector< Extents1D >;
   using Extents2DVec = std::vector< Extents2D >;
   using Extents3DVec = std::vector< Extents3D >;
 
+  namespace interpret_as {
+    template<typename T_Extents>
+    T_Extents column_major(T_Extents e) {
+      return e;
+    }
+    template<typename T_Extents>
+    T_Extents row_major(T_Extents e) {
+      std::reverse(e.begin(), e.end());
+      return e;
+    }
+  }
+
   template<size_t NDim>
   inline
-  std::ostream& operator<<(std::ostream& os, const std::array<unsigned,NDim>& e) {
+  std::ostream& operator<<(std::ostream& os, const std::array<size_t,NDim>& e) {
     os << e[0];
     for(size_t k=1; k<NDim; ++k) {
       if(e[k]==0)
