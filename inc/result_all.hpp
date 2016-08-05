@@ -92,7 +92,7 @@ namespace gearshifft {
              << "\"" << complex  << "\"" << sep
              << "\"" << result.getPrecision() << "\"" << sep
              << result.getDim() << sep
-             << result.getDimKind() << sep
+             << "\"" << result.getDimKindStr() << "\"" << sep
              << result.getExtents()[0] << sep
              << result.getExtents()[1] << sep
              << result.getExtents()[2] << sep
@@ -136,7 +136,7 @@ namespace gearshifft {
              << ", "<<complex
              << ", "<<result.getPrecision()
              << ", Dim="<<result.getDim()
-             << ", Kind="<<result.getDimKind()
+             << ", Kind="<<result.getDimKindStr()<<" ("<<result.getDimKind()<<")"
              << ", Ext="<<result.getExtents()
              << std::endl;
           if(result.hasError()) {

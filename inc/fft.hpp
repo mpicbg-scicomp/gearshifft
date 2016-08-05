@@ -52,7 +52,7 @@ namespace gearshifft {
     template<typename T_Result, typename T_Vector, size_t NDim>
     void operator()(T_Result& result,
                     T_Vector& vec,
-                    const std::array<unsigned,NDim>& extents
+                    const std::array<size_t,NDim>& extents
       ) {
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             TFFT::IsComplex >::type;

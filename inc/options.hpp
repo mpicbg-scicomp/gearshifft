@@ -9,7 +9,7 @@ namespace gearshifft {
 
   /**
    * Extract and provide options given by command line arguments like extents,
-   * input files and verbosity.
+   * input files and verbosity. Is a singleton.
    */
   class Options {
 
@@ -25,6 +25,10 @@ namespace gearshifft {
     }
     const std::string& getOutputFile() const {
       return outputFile_;
+    }
+
+    const std::string& getDevice() const {
+      return device_;
     }
 
     void parseFile(const std::string& file);
@@ -50,6 +54,8 @@ namespace gearshifft {
   private:
     bool verbose_ = false;
     std::string outputFile_;
+    std::string device_;
+
     Extents1DVec vector1D_;
     Extents2DVec vector2D_;
     Extents3DVec vector3D_;
