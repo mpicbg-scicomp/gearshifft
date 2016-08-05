@@ -182,6 +182,10 @@ namespace gearshifft
         data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
       }
 
+      ~ClFFTImpl() {
+        destroy();
+      }
+
       /**
        * Returns allocated memory on device for FFT
        */
@@ -353,17 +357,23 @@ namespace gearshifft
       }
 
       void destroy() {
-        CHECK_CL( clFinish(queue_) );
-        CHECK_CL( clReleaseMemObject( data_ ) );
-        if(IsInplace==false)
-          CHECK_CL( clReleaseMemObject( data_transform_ ) );
-
-        CHECK_CL(clfftDestroyPlan( &plan_ ));
-        CHECK_CL( clReleaseCommandQueue( queue_ ) );
-        data_ = 0;
-        data_transform_ = 0;
-        plan_ = 0;
-        queue_ = 0;
+        if(queue_) {
+          CHECK_CL( clFinish(queue_) );
+          if( data_ ) {
+            CHECK_CL( clReleaseMemObject( data_ ) );
+            data_ = 0;
+            if(IsInplace==false && data_transform_){
+              CHECK_CL( clReleaseMemObject( data_transform_ ) );
+              data_transform_ = 0;
+            }
+          }
+          if(plan_) {
+            CHECK_CL(clfftDestroyPlan( &plan_ ));
+            plan_ = 0;
+          }
+          CHECK_CL( clReleaseCommandQueue( queue_ ) );
+          queue_ = 0;
+        }
       }
     };
 

@@ -186,6 +186,10 @@ namespace CuFFT {
       data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
     }
 
+    ~CuFFTImpl() {
+      destroy();
+    }
+
     /**
      * Returns allocated memory on device for FFT
      */
@@ -267,10 +271,18 @@ namespace CuFFT {
     }
 
     void destroy() {
-      CHECK_CUDA( cudaFree(data_) );
-      if(IsInplace==false)
-        CHECK_CUDA( cudaFree(data_transform_) );
-      CHECK_CUFFT( cufftDestroy(plan_) );
+      if(data_) {
+        CHECK_CUDA( cudaFree(data_) );
+        data_=nullptr;
+        if(IsInplace==false && data_transform_) {
+          CHECK_CUDA( cudaFree(data_transform_) );
+          data_transform_ = nullptr;
+        }
+      }
+      if(plan_) {
+        CHECK_CUFFT( cufftDestroy(plan_) );
+        plan_=0;
+      }
     }
   };
 
