@@ -268,13 +268,11 @@ namespace CuFFT {
 
     void malloc() {
       CHECK_CUDA(cudaMalloc(&data_, data_size_));
-      if(!data_) throw std::runtime_error("Could not allocate GPU input buffer.");
 
       if(IsInplace) {
         data_transform_ = reinterpret_cast<ComplexType*>(data_);
       }else{
         CHECK_CUDA(cudaMalloc(&data_transform_, data_transform_size_));
-        if(!data_transform_) throw std::runtime_error("Could not allocate GPU buffer for outplace transform.");
       }
     }
 
