@@ -9,8 +9,6 @@
 
 #include <array>
 
-/*?*/
-#include <boost/type_traits/function_traits.hpp>
 #include <boost/bind.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_suite.hpp>
