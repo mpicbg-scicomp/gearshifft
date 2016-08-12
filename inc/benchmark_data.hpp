@@ -28,7 +28,7 @@ namespace gearshifft {
   public:
     using ComplexType    = Real2D<RealType>;
     using BenchmarkDataT = BenchmarkData<RealType, Dimensions>;
-    using Extent         = std::array<unsigned, Dimensions>;
+    using Extent         = std::array<size_t, Dimensions>;
     using RealVector     = std::vector<RealType, boost::alignment::
                                        aligned_allocator<RealType,
                                                          alignof(RealType)> >;
@@ -47,14 +47,14 @@ namespace gearshifft {
 
     void copyTo(RealVector& vec) {
       vec.reserve(size_);
-      for( unsigned i : boost::counting_range(size_t(0), size_) ){
+      for( size_t i : boost::counting_range(size_t(0), size_) ){
         vec[i] = data_linear_[i];
       }
     }
 
     void copyTo(ComplexVector& vec) {
       vec.reserve(size_);
-      for( unsigned i : boost::counting_range(size_t(0), size_) ){
+      for( size_t i : boost::counting_range(size_t(0), size_) ){
         vec[i].x = data_linear_[i];
         vec[i].y = 0;
       }
@@ -65,7 +65,7 @@ namespace gearshifft {
       {
         double diff_sum = 0;
         double diff;
-        for( unsigned i : boost::counting_range(size_t(0), size_) ){
+        for( size_t i : boost::counting_range(size_t(0), size_) ){
           diff = sub<Normalize>(data,i);
           diff_sum += diff*diff;
         }
@@ -75,7 +75,7 @@ namespace gearshifft {
   private:
 
     template<bool Normalize>
-    constexpr double sub(const ComplexVector& vector, unsigned i) const {
+    constexpr double sub(const ComplexVector& vector, size_t i) const {
       if(Normalize)
         return 1.0/size_ * (vector[i].x) - data_linear_[i];
       else
@@ -83,7 +83,7 @@ namespace gearshifft {
     }
 
     template<bool Normalize>
-    constexpr double sub(const RealVector& vector, unsigned i) const {
+    constexpr double sub(const RealVector& vector, size_t i) const {
       if(Normalize)
         return 1.0/size_ * (vector[i]) - data_linear_[i];
       else
@@ -95,13 +95,13 @@ namespace gearshifft {
         if(extents_ == extents) // nothing changed
           return;
         extents_ = extents;
-        size_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<unsigned>());
+        size_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<size_t>());
 
         srand(2016); // seed for random number stream
 
         // allocate variables for all test cases
         data_linear_.resize(size_);
-        for( unsigned i : boost::counting_range(size_t(0), size_) )
+        for( size_t i : boost::counting_range(size_t(0), size_) )
         {
           data_linear_[i] = 1.0*rand()/RAND_MAX;
         }

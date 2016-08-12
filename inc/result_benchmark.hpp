@@ -18,7 +18,7 @@ namespace gearshifft
     using ValuesT = std::array<std::array<double, T_NumberValues >, T_NumberRuns >;
 
     template<bool isComplex, bool isInplace, size_t T_NDim>
-    void init(const std::array<unsigned, T_NDim>& ce, const char* precision) {
+    void init(const std::array<size_t, T_NDim>& ce, const char* precision) {
       total_ = 1;
       for(auto i=0; i<T_NDim; ++i) {
         extents_[i] = ce[i];
@@ -37,24 +37,19 @@ namespace gearshifft
     /**
      * @retval 1 arbitrary extents
      * @retval 2 power-of-two extents
-     * @retval 3 combination of powers of (3,5,7) {3^r * 5^s * 7^t}
+     * @retval 3 extents are combination of powers of (3,5,7) {3^r * 5^s * 7^t}
      */
     size_t computeDimkind() {
       bool p2=true;
-      for( unsigned k=0; k<dim_; ++k)
+      for( size_t k=0; k<dim_; ++k ) {
         p2 &= powerOf(extents_[k], 2.0);
+      }
       if(p2)
         return 2;
-      for(unsigned k=0; k<dim_; ++k) {
-        unsigned e = extents_[k];
-        unsigned sqr = static_cast<unsigned>(sqrt(e));
-        for( unsigned k=2; k<=sqr; k+=1 ) {
-          while( e%k == 0 ) {
-            e /= k;
-          }
-        }
-        if(e>7)
+      for( size_t k=0; k<dim_; ++k ) {
+        if( isNotOnlyDivBy_2_3_5_7(extents_[k]) ){
           return 1;
+        }
       }
       return 3;
     }
@@ -92,7 +87,14 @@ namespace gearshifft
     std::string getPrecision() const { return precision_; }
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
-    std::array<unsigned,3> getExtents() const { return extents_; }
+    std::string getDimKindStr() const {
+      switch(dimkind_) {
+      case 1: return "oddshape";
+      case 2: return "powerof2";
+      case 3: return "radix357";
+      }
+    }
+    std::array<size_t,3> getExtents() const { return extents_; }
     size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }
     bool isComplex() const { return isComplex_; }
@@ -106,10 +108,10 @@ namespace gearshifft
     int run_ = 0;
     /// fft dimension
     size_t dim_ = 0;
-    /// extents are 1=Arbitrary, 2=PowerOfTwo, 3=PowerOfOther
+    /// extents are 1=Arbitrary, 2=PowerOfTwo, 3=CombRadix357
     size_t dimkind_ = 0;
     /// fft extents
-    std::array<unsigned,3> extents_ = { {1} };
+    std::array<size_t,3> extents_ = { {1} };
     /// all extents multiplied
     size_t total_ = 1;
     /// each run w values ( data[idx_run][idx_val] )
@@ -126,12 +128,27 @@ namespace gearshifft
     int errorRun_;
 
   private:
-    bool powerOf(unsigned e, double b) {
+    bool powerOf(size_t e, double b) {
       if(e==0)
         return false;
       double a = static_cast<double>(e);
       double p = floor(log(a)/log(b)+0.5);
       return fabs(pow(b,p)-a)<0.0001;
+    }
+
+    bool isNotOnlyDivBy_2_3_5_7(size_t e) {
+      size_t t = e;
+      size_t sqr = static_cast<size_t>(sqrt(e));
+      for( size_t d=2; d<=sqr; ++d ) {
+        // if e contains divisors > 7
+        if( e%d == 0 && d>7 )
+          return true;
+        // e = e / d^q
+        while( e%d == 0 ) {
+          e /= d;
+        }
+      }
+      return e==t || e>7; // e might be a prime or a divisor>7
     }
 
   };

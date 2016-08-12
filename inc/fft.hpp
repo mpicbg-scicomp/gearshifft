@@ -52,7 +52,7 @@ namespace gearshifft {
     template<typename T_Result, typename T_Vector, size_t NDim>
     void operator()(T_Result& result,
                     T_Vector& vec,
-                    const std::array<unsigned,NDim>& extents
+                    const std::array<size_t,NDim>& extents
       ) {
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             TFFT::IsComplex >::type;
@@ -61,60 +61,65 @@ namespace gearshifft {
       // prepare plan object
       // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
       auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
-      result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
-      result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
 
-      TimerCPU ttotal;
-      TimerCPU talloc;
-      TimerCPU tplaninit;
-      TimerCPU tplandestroy;
-      TDeviceTimer tdevupload;
-      TDeviceTimer tdevdownload;
-      TDeviceTimer tdevfft;
-      TDeviceTimer tdevfftinverse;
-      TDeviceTimer tdevtotal;
-      /// --- Total CPU ---
-      ttotal.startTimer();
-      /// --- Malloc ---
-      talloc.startTimer();
-      plan.malloc();
-      result.setValue(RecordType::Allocation, talloc.stopTimer());
+      try{
+        result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
+        result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
 
-      /// --- Create plan ---
-      tplaninit.startTimer();
-      plan.init_forward();
-      result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
+        TimerCPU ttotal;
+        TimerCPU talloc;
+        TimerCPU tplaninit;
+        TimerCPU tplandestroy;
+        TDeviceTimer tdevupload;
+        TDeviceTimer tdevdownload;
+        TDeviceTimer tdevfft;
+        TDeviceTimer tdevfftinverse;
+        TDeviceTimer tdevtotal;
+        /// --- Total CPU ---
+        ttotal.startTimer();
+        /// --- Malloc ---
+        talloc.startTimer();
+        plan.malloc();
+        result.setValue(RecordType::Allocation, talloc.stopTimer());
 
-      /// --- FFT+iFFT GPU ---
-      tdevtotal.startTimer();
+        /// --- Create plan ---
+        tplaninit.startTimer();
+        plan.init_forward();
+        result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
 
-      tdevupload.startTimer();
-      plan.upload(vec.data());
-      result.setValue(RecordType::Upload, tdevupload.stopTimer());
+        /// --- FFT+iFFT GPU ---
+        tdevtotal.startTimer();
 
-      tdevfft.startTimer();
-      plan.execute_forward();
-      result.setValue(RecordType::FFT, tdevfft.stopTimer());
+        tdevupload.startTimer();
+        plan.upload(vec.data());
+        result.setValue(RecordType::Upload, tdevupload.stopTimer());
 
-      plan.init_backward();
+        tdevfft.startTimer();
+        plan.execute_forward();
+        result.setValue(RecordType::FFT, tdevfft.stopTimer());
 
-      tdevfftinverse.startTimer();
-      plan.execute_backward();
-      result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
+        plan.init_backward();
 
-      tdevdownload.startTimer();
-      plan.download(vec.data());
-      result.setValue(RecordType::Download, tdevdownload.stopTimer());
+        tdevfftinverse.startTimer();
+        plan.execute_backward();
+        result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
 
-      result.setValue(RecordType::Device, tdevtotal.stopTimer());
+        tdevdownload.startTimer();
+        plan.download(vec.data());
+        result.setValue(RecordType::Download, tdevdownload.stopTimer());
 
+        result.setValue(RecordType::Device, tdevtotal.stopTimer());
 
-      /// --- Cleanup ---
-      tplandestroy.startTimer();
-      plan.destroy();
-      result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
+        /// --- Cleanup ---
+        tplandestroy.startTimer();
+        plan.destroy();
+        result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
+        result.setValue(RecordType::Total, ttotal.stopTimer());
 
-      result.setValue(RecordType::Total, ttotal.stopTimer());
+      }catch(const std::runtime_error& e){
+        plan.destroy();
+        throw e;
+      }
     }
   };
 

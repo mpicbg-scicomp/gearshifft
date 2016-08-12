@@ -10,11 +10,9 @@
 
 #ifndef CUDA_DISABLE_ERROR_CHECKING
 #define CHECK_CUDA(ans) gearshifft::CuFFT::check_cuda((ans), "", #ans, __FILE__, __LINE__)
-#define CHECK_CUFFT(ans) gearshifft::CuFFT::check_cufft((ans), #ans, __FILE__, __LINE__)
-#define CHECK_LAST(msg) gearshifft::CuFFT::check_cuda(cudaGetLastError(), msg, __FILE__, __LINE__)
+#define CHECK_LAST(msg) gearshifft::CuFFT::check_cuda(cudaGetLastError(), msg, "CHECK_LAST", __FILE__, __LINE__)
 #else
 #define CHECK_CUDA(ans) {}
-#define CHECK_CUFFT(ans) {}
 #define CHECK_LAST(msg) {}
 #endif
 
@@ -28,7 +26,6 @@ namespace CuFFT {
                    const char* func,
                    const char* file,
                    int line) {
-    cudaDeviceReset();
     throw std::runtime_error("CUDA error "
                              +std::string(msg)
                              +" "+std::string(error_string)
@@ -37,14 +34,6 @@ namespace CuFFT {
                              +":"+std::to_string(line)
                              +" "+std::string(func)
       );
-  }
-
-  inline
-  void check_cuda(cudaError_t code, const char* msg, const char *func, const char *file, int line) {
-    if (code != cudaSuccess) {
-      throw_error(static_cast<int>(code),
-                  cudaGetErrorString(code), msg, func, file, line);
-    }
   }
 
   static const char* cufftResultToString(cufftResult error) {
@@ -83,10 +72,17 @@ namespace CuFFT {
   }
 
   inline
-  void check_cufft(cufftResult code, const char *func, const char *file, int line) {
-    if(code) {
+  void check_cuda(cudaError_t code, const char* msg, const char *func, const char *file, int line) {
+    if (code != cudaSuccess) {
       throw_error(static_cast<int>(code),
-                  cufftResultToString(code), "cuFFT", func, file, line);
+                  cudaGetErrorString(code), msg, func, file, line);
+    }
+  }
+  inline
+  void check_cuda(cufftResult code, const char* msg,  const char *func, const char *file, int line) {
+    if (code != CUFFT_SUCCESS) {
+      throw_error(static_cast<int>(code),
+                  cufftResultToString(code), "cufft", func, file, line);
     }
   }
 
@@ -97,7 +93,7 @@ namespace CuFFT {
     int runtimeVersion = 0;
     int cufftv = 0;
     size_t f=0, t=0;
-    CHECK_CUFFT( cufftGetVersion(&cufftv) );
+    CHECK_CUDA( cufftGetVersion(&cufftv) );
     CHECK_CUDA( cudaRuntimeGetVersion(&runtimeVersion) );
     CHECK_CUDA( cudaGetDeviceProperties(&prop, dev) );
     CHECK_CUDA( cudaMemGetInfo(&f, &t) );
@@ -109,7 +105,7 @@ namespace CuFFT {
          << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
          << ", \"GPUClock [MHz]\", " << prop.clockRate/1000
          << ", \"CUDA Runtime\", " << runtimeVersion
-         << ", \"cuFFT\", " << cufftv
+         << ", \"cufft\", " << cufftv
       ;
     return info;
   }
