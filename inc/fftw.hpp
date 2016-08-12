@@ -1,6 +1,7 @@
 #ifndef FFTW_HPP_
 #define FFTW_HPP_
 
+#include "types.hpp"
 #include "application.hpp"
 #include "timer.hpp"
 #include "fft.hpp"
@@ -35,7 +36,64 @@ namespace gearshifft {
 
 	static void free(void* p) { fftw_free(p); }
       };
-    
+
+
+      //http://www.fftw.org/fftw3_doc/Usage-of-Multi_002dthreaded-FFTW.html
+      template <typename T>
+      struct thread_api {};
+
+      template <>
+      struct thread_api<double> {
+
+	
+	static int init_threads() {
+	  int res = fftw_init_threads();
+	  return res;
+	}
+
+	static void plan_with_threads(int nthreads = -1){
+
+	  int av_procs = std::thread::hardware_concurrency();
+	  
+	  if(nthreads<1 || nthreads>av_procs)
+	    nthreads = av_procs;
+
+	  fftw_plan_with_nthreads(nthreads);
+	    
+	}
+
+	static void cleanup_threads(){
+	  fftw_cleanup_threads();
+	}
+	
+      };
+
+      template <>
+      struct thread_api<float> {
+
+	
+	static int init_threads() {
+	  int res = fftwf_init_threads();
+	  return res;
+	}
+
+	static void plan_with_threads(int nthreads = -1){
+
+	  int av_procs = std::thread::hardware_concurrency();
+	  
+	  if(nthreads<1 || nthreads>av_procs)
+	    nthreads = av_procs;
+
+	  fftwf_plan_with_nthreads(nthreads);
+	    
+	}
+
+	static void cleanup_threads(){
+	  fftwf_cleanup_threads();
+	}
+	
+      };
+
     
       enum fftw_direction {
 	backward = FFTW_BACKWARD,
@@ -59,7 +117,7 @@ namespace gearshifft {
 	}
 
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     RealType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
@@ -71,7 +129,7 @@ namespace gearshifft {
 	}
 
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     ComplexType* _in,
 			     RealType* _out,
 			     fftw_direction _dir = forward){
@@ -82,7 +140,7 @@ namespace gearshifft {
 	}
 	
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     ComplexType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
@@ -93,7 +151,7 @@ namespace gearshifft {
 				_dir, FFTW_MEASURE );
 	}
 	// //1D
-	// static PlanType plan(const std::array<unsigned,1>& _shape,
+	// static PlanType plan(const std::array<std::size_t,1>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -103,7 +161,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }
       
-	// static PlanType plan(const std::array<unsigned,1>& _shape,
+	// static PlanType plan(const std::array<std::size_t,1>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -113,7 +171,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType plan(const std::array<unsigned,1>& _shape,
+	// static PlanType plan(const std::array<std::size_t,1>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -125,7 +183,7 @@ namespace gearshifft {
 	// }      
 
 	// //2D
-	// static PlanType plan(const std::array<unsigned,2>& _shape,
+	// static PlanType plan(const std::array<std::size_t,2>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -135,7 +193,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }
       
-	// static PlanType plan(const std::array<unsigned,2>& _shape,
+	// static PlanType plan(const std::array<std::size_t,2>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -145,7 +203,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType plan(const std::array<unsigned,2>& _shape,
+	// static PlanType plan(const std::array<std::size_t,2>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -157,7 +215,7 @@ namespace gearshifft {
 	// }
 
 	// //3D      
-	// static PlanType plan(const std::array<unsigned,3>& _shape,
+	// static PlanType plan(const std::array<std::size_t,3>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -167,7 +225,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }
       
-	// static PlanType plan(const std::array<unsigned,3>& _shape,
+	// static PlanType plan(const std::array<std::size_t,3>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -177,7 +235,7 @@ namespace gearshifft {
 	// 			    _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType plan(const std::array<unsigned,3>& _shape,
+	// static PlanType plan(const std::array<std::size_t,3>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -208,7 +266,7 @@ namespace gearshifft {
 
 	// //ND
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     RealType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
@@ -220,7 +278,7 @@ namespace gearshifft {
 	}
 
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     ComplexType* _in,
 			     RealType* _out,
 			     fftw_direction _dir = forward){
@@ -231,7 +289,7 @@ namespace gearshifft {
 	}
 	
 	template <size_t NDims>
-	static PlanType create(const std::array<unsigned,NDims>& _shape,
+	static PlanType create(const std::array<std::size_t,NDims>& _shape,
 			     ComplexType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
@@ -243,7 +301,7 @@ namespace gearshifft {
 	}
 	
 	//1D
-	// static PlanType create(const std::array<unsigned,1>& _shape,
+	// static PlanType create(const std::array<std::size_t,1>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out ,
 	// 		     fftw_direction _dir = forward){
@@ -254,7 +312,7 @@ namespace gearshifft {
 	// 			   FFTW_MEASURE );
 	// }
       
-	// static PlanType create(const std::array<unsigned,1>& _shape,
+	// static PlanType create(const std::array<std::size_t,1>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -264,7 +322,7 @@ namespace gearshifft {
 	// 			   _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType create(const std::array<unsigned,1>& _shape,
+	// static PlanType create(const std::array<std::size_t,1>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -276,7 +334,7 @@ namespace gearshifft {
 	// }      
 
 	// //2D
-	// static PlanType create(const std::array<unsigned,2>& _shape,
+	// static PlanType create(const std::array<std::size_t,2>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -286,7 +344,7 @@ namespace gearshifft {
 	// 			   _out, FFTW_MEASURE );
 	// }
       
-	// static PlanType create(const std::array<unsigned,2>& _shape,
+	// static PlanType create(const std::array<std::size_t,2>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -296,7 +354,7 @@ namespace gearshifft {
 	// 			   _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType create(const std::array<unsigned,2>& _shape,
+	// static PlanType create(const std::array<std::size_t,2>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -308,7 +366,7 @@ namespace gearshifft {
 	// }
 
 	// //3D      
-	// static PlanType create(const std::array<unsigned,3>& _shape,
+	// static PlanType create(const std::array<std::size_t,3>& _shape,
 	// 		     RealType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -318,7 +376,7 @@ namespace gearshifft {
 	// 			   _out, FFTW_MEASURE );
 	// }
       
-	// static PlanType create(const std::array<unsigned,3>& _shape,
+	// static PlanType create(const std::array<std::size_t,3>& _shape,
 	// 		     ComplexType* _in,
 	// 		     RealType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -328,7 +386,7 @@ namespace gearshifft {
 	// 			   _out, FFTW_MEASURE );
 	// }      
 
-	// static PlanType create(const std::array<unsigned,3>& _shape,
+	// static PlanType create(const std::array<std::size_t,3>& _shape,
 	// 		     ComplexType* _in,
 	// 		     ComplexType* _out,
 	// 		     fftw_direction _dir = forward){
@@ -386,7 +444,7 @@ namespace gearshifft {
       //////////////////////////////////////////////////////////////////////////////////////
       // COMPILE TIME FIELDS
     
-      using Extent = std::array<unsigned,(int)NDim>;
+      using Extent = std::array<std::size_t,(int)NDim>;
       using Api  = typename traits::plan<TPrecision>;
       using ComplexType = typename traits::plan<TPrecision>::ComplexType;
       using RealType = typename traits::plan<TPrecision>::RealType;
@@ -425,13 +483,15 @@ namespace gearshifft {
       FftwImpl(const Extent& cextents)
 	: n_(0),
 	  n_padded_(0),
-	  extents_(cextents),
+	  extents_(),
 	  plan_(),
 	  data_(nullptr),
 	  data_transform_(nullptr),
 	  data_size_(0),
 	  data_transform_size_(0)
       {
+	extents_ = interpret_as::column_major(cextents);
+	
 	n_ = std::accumulate(extents_.begin(),
 			     extents_.end(),
 			     1,
@@ -441,8 +501,15 @@ namespace gearshifft {
 
 	data_size_ = ( Padding ? 2*n_padded_ : n_ ) * sizeof(value_type);
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+
+	traits::thread_api<TPrecision>::init_threads();
+	traits::thread_api<TPrecision>::plan_with_threads(-1);
       }
 
+      ~FftwImpl(){
+	traits::thread_api<TPrecision>::cleanup_threads();
+      }
+      
       /**
        * Returns allocated memory for FFT
        */
