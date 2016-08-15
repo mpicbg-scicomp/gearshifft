@@ -124,31 +124,39 @@ namespace gearshifft
       using Extent = std::array<size_t,NDim>;
       static constexpr auto IsInplace = TFFT::IsInplace;
       static constexpr auto IsComplex = TFFT::IsComplex;
-      static constexpr auto Padding = IsInplace && IsComplex==false;
+      static constexpr auto IsInplaceReal = IsInplace && IsComplex==false;
       static constexpr clfftDim FFTDim = NDim==1 ? CLFFT_1D : NDim==2 ? CLFFT_2D : CLFFT_3D;
       using RealOrComplexType = typename std::conditional<IsComplex,ComplexType,RealType>::type;
-
-      size_t n_;
-      size_t n_padded_;
 
       Context context_;
       cl_command_queue queue_ = 0;
       clfftPlanHandle plan_   = 0;
+      /// input buffer
       cl_mem data_            = 0;
-      cl_mem data_transform_  = 0; // intermediate buffer
+      /// intermediate output buffer (transformed input values)
+      cl_mem data_complex_    = 0;
+      /// data size of input buffer
       size_t data_size_       = 0;
-      size_t data_transform_size_ = 0;
+      /// data size of intermediate output buffer
+      size_t data_complex_size_ = 0;
 
-      size_t w;
-      size_t h;
-      size_t pitch;
-      size_t region[3] = {0};
-      size_t offset[3] = {0};
-      size_t strides[3] = {1};
-      std::array<size_t, 3> clLengths = {{0}};
-      size_t transform_strides[3] = {1};
-      size_t dist;
-      size_t transform_dist;
+      /// total length (product of extents)
+      size_t n_;
+      /// FFT extents
+      std::array<size_t, 3> extents_ = {{0}};
+      /// strides setting in input data, for clfft kernel
+      size_t strides_[3] = {1};
+      /// strides setting in output data, for clfft kernel
+      size_t strides_complex_[3] = {1};
+      /// total length of input values, for clfft kernel
+      size_t dist_;
+      /// total length of output values, for clfft kernel
+      size_t dist_complex_;
+      // for padding in memory transfers
+      size_t pitch_;
+      size_t region_[3] = {0};
+      size_t offset_[3] = {0};
+
 
       ClFFTImpl(const Extent& cextents) {
         cl_int err;
@@ -161,25 +169,42 @@ namespace gearshifft
         n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<size_t>());
 
         auto cl_extents = interpret_as::row_major(cextents);
-        std::copy(cl_extents.begin(), cl_extents.end(), clLengths.begin());
+        std::copy(cl_extents.begin(), cl_extents.end(), extents_.begin());
 
-        if(Padding){
-          n_padded_ = n_ / clLengths[0] * (clLengths[0]/2 + 1);
-          w      = clLengths[0] * sizeof(RealType);
-          h      = n_ / clLengths[0];
-          pitch  = (clLengths[0]/2+1) * sizeof(ComplexType);
-          region[0] = w; // in bytes
-          region[1] = h; // in counts (OpenCL1.1 is wrong here saying in bytes)
-          region[2] = 1; // in counts (same)
-          strides[1] = 2*(clLengths[0]/2+1);
-          strides[2] = 2 * n_padded_ / clLengths[NDim-1];
-          transform_strides[1] = clLengths[0]/2+1;
-          transform_strides[2] = n_padded_ / clLengths[NDim-1];
-          dist = 2 * n_padded_;
-          transform_dist = n_padded_;
+        size_t n_half = n_ / extents_[0] * (extents_[0]/2 + 1);
+
+        // strides_ for clfft kernel, if less than 3D, strides_ will be ignored
+        if(IsInplaceReal) {
+          strides_[1] = 2 * (extents_[0]/2+1);
+          strides_[2] = 2 * n_half / extents_[NDim-1];
+          dist_       = 2 * n_half;
+        }else{
+          strides_[1] = extents_[0];
+          strides_[2] = n_ / extents_[NDim-1];
+          dist_       = n_;
         }
-        data_size_ = ( Padding ? 2*n_padded_*sizeof(RealType) : n_ * sizeof(RealOrComplexType) );
-        data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+
+        if(IsComplex==false){
+          strides_complex_[1] = extents_[0]/2+1;
+          strides_complex_[2] = n_half / extents_[NDim-1];
+          dist_complex_       = n_half;
+        }else{ // Complex, inplace, outplace
+          strides_complex_[1] = extents_[0];
+          strides_complex_[2] = n_ / extents_[NDim-1];
+          dist_complex_       = n_;
+        }
+        // if memory transfer must pad reals
+        if(IsInplaceReal && NDim>1) {
+          size_t width  = extents_[0] * sizeof(RealType);
+          size_t height = n_ / extents_[0];
+          pitch_ = (extents_[0]/2+1) * sizeof(ComplexType);
+          region_[0] = width; // in bytes
+          region_[1] = height; // in counts (OpenCL1.1 is wrong here speaking of bytes)
+          region_[2] = 1; // in counts (same)
+        }
+
+        data_size_ = dist_ * sizeof(RealOrComplexType);
+        data_complex_size_ = ( IsInplace ? 0 : IsComplex ? n_ : n_half ) * sizeof(ComplexType);
       }
 
       ~ClFFTImpl() {
@@ -187,10 +212,17 @@ namespace gearshifft
       }
 
       /**
+       * Returns data to be transfered to and from device for FFT
+       */
+      size_t getTransferSize() {
+        return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
+      }
+
+      /**
        * Returns allocated memory on device for FFT
        */
       size_t getAllocSize() {
-        return data_size_ + data_transform_size_;
+        return data_size_ + data_complex_size_;
       }
 
       /**
@@ -209,6 +241,9 @@ namespace gearshifft
 
       // --- next methods are benchmarked ---
 
+      /**
+       * Allocate buffers on OpenCL device
+       */
       void malloc() {
         cl_int err;
         data_ = clCreateBuffer( context_.ctx,
@@ -217,27 +252,27 @@ namespace gearshifft
                                 nullptr, // host pointer @todo
                                 &err );
         if(IsInplace==false){
-          data_transform_ = clCreateBuffer( context_.ctx,
-                                            CL_MEM_READ_WRITE,
-                                            data_transform_size_,
-                                            nullptr, // host pointer
-                                            &err );
+          data_complex_ = clCreateBuffer( context_.ctx,
+                                          CL_MEM_READ_WRITE,
+                                          data_complex_size_,
+                                          nullptr, // host pointer
+                                          &err );
         }
       }
 
-      // create FFT plan handle
+      /**
+       * Create clfft forward plan with layout, precision, strides and distances
+       */
       void init_forward() {
-        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths.data()));
+        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_.data()));
         CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
         CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
                                 traits::FFTLayout<IsComplex>::value_transformed));
         CHECK_CL(clfftSetResultLocation(plan_, traits::FFTInplace<IsInplace>::value));
-        if(Padding){
-          CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, strides));
-          CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, transform_strides));
-          CHECK_CL(clfftSetPlanDistance(plan_, dist, transform_dist));
-        }
+        CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, strides_));
+        CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, strides_complex_));
+        CHECK_CL(clfftSetPlanDistance(plan_, dist_, dist_complex_));
         CHECK_CL(clfftBakePlan(plan_,
                                1, // number of queues
                                &queue_,
@@ -245,21 +280,21 @@ namespace gearshifft
                                nullptr)); // user data
       }
 
-      // recreates plan if needed
+
+      /**
+       * If real-transform: create clfft backward plan with layout, precision, strides and distances
+       */
       void init_backward() {
         if(IsComplex==false){
           CHECK_CL(clfftDestroyPlan( &plan_ ));
-          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, clLengths.data()));
+          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_.data()));
           CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
           CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,
                                   traits::FFTLayout<IsComplex>::value));
-          if(Padding){
-            CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, strides));
-            CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, transform_strides));
-            CHECK_CL(clfftSetPlanDistance(plan_, transform_dist, dist));
-          }
-
+          CHECK_CL(clfftSetPlanOutStride(plan_, FFTDim, strides_));
+          CHECK_CL(clfftSetPlanInStride(plan_, FFTDim, strides_complex_));
+          CHECK_CL(clfftSetPlanDistance(plan_, dist_complex_, dist_));
           CHECK_CL(clfftBakePlan(plan_,
                                  1, // number of queues
                                  &queue_,
@@ -277,7 +312,7 @@ namespace gearshifft
                                        0, // waitEvents
                                        0, // outEvents
                                        &data_,  // input
-                                       IsInplace ? &data_ : &data_transform_, // output
+                                       IsInplace ? &data_ : &data_complex_, // output
                                        0)); // tmpBuffer
         CHECK_CL(clFinish(queue_));
       }
@@ -290,7 +325,7 @@ namespace gearshifft
                                        0, // numWaitEvents
                                        nullptr, // waitEvents
                                        nullptr, // outEvents
-                                       IsInplace ? &data_ : &data_transform_, // input
+                                       IsInplace ? &data_ : &data_complex_, // input
                                        &data_, // output
                                        nullptr)); // tmpBuffer
         CHECK_CL(clFinish(queue_));
@@ -298,14 +333,14 @@ namespace gearshifft
 
       template<typename THostData>
       void upload(THostData* input) {
-        if(Padding && NDim>1) {
+        if(IsInplaceReal && NDim>1) {
           CHECK_CL(clEnqueueWriteBufferRect( queue_,
                                              data_,
                                              CL_TRUE, // blocking_write
-                                             offset, // buffer origin
-                                             offset, // host origin
-                                             region,
-                                             pitch, // buffer row pitch
+                                             offset_, // buffer origin
+                                             offset_, // host origin
+                                             region_,
+                                             pitch_, // buffer row pitch
                                              0, // buffer slice pitch
                                              0, // host row pitch
                                              0, // host slice pitch
@@ -318,7 +353,7 @@ namespace gearshifft
                                          data_,
                                          CL_TRUE, // blocking_write
                                          0, // offset
-                                         Padding ? n_*sizeof(RealType) : data_size_,
+                                         getTransferSize(),
                                          input,
                                          0, // num_events_in_wait_list
                                          nullptr, // event_wait_list
@@ -328,14 +363,14 @@ namespace gearshifft
 
       template<typename THostData>
       void download(THostData* output) {
-        if(Padding && NDim>1) {
+        if(IsInplaceReal && NDim>1) {
           CHECK_CL(clEnqueueReadBufferRect( queue_,
                                             data_,
                                             CL_TRUE, // blocking_write
-                                            offset, // buffer origin
-                                            offset, // host origin
-                                            region,
-                                            pitch, // buffer row pitch
+                                            offset_, // buffer origin
+                                            offset_, // host origin
+                                            region_,
+                                            pitch_, // buffer row pitch
                                             0, // buffer slice pitch
                                             0, // host row pitch
                                             0, // host slice pitch
@@ -348,7 +383,7 @@ namespace gearshifft
                                         data_,
                                         CL_TRUE, // blocking_write
                                         0, // offset
-                                        Padding ? n_*sizeof(RealType) : data_size_,
+                                        getTransferSize(),
                                         output,
                                         0, // num_events_in_wait_list
                                         nullptr, // event_wait_list
@@ -362,9 +397,9 @@ namespace gearshifft
           if( data_ ) {
             CHECK_CL( clReleaseMemObject( data_ ) );
             data_ = 0;
-            if(IsInplace==false && data_transform_){
-              CHECK_CL( clReleaseMemObject( data_transform_ ) );
-              data_transform_ = 0;
+            if(IsInplace==false && data_complex_){
+              CHECK_CL( clReleaseMemObject( data_complex_ ) );
+              data_complex_ = 0;
             }
           }
           if(plan_) {
