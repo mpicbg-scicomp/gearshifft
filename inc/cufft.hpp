@@ -184,7 +184,7 @@ namespace CuFFT {
     static constexpr
      bool IsComplex = TFFT::IsComplex;
     static constexpr
-     bool Padding = IsInplace && IsComplex==false && NDim>1;
+     bool IsInplaceReal = IsInplace && IsComplex==false;
     static constexpr
      cufftType FFTForward  = IsComplex ? Types::FFTComplex : Types::FFTForward;
     static constexpr
@@ -193,14 +193,13 @@ namespace CuFFT {
     using RealOrComplexType  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
     size_t n_;        // =[1]*..*[dim]
-    size_t n_padded_; // =[1]*..*[dim-1]*([dim]/2+1)
     Extent extents_;
 
     cufftHandle        plan_           = 0;
     RealOrComplexType* data_           = nullptr;
-    ComplexType*       data_transform_ = nullptr; // intermediate buffer
+    ComplexType*       data_complex_   = nullptr; // intermediate buffer
     size_t             data_size_;
-    size_t             data_transform_size_;
+    size_t             data_complex_size_;
     bool               use64bit_       = false;
 
     CuFFTImpl(const Extent& cextents) {
@@ -209,14 +208,13 @@ namespace CuFFT {
                            extents_.end(),
                            static_cast<size_t>(1),
                            std::multiplies<size_t>());
-      if(Padding)
-        n_padded_ = n_ / extents_[NDim-1] * (extents_[NDim-1]/2 + 1);
+      size_t n_half = n_ / extents_[NDim-1] * (extents_[NDim-1]/2 + 1);
 
-      data_size_ = ( Padding ? 2*n_padded_ : n_ ) * sizeof(RealOrComplexType);
-      data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+      data_size_ = ( IsInplaceReal ? 2*n_half : n_ ) * sizeof(RealOrComplexType);
+      data_complex_size_ = ( IsInplace ? 0 : IsComplex ? n_ : n_half ) * sizeof(ComplexType);
       // There are some additional restrictions when using 64-bit API of cufft
       // see http://docs.nvidia.com/cuda/cufft/#unique_1972991535
-      if(data_size_ >= (1ull<<32) || data_transform_size_ >= (1ull<<32))
+      if(data_size_ >= (1ull<<32) || data_complex_size_ >= (1ull<<32))
         use64bit_ = true;
     }
 
@@ -228,7 +226,14 @@ namespace CuFFT {
      * Returns allocated memory on device for FFT
      */
     size_t getAllocSize() {
-      return data_size_ + data_transform_size_;
+      return data_size_ + data_complex_size_;
+    }
+
+    /**
+     * Returns data to be transfered to and from device for FFT
+     */
+    size_t getTransferSize() {
+      return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
     }
 
     /**
@@ -255,7 +260,7 @@ namespace CuFFT {
       // check available GPU memory
       size_t mem_free=0, mem_tot=0;
       CHECK_CUDA( cudaMemGetInfo(&mem_free, &mem_tot) );
-      size_t wanted = std::max(size1,size2) + data_size_ + data_transform_size_;
+      size_t wanted = std::max(size1,size2) + data_size_ + data_complex_size_;
       if(mem_free<wanted) {
         std::stringstream ss;
         ss << mem_free << "<" << wanted << " (bytes)";
@@ -266,13 +271,16 @@ namespace CuFFT {
 
     // --- next methods are benchmarked ---
 
+    /**
+     * Allocate buffers on CUDA device
+     */
     void malloc() {
       CHECK_CUDA(cudaMalloc(&data_, data_size_));
 
       if(IsInplace) {
-        data_transform_ = reinterpret_cast<ComplexType*>(data_);
+        data_complex_ = reinterpret_cast<ComplexType*>(data_);
       }else{
-        CHECK_CUDA(cudaMalloc(&data_transform_, data_transform_size_));
+        CHECK_CUDA(cudaMalloc(&data_complex_, data_complex_size_));
       }
     }
 
@@ -297,43 +305,43 @@ namespace CuFFT {
     }
 
     void execute_forward() {
-      FFTExecuteForward()(plan_, data_, data_transform_);
+      FFTExecuteForward()(plan_, data_, data_complex_);
     }
 
     void execute_backward() {
-      FFTExecuteBackward()(plan_, data_transform_, data_);
+      FFTExecuteBackward()(plan_, data_complex_, data_);
     }
 
     template<typename THostData>
     void upload(THostData* input) {
-      if(Padding) { // real + inplace + ndim>1
+      if(IsInplaceReal && NDim>1) {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
         CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice));
       }else{
-        CHECK_CUDA(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice));
+        CHECK_CUDA(cudaMemcpy(data_, input, getTransferSize(), cudaMemcpyHostToDevice));
       }
     }
 
     template<typename THostData>
     void download(THostData* output) {
-      if(Padding) { // real + inplace + ndim>1
+      if(IsInplaceReal && NDim>1) {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
         CHECK_CUDA(cudaMemcpy2D(output, w, data_, pitch, w, h, cudaMemcpyDeviceToHost));
       }else{
-        CHECK_CUDA(cudaMemcpy(output, data_, data_size_, cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy(output, data_, getTransferSize(), cudaMemcpyDeviceToHost));
       }
     }
 
     void destroy() {
       CHECK_CUDA( cudaFree(data_) );
       data_=nullptr;
-      if(IsInplace==false && data_transform_) {
-        CHECK_CUDA( cudaFree(data_transform_) );
-        data_transform_ = nullptr;
+      if(IsInplace==false && data_complex_) {
+        CHECK_CUDA( cudaFree(data_complex_) );
+        data_complex_ = nullptr;
       }
       if(plan_) {
         CHECK_CUDA( cufftDestroy(plan_) );
