@@ -417,13 +417,14 @@ namespace gearshifft {
       }
 
       void create() {
-	//TODO: set number of threads
-      
+
+	traits::thread_api<TPrecision>::init_threads();
+	traits::thread_api<TPrecision>::plan_with_threads(-1);
+
       }
 
       void destroy() {
-      
-	//not needed
+	traits::thread_api<TPrecision>::cleanup_threads();
       }
     };
 
@@ -495,19 +496,17 @@ namespace gearshifft {
 	n_ = std::accumulate(extents_.begin(),
 			     extents_.end(),
 			     1,
-			     std::multiplies<unsigned>());
+			     std::multiplies<std::size_t>());
 	if(Padding)
 	  n_padded_ = n_ / extents_[NDim-1] * (extents_[NDim-1]/2 + 1);
 
 	data_size_ = ( Padding ? 2*n_padded_ : n_ ) * sizeof(value_type);
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
 
-	traits::thread_api<TPrecision>::init_threads();
-	traits::thread_api<TPrecision>::plan_with_threads(-1);
       }
 
       ~FftwImpl(){
-	traits::thread_api<TPrecision>::cleanup_threads();
+	
       }
       
       /**
@@ -536,15 +535,12 @@ namespace gearshifft {
 
       /**
        * Returns estimated allocated memory on device for FFT plan, accessing the plan size in fftw is impossible
-       
+       following @tdd11235813 advice:
+       getPlanSize() should return 0, Sizes of transform buffers are already returned by getAllocSize().
        */
       size_t getPlanSize() {
       
-	if(IsInplace)
-	  return data_size_;
-	else
-	  return data_size_ + data_transform_size_;
-	
+	return 0;
       }
 
       //////////////////////////////////////////////////////////////////////////////////////
@@ -575,16 +571,17 @@ namespace gearshifft {
       template<typename THostData>
       void upload(THostData* input) {
 
-	//TODO: unnecessary?
-      
+	      
 	// if(Padding) // real + inplace + ndim>1
 	// {
 	//   size_t w      = extents_[NDim-1] * sizeof(THostData);
 	//   size_t h      = n_ * sizeof(THostData) / w;
 	//   size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
-	//   CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice);
+	//   // CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice);
+	  
 	// }else{
-	//   CHECK_CUDA(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice);
+	  // CHECK_CUDA(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice);
+	std::copy(input,input+data_size_,data_);
 	// }
 
       
@@ -593,8 +590,7 @@ namespace gearshifft {
       template<typename THostData>
       void download(THostData* output) {
 
-	//TODO: unnecessary?
-      
+	std::copy(data_,data_+data_size_,output);
 	// if(Padding) // real + inplace + ndim>1
 	// {
 	//   size_t w      = extents_[NDim-1] * sizeof(THostData);

@@ -59,13 +59,13 @@ foreach(_COMPONENT IN LISTS FFTW_FIND_COMPONENTS)
 endforeach()
 
 #If environment variable FFTWDIR is specified, it has same effect as FFTW_ROOT
-if( NOT FFTW_ROOT AND (ENV{FFTWDIR} OR ENV{FFTW_ROOT}))
-  if(EXISTS ENV{FFTWDIR})
-    set( FFTW_ROOT $ENV{FFTWDIR} )
-  endif()
-  if(EXISTS ENV{FFTW_ROOT})
-    set( FFTW_ROOT $ENV{FFTW_ROOT} )
-  endif()
+if( NOT FFTW_ROOT AND (DEFINED ENV{FFTWDIR} OR DEFINED ENV{FFTW_ROOT}))
+  if(EXISTS "$ENV{FFTWDIR}/")                                          
+    set( FFTW_ROOT $ENV{FFTWDIR} )                                     
+  endif()                                                              
+  if( EXISTS "$ENV{FFTW_ROOT}/" )                                      
+    set( FFTW_ROOT $ENV{FFTW_ROOT} )                                   
+  endif()                                                              
 endif()
 
 # Check if we can use PkgConfig
