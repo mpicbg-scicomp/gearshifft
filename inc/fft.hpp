@@ -65,6 +65,7 @@ namespace gearshifft {
       try{
         result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
         result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
+        result.setValue(RecordType::DevTransferSize, plan.getTransferSize());
 
         TimerCPU ttotal;
         TimerCPU talloc;

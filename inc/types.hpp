@@ -59,6 +59,7 @@ namespace gearshifft {
     Total,
     DevBufferSize,
     DevPlanSize,
+    DevTransferSize,
     _NrRecords
   };
 
@@ -76,6 +77,7 @@ namespace gearshifft {
     case RecordType::Total: return os << "Time_Total [ms]";
     case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
     case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
+    case RecordType::DevTransferSize: return os << "Size_DeviceTransfer [bytes]";
     };
     return os << static_cast<int>(r);
   }
