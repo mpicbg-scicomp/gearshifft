@@ -1,6 +1,8 @@
 #ifndef FFTW_HPP_
 #define FFTW_HPP_
 
+#include <string.h>
+
 #include "types.hpp"
 #include "application.hpp"
 #include "timer.hpp"
@@ -418,13 +420,11 @@ namespace gearshifft {
 
       void create() {
 
-	traits::thread_api<TPrecision>::init_threads();
-	traits::thread_api<TPrecision>::plan_with_threads(-1);
 
       }
 
       void destroy() {
-	traits::thread_api<TPrecision>::cleanup_threads();
+	
       }
     };
 
@@ -450,7 +450,9 @@ namespace gearshifft {
       using ComplexType = typename traits::plan<TPrecision>::ComplexType;
       using RealType = typename traits::plan<TPrecision>::RealType;
       using PlanType = typename traits::plan<TPrecision>::PlanType;
-    
+
+      static_assert(NDim > 0 && NDim < 4, "[fftw.hpp]\treceived NDim not in [1,3], currently unsupported" );
+      
       // using FFTExecuteForward  = typename traits::plan::FFTExecuteForward;
       // using FFTExecuteBackward = typename traits::plan::FFTExecuteBackward;
 
@@ -476,8 +478,8 @@ namespace gearshifft {
       Extent extents_;
 
       PlanType			plan_           ;
-      value_type*		data_           = nullptr;
-      ComplexType*       	data_transform_ = nullptr; // intermediate buffer
+      value_type*		data_           ;
+      ComplexType*       	data_transform_ ; // intermediate buffer
       size_t             	data_size_;
       size_t             	data_transform_size_;
 
@@ -503,10 +505,15 @@ namespace gearshifft {
 	data_size_ = ( Padding ? 2*n_padded_ : n_ ) * sizeof(value_type);
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
 
+	traits::thread_api<TPrecision>::init_threads();
+	traits::thread_api<TPrecision>::plan_with_threads(-1);
+
       }
 
       ~FftwImpl(){
-	
+	destroy();
+
+	traits::thread_api<TPrecision>::cleanup_threads();
       }
       
       /**
@@ -543,6 +550,14 @@ namespace gearshifft {
 	return 0;
       }
 
+      /**
+       * Returns data to be transfered to and from device for FFT
+       */
+      size_t getTransferSize() {
+	return data_size_ + data_transform_size_;
+      }
+
+      
       //////////////////////////////////////////////////////////////////////////////////////
       // --- next methods are benchmarked ---
 
@@ -571,43 +586,70 @@ namespace gearshifft {
       template<typename THostData>
       void upload(THostData* input) {
 
-	      
-	// if(Padding) // real + inplace + ndim>1
-	// {
-	//   size_t w      = extents_[NDim-1] * sizeof(THostData);
-	//   size_t h      = n_ * sizeof(THostData) / w;
-	//   size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
-	//   // CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice);
+	
+	if(!IsInplace){
+	  memcpy(data_,input,sizeof(value_type)*data_size_);
+	}
+	else{
+	  const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
+	  const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
+	  const std::size_t max_x = extents_[NDim-1];
+	  const std::size_t padded_x = (extents_[NDim-1]/2)+1;
+	  std::size_t input_index = 0;
+	  std::size_t data_index = 0;
 	  
-	// }else{
-	  // CHECK_CUDA(cudaMemcpy(data_, input, data_size_, cudaMemcpyHostToDevice);
-	std::copy(input,input+data_size_,data_);
-	// }
+	  for(std::size_t z = 0;z < max_z;++z){
+	    for(std::size_t y = 0;y < max_y;++y){
+	      input_index = z*(max_y*max_x) + y*max_x;
+	      data_index = z*(max_y*padded_x) + y*padded_x;
 
-      
+	      memcpy(data_+data_index,
+		     input + input_index,
+		     max_x*sizeof(value_type));
+	      
+	    }
+	  }
+	}
       }
 
       template<typename THostData>
       void download(THostData* output) {
 
-	std::copy(data_,data_+data_size_,output);
-	// if(Padding) // real + inplace + ndim>1
-	// {
-	//   size_t w      = extents_[NDim-1] * sizeof(THostData);
-	//   size_t h      = n_ * sizeof(THostData) / w;
-	//   size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
-	//   CHECK_CUDA(cudaMemcpy2D(output, w, data_, pitch, w, h, cudaMemcpyDeviceToHost);
-	// }else{
-	//   CHECK_CUDA(cudaMemcpy(output, data_, data_size_, cudaMemcpyDeviceToHost);
-	// }
+
+	if(!IsInplace){
+	  memcpy(output,data_,sizeof(value_type)*data_size_);
+	}
+	else{
+	  const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
+	  const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
+	  const std::size_t max_x = extents_[NDim-1];
+	  const std::size_t padded_x = (extents_[NDim-1]/2)+1;
+	  std::size_t output_index = 0;
+	  std::size_t data_index = 0;
+	  
+	  for(std::size_t z = 0;z < max_z;++z){
+	    for(std::size_t y = 0;y < max_y;++y){
+	      output_index = z*(max_y*max_x) + y*max_x;
+	      data_index = z*(max_y*padded_x) + y*padded_x;
+	      memcpy(output+output_index,
+		     data_+data_index,
+		     max_x*sizeof(value_type));
+	    }
+	  }
+	}
+	
       }
 
       void destroy() {
 
-	traits::memory_api<TPrecision>::free(data_);
-	if(IsInplace==false)
+	if(data_)
+	  traits::memory_api<TPrecision>::free(data_);
+	data_ = nullptr;
+	
+	if(data_transform_)
 	  traits::memory_api<TPrecision>::free(data_transform_);
-
+	data_transform_ = nullptr;
+	
 	traits::plan<TPrecision>::destroy(plan_);
       
       }
