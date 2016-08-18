@@ -1,7 +1,7 @@
 #ifndef FFT_HPP_
 #define FFT_HPP_
 
-#include "timer.hpp"
+#include "timer_cpu.hpp"
 #include "traits.hpp"
 #include "types.hpp"
 
@@ -75,7 +75,7 @@ namespace gearshifft {
         TDeviceTimer tdevdownload;
         TDeviceTimer tdevfft;
         TDeviceTimer tdevfftinverse;
-        TDeviceTimer tdevtotal;
+        TimerCPU tdevtotal;
         /// --- Total CPU ---
         ttotal.startTimer();
         /// --- Malloc ---
@@ -125,4 +125,4 @@ namespace gearshifft {
   };
 
 }
-#endif /* FFT_ABSTRACT_HPP_ */
+#endif /* FFT_HPP_ */
