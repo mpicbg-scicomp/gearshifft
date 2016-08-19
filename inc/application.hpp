@@ -3,7 +3,7 @@
 
 #include "result_benchmark.hpp"
 #include "result_all.hpp"
-#include "timer.hpp"
+#include "timer_cpu.hpp"
 #include "types.hpp"
 
 #include <vector>

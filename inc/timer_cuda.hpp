@@ -1,7 +1,8 @@
-#ifndef TIMER_CUDA_H_
-#define TIMER_CUDA_H_
+#ifndef TIMER_CUDA_HPP_
+#define TIMER_CUDA_HPP_
 
 #include "cufft_helper.hpp"
+#include "timer.hpp"
 #include <cuda_runtime.h>
 
 namespace gearshifft {
@@ -36,5 +37,7 @@ namespace gearshifft {
     }
   };
 
+  typedef Timer<TimerCUDA_> TimerGPU;
+
 } // gearshifft
-#endif /* TIMER_CUDA_H_ */
+#endif /* TIMER_CUDA_HPP_ */
