@@ -396,7 +396,10 @@ namespace gearshifft {
       // create FFT plan handle
       void init_forward() {
 
-	
+	//Note: these calls clear the content of data_ et al
+	fwd_plan_ = traits::plan<TPrecision>::create(extents_, data_, data_transform_, traits::forward);
+	bwd_plan_ = traits::plan<TPrecision>::create(extents_, data_transform_, data_, traits::backward);//leave this here for now
+
       }
 
       // recreates plan if needed
@@ -437,9 +440,6 @@ namespace gearshifft {
 	  data_transform_ = (ComplexType*)traits::memory_api<TPrecision>::malloc(data_transform_size_);
 	}
 
-	//Note: these calls clear the content of data_ et al
-	fwd_plan_ = traits::plan<TPrecision>::create(extents_, data_, data_transform_, traits::forward);
-	bwd_plan_ = traits::plan<TPrecision>::create(extents_, data_transform_, data_, traits::backward);
 
 	
       }
