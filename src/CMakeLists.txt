@@ -41,7 +41,7 @@ if(CUDA_FOUND)
   list(APPEND FFTLIBS "cufft")
   message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
 else()
-  message("cuFFT benchmark disabled.")
+  message("<< cuFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ if(OPENCL_FOUND)
 endif()
 
 if(NOT CLFFT_FOUND)
-  message("clFFT benchmark disabled.")
+  message("<< clFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -73,18 +73,51 @@ if(HCFFT_FOUND)
 endif()
 
 if(NOT HCFFT_FOUND)
-  message("hcFFT benchmark disabled.")
+  message("<< hcFFT benchmark disabled.")
 endif()
 
-if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND))
-  message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
+#------------------------------------------------------------------------------
+# FFTW
+#------------------------------------------------------------------------------
+find_package(FFTW COMPONENTS float double)
+if(FFTW_FOUND)
+  include_directories(${FFTW_INCLUDE_DIR})
+  link_directories(${FFTW_LIBRARY_DIR})
+  list(APPEND FFTLIBS "fftw")
+  find_package(OpenMP)
+
+  foreach(_LIBSTEM IN LISTS FFTW_SERIAL_LIBS)
+    list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+  endforeach()
+
+  if(USE_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
+    foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+  endif()
+
+  if(USE_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
+    foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+
+  endif()
+
+  set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
+  message(">> FFTW -> " ${FFTW_LIBRARIES} " " ${FFTW_INCLUDES})
+else()
+  message("<< FFTW benchmark disabled.")
+endif()
+
+
+if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND OR FFTW_FOUND))
+  message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
 endif()
 
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
 #------------------------------------------------------------------------------
 function(add_exec Tlib)
-  message(">> Target: ${Tlib}")
   set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
   if (Tlib STREQUAL "cufft" OR DEV_TESTS STREQUAL "cufft")
@@ -94,6 +127,13 @@ function(add_exec Tlib)
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DOPENCL_ENABLED)
     set(LIBS ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
   endif()
+  if (Tlib STREQUAL "fftw")
+    set_target_properties(${PROJECT_EXEC}
+      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED ${PROJECT_EXEC_FLAGS}")
+    
+    set(LIBS ${LIBS} ${FFTW_LIBRARIES})
+  endif()
+
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
 endfunction()
