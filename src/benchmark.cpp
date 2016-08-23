@@ -39,7 +39,7 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Real,
                                Outplace_Complex>;
 using Precisions        = List<float, double>;
-using FFT_Is_Normalized = std::true_type;
+using FFT_Is_Normalized = std::false_type;
 #endif
 
 // ----------------------------------------------------------------------------

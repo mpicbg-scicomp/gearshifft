@@ -10,6 +10,7 @@
 #include "benchmark_suite.hpp"
 //#include "fftw_helper.hpp"
 
+#include <vector>
 #include <array>
 #include <thread>
 #include <sstream>
@@ -115,7 +116,11 @@ namespace gearshifft {
 	}
 
 	static void destroy(PlanType _plan){
-	  fftwf_destroy_plan(_plan);
+
+	  if(_plan)
+	    fftwf_destroy_plan(_plan);
+	  _plan = nullptr;
+	  
 	}
 
 	template <size_t NDims>
@@ -123,11 +128,17 @@ namespace gearshifft {
 			     RealType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
-	  return fftwf_plan_dft_r2c(NDims,
-				    (int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+	  
+	  PlanType value = fftwf_plan_dft_r2c(NDims,
+				    converted.data(),
 				    _in,
 				    _out,
 				    FFTW_MEASURE );
+	  return value;
 	}
 
 	template <size_t NDims>
@@ -135,10 +146,16 @@ namespace gearshifft {
 			     ComplexType* _in,
 			     RealType* _out,
 			     fftw_direction _dir = forward){
-	  return fftwf_plan_dft_c2r(NDims,
-				    (int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+
+	  PlanType value = fftwf_plan_dft_c2r(NDims,
+				    converted.data(),
 				    _in,
 				    _out, FFTW_MEASURE );
+	  return value;
 	}
 	
 	template <size_t NDims>
@@ -146,108 +163,19 @@ namespace gearshifft {
 			     ComplexType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
-	  return fftwf_plan_dft(NDims,
-				(int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+	  
+
+	  PlanType value = fftwf_plan_dft(NDims,
+				converted.data(),
 				_in,
 				_out,
 				_dir, FFTW_MEASURE );
+	  return value;
 	}
-	// //1D
-	// static PlanType plan(const std::array<std::size_t,1>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_r2c(1,
-	// 			    _shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }
-      
-	// static PlanType plan(const std::array<std::size_t,1>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_c2r(1,
-	// 			    _shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType plan(const std::array<std::size_t,1>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft(1,
-	// 			_shape[0],
-	// 			_in,
-	// 			_out,
-	// 			_dir, FFTW_MEASURE );
-	// }      
-
-	// //2D
-	// static PlanType plan(const std::array<std::size_t,2>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_r2c(2,
-	// 			    _shape[1],_shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }
-      
-	// static PlanType plan(const std::array<std::size_t,2>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_c2r(2,
-	// 			    _shape[1],_shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType plan(const std::array<std::size_t,2>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft(2,
-	// 			_shape[1],_shape[0],
-	// 			_in,
-	// 			_out,
-	// 			_dir, FFTW_MEASURE );
-	// }
-
-	// //3D      
-	// static PlanType plan(const std::array<std::size_t,3>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_r2c(3,
-	// 			    _shape[2],_shape[1],_shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }
-      
-	// static PlanType plan(const std::array<std::size_t,3>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft_c2r(3,
-	// 			    _shape[2],_shape[1],_shape[0],
-	// 			    _in,
-	// 			    _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType plan(const std::array<std::size_t,3>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftwf_plan_dft(3,
-	// 			_shape[2],_shape[1],_shape[0],
-	// 			_in,
-	// 			_out,
-	// 			_dir, FFTW_MEASURE );
-	// }
-	// //ND
 	
       };
 
@@ -263,7 +191,11 @@ namespace gearshifft {
 	}
 
 	static void destroy(PlanType _plan){
-	  fftw_destroy_plan(_plan);
+
+	  if(_plan)
+	    fftw_destroy_plan(_plan);
+	  _plan = nullptr;
+	  
 	}
 
 	// //ND
@@ -272,11 +204,18 @@ namespace gearshifft {
 			     RealType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
-	  return fftw_plan_dft_r2c(NDims,
-				    (int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+	  
+
+	  PlanType value = fftw_plan_dft_r2c(NDims,
+				    converted.data(),
 				    _in,
 				    _out,
 				    FFTW_MEASURE );
+	  return value;
 	}
 
 	template <size_t NDims>
@@ -284,10 +223,17 @@ namespace gearshifft {
 			     ComplexType* _in,
 			     RealType* _out,
 			     fftw_direction _dir = forward){
-	  return fftw_plan_dft_c2r(NDims,
-				    (int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+	  
+
+	  PlanType value = fftw_plan_dft_c2r(NDims,
+				    converted.data(),
 				    _in,
 				    _out, FFTW_MEASURE );
+	  return value;
 	}
 	
 	template <size_t NDims>
@@ -295,109 +241,20 @@ namespace gearshifft {
 			     ComplexType* _in,
 			     ComplexType* _out,
 			     fftw_direction _dir = forward){
-	  return fftw_plan_dft(NDims,
-				(int*)_shape.data(),
+
+	  std::array<int,NDims> converted;
+	  for(int i = 0;i < NDims;++i)
+	    converted[i] = _shape[i];
+	  
+
+	  PlanType value = fftw_plan_dft(NDims,
+				converted.data(),
 				_in,
 				_out,
 				_dir, FFTW_MEASURE );
+	  return value;
 	}
 	
-	//1D
-	// static PlanType create(const std::array<std::size_t,1>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out ,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_r2c(1,
-	// 			   _shape.data(),
-	// 			   _in,
-	// 			   _out,
-	// 			   FFTW_MEASURE );
-	// }
-      
-	// static PlanType create(const std::array<std::size_t,1>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_c2r(1,
-	// 			   _shape[0],
-	// 			   _in,
-	// 			   _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType create(const std::array<std::size_t,1>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft(1,
-	// 		       _shape[0],
-	// 		       _in,
-	// 		       _out,
-	// 		       _dir, FFTW_MEASURE );
-	// }      
-
-	// //2D
-	// static PlanType create(const std::array<std::size_t,2>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_r2c(2,
-	// 			   _shape[1],_shape[0],
-	// 			   _in,
-	// 			   _out, FFTW_MEASURE );
-	// }
-      
-	// static PlanType create(const std::array<std::size_t,2>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_c2r(2,
-	// 			   _shape[1],_shape[0],
-	// 			   _in,
-	// 			   _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType create(const std::array<std::size_t,2>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft(2,
-	// 		       _shape[1],_shape[0],
-	// 		       _in,
-	// 		       _out,
-	// 		       _dir, FFTW_MEASURE );
-	// }
-
-	// //3D      
-	// static PlanType create(const std::array<std::size_t,3>& _shape,
-	// 		     RealType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_r2c(3,
-	// 			   _shape[2],_shape[1],_shape[0],
-	// 			   _in,
-	// 			   _out, FFTW_MEASURE );
-	// }
-      
-	// static PlanType create(const std::array<std::size_t,3>& _shape,
-	// 		     ComplexType* _in,
-	// 		     RealType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft_c2r(3,
-	// 			   _shape[2],_shape[1],_shape[0],
-	// 			   _in,
-	// 			   _out, FFTW_MEASURE );
-	// }      
-
-	// static PlanType create(const std::array<std::size_t,3>& _shape,
-	// 		     ComplexType* _in,
-	// 		     ComplexType* _out,
-	// 		     fftw_direction _dir = forward){
-	//   return fftw_plan_dft(3,
-	// 		       _shape[2],_shape[1],_shape[0],
-	// 		       _in,
-	// 		       _out,
-	// 		       _dir, FFTW_MEASURE );
-	// }
       };
     }  // namespace traits
 
@@ -461,7 +318,7 @@ namespace gearshifft {
       static constexpr
       bool IsComplex = TFFT::IsComplex;
       static constexpr
-      bool Padding = IsInplace && IsComplex==false && NDim>1;
+      bool Padding = IsInplace && IsComplex==false;
 
       using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
     
@@ -474,10 +331,12 @@ namespace gearshifft {
       // RUNTIME TIME FIELDS
     
       size_t n_;        // =[1]*..*[dim]
-      size_t n_padded_; // =[1]*..*[dim-1]*([dim]/2+1)
+      size_t n_allocated_; // =[1]*..*[dim-1]*([dim]/2+1)
       Extent extents_;
+      Extent allocated_extents_;
 
-      PlanType			plan_           ;
+      PlanType			fwd_plan_           ;
+      PlanType			bwd_plan_           ;
       value_type*		data_           ;
       ComplexType*       	data_transform_ ; // intermediate buffer
       size_t             	data_size_;
@@ -485,24 +344,34 @@ namespace gearshifft {
 
       FftwImpl(const Extent& cextents)
 	: n_(0),
-	  n_padded_(0),
+	  n_allocated_(0),
 	  extents_(),
-	  plan_(),
+	  allocated_extents_(),
+	  fwd_plan_(nullptr),
+	  bwd_plan_(nullptr),
 	  data_(nullptr),
 	  data_transform_(nullptr),
 	  data_size_(0),
 	  data_transform_size_(0)
       {
 	extents_ = interpret_as::column_major(cextents);
+	allocated_extents_ = extents_;
 	
 	n_ = std::accumulate(extents_.begin(),
 			     extents_.end(),
 			     1,
 			     std::multiplies<std::size_t>());
-	if(Padding)
-	  n_padded_ = n_ / extents_[NDim-1] * (extents_[NDim-1]/2 + 1);
+	
+	if(Padding){
+	  allocated_extents_.back() = 2*(extents_.back()/2 + 1);
+	}
 
-	data_size_ = ( Padding ? 2*n_padded_ : n_ ) * sizeof(value_type);
+	n_allocated_ = std::accumulate(allocated_extents_.begin(),
+				     allocated_extents_.end(),
+				     1,
+				     std::multiplies<std::size_t>());
+
+	data_size_ = sizeof(value_type)*n_allocated_;
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
 
 	traits::thread_api<TPrecision>::init_threads();
@@ -511,6 +380,7 @@ namespace gearshifft {
       }
 
       ~FftwImpl(){
+	
 	destroy();
 
 	traits::thread_api<TPrecision>::cleanup_threads();
@@ -526,18 +396,14 @@ namespace gearshifft {
       // create FFT plan handle
       void init_forward() {
 
-	//NOTE: contents of data_ et al are overwritten by this call
-	plan_ = traits::plan<TPrecision>::create(extents_, data_, data_transform_, traits::forward);
+	
       }
 
       // recreates plan if needed
       void init_backward() {
 
-	traits::plan<TPrecision>::destroy(plan_);
+	
 
-	//NOTE: contents of data_ et al are overwritten by this call
-	plan_ = traits::plan<TPrecision>::create(extents_, data_, data_transform_, traits::backward);
-      
       }
 
       /**
@@ -564,44 +430,52 @@ namespace gearshifft {
       void malloc() {
 
 	data_ = (value_type*)traits::memory_api<TPrecision>::malloc(data_size_);
-      
 	if(IsInplace){
 	  data_transform_ = reinterpret_cast<ComplexType*>(data_);
 	}
 	else{
 	  data_transform_ = (ComplexType*)traits::memory_api<TPrecision>::malloc(data_transform_size_);
 	}
-		   
+
+	//Note: these calls clear the content of data_ et al
+	fwd_plan_ = traits::plan<TPrecision>::create(extents_, data_, data_transform_, traits::forward);
+	bwd_plan_ = traits::plan<TPrecision>::create(extents_, data_transform_, data_, traits::backward);
+
+	
       }
 
 
       void execute_forward() {
-	traits::plan<TPrecision>::execute(plan_);
+	
+	traits::plan<TPrecision>::execute(fwd_plan_);
+	
       }
 
       void execute_backward() {
-	traits::plan<TPrecision>::execute(plan_);
+
+	traits::plan<TPrecision>::execute(bwd_plan_);
       }
 
       template<typename THostData>
       void upload(THostData* input) {
 
 	
-	if(!IsInplace){
-	  memcpy(data_,input,sizeof(value_type)*data_size_);
+	if(!Padding){
+	  memcpy(data_,input,data_size_);
 	}
 	else{
 	  const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
 	  const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
 	  const std::size_t max_x = extents_[NDim-1];
-	  const std::size_t padded_x = (extents_[NDim-1]/2)+1;
+	  const std::size_t allocated_x = allocated_extents_[NDim-1];
+	  
 	  std::size_t input_index = 0;
 	  std::size_t data_index = 0;
 	  
 	  for(std::size_t z = 0;z < max_z;++z){
 	    for(std::size_t y = 0;y < max_y;++y){
 	      input_index = z*(max_y*max_x) + y*max_x;
-	      data_index = z*(max_y*padded_x) + y*padded_x;
+	      data_index = z*(max_y*allocated_x) + y*allocated_x;
 
 	      memcpy(data_+data_index,
 		     input + input_index,
@@ -615,22 +489,23 @@ namespace gearshifft {
       template<typename THostData>
       void download(THostData* output) {
 
-
-	if(!IsInplace){
-	  memcpy(output,data_,sizeof(value_type)*data_size_);
+	
+	if(!Padding){
+	  memcpy(output,data_,data_size_);
 	}
 	else{
 	  const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
 	  const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
 	  const std::size_t max_x = extents_[NDim-1];
-	  const std::size_t padded_x = (extents_[NDim-1]/2)+1;
+	  const std::size_t allocated_x = allocated_extents_[NDim-1];
+	  
 	  std::size_t output_index = 0;
 	  std::size_t data_index = 0;
 	  
 	  for(std::size_t z = 0;z < max_z;++z){
 	    for(std::size_t y = 0;y < max_y;++y){
 	      output_index = z*(max_y*max_x) + y*max_x;
-	      data_index = z*(max_y*padded_x) + y*padded_x;
+	      data_index = z*(max_y*allocated_x) + y*allocated_x;
 	      memcpy(output+output_index,
 		     data_+data_index,
 		     max_x*sizeof(value_type));
@@ -642,16 +517,23 @@ namespace gearshifft {
 
       void destroy() {
 
+		
 	if(data_)
 	  traits::memory_api<TPrecision>::free(data_);
 	data_ = nullptr;
 	
-	if(data_transform_)
+	if(data_transform_ && !IsInplace)
 	  traits::memory_api<TPrecision>::free(data_transform_);
 	data_transform_ = nullptr;
 	
-	traits::plan<TPrecision>::destroy(plan_);
-      
+	if(fwd_plan_)
+	  traits::plan<TPrecision>::destroy(fwd_plan_);
+	fwd_plan_ = nullptr;
+
+	if(bwd_plan_)
+	  traits::plan<TPrecision>::destroy(bwd_plan_);
+	bwd_plan_ = nullptr;
+
       }
     };
 
