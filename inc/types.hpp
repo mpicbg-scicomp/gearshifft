@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <complex>
+
 namespace gearshifft {
   using Extents1D = std::array<size_t,1>;
   using Extents2D = std::array<size_t,2>;
@@ -41,11 +43,14 @@ namespace gearshifft {
    * Basic 2D vector with template type.
    * Used for test data for complex FFTs
    */
+  // template<typename REAL>
+  // struct Real2D {
+  //   using type = REAL;
+  //   REAL x, y;
+  // };
+
   template<typename REAL>
-  struct Real2D {
-    using type = REAL;
-    REAL x, y;
-  };
+  using Real2D = std::complex<REAL>;
 
   enum struct RecordType {
     Device = 0,
