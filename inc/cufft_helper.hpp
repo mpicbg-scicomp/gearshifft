@@ -109,6 +109,17 @@ namespace CuFFT {
       ;
     return info;
   }
+
+  std::stringstream listCudaDevices() {
+    std::stringstream info;
+    int nrdev = 0;
+    CHECK_CUDA( cudaGetDeviceCount( &nrdev ) );
+    if(nrdev==0)
+      throw std::runtime_error("No CUDA capable device found");
+    for(int i=0; i<nrdev; ++i)
+      info << "\"ID\"," << i << "," << getCUDADeviceInformations(i).str() << std::endl;
+    return info;
+  }
 } // CuFFT
 } // gearshifft
 #endif

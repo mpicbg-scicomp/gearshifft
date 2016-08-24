@@ -1,7 +1,7 @@
 #ifndef FFT_HPP_
 #define FFT_HPP_
 
-#include "timer.hpp"
+#include "timer_cpu.hpp"
 #include "traits.hpp"
 #include "types.hpp"
 
@@ -56,72 +56,66 @@ namespace gearshifft {
       ) {
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             TFFT::IsComplex >::type;
-      assert(vec.data());
+      assert(vec.size());
 
       // prepare plan object
       // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
       auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
+      result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
+      result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
+      result.setValue(RecordType::DevTransferSize, plan.getTransferSize());
 
-      try{
-        result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
-        result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
+      TimerCPU ttotal;
+      TimerCPU talloc;
+      TimerCPU tplaninit;
+      TimerCPU tplandestroy;
+      TDeviceTimer tdevupload;
+      TDeviceTimer tdevdownload;
+      TDeviceTimer tdevfft;
+      TDeviceTimer tdevfftinverse;
+      TimerCPU tdevtotal;
+      /// --- Total CPU ---
+      ttotal.startTimer();
+      /// --- Malloc ---
+      talloc.startTimer();
+      plan.malloc();
+      result.setValue(RecordType::Allocation, talloc.stopTimer());
 
-        TimerCPU ttotal;
-        TimerCPU talloc;
-        TimerCPU tplaninit;
-        TimerCPU tplandestroy;
-        TDeviceTimer tdevupload;
-        TDeviceTimer tdevdownload;
-        TDeviceTimer tdevfft;
-        TDeviceTimer tdevfftinverse;
-        TDeviceTimer tdevtotal;
-        /// --- Total CPU ---
-        ttotal.startTimer();
-        /// --- Malloc ---
-        talloc.startTimer();
-        plan.malloc();
-        result.setValue(RecordType::Allocation, talloc.stopTimer());
+      /// --- Create plan ---
+      tplaninit.startTimer();
+      plan.init_forward();
+      result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
 
-        /// --- Create plan ---
-        tplaninit.startTimer();
-        plan.init_forward();
-        result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
+      /// --- FFT+iFFT GPU ---
+      tdevtotal.startTimer();
 
-        /// --- FFT+iFFT GPU ---
-        tdevtotal.startTimer();
+      tdevupload.startTimer();
+      plan.upload(vec.data());
+      result.setValue(RecordType::Upload, tdevupload.stopTimer());
 
-        tdevupload.startTimer();
-        plan.upload(vec.data());
-        result.setValue(RecordType::Upload, tdevupload.stopTimer());
+      tdevfft.startTimer();
+      plan.execute_forward();
+      result.setValue(RecordType::FFT, tdevfft.stopTimer());
 
-        tdevfft.startTimer();
-        plan.execute_forward();
-        result.setValue(RecordType::FFT, tdevfft.stopTimer());
+      plan.init_backward();
 
-        plan.init_backward();
+      tdevfftinverse.startTimer();
+      plan.execute_backward();
+      result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
 
-        tdevfftinverse.startTimer();
-        plan.execute_backward();
-        result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
+      tdevdownload.startTimer();
+      plan.download(vec.data());
+      result.setValue(RecordType::Download, tdevdownload.stopTimer());
 
-        tdevdownload.startTimer();
-        plan.download(vec.data());
-        result.setValue(RecordType::Download, tdevdownload.stopTimer());
+      result.setValue(RecordType::Device, tdevtotal.stopTimer());
 
-        result.setValue(RecordType::Device, tdevtotal.stopTimer());
-
-        /// --- Cleanup ---
-        tplandestroy.startTimer();
-        plan.destroy();
-        result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
-        result.setValue(RecordType::Total, ttotal.stopTimer());
-
-      }catch(const std::runtime_error& e){
-        plan.destroy();
-        throw e;
-      }
+      /// --- Cleanup ---
+      tplandestroy.startTimer();
+      plan.destroy();
+      result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
+      result.setValue(RecordType::Total, ttotal.stopTimer());
     }
   };
 
 }
-#endif /* FFT_ABSTRACT_HPP_ */
+#endif /* FFT_HPP_ */

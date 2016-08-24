@@ -24,6 +24,8 @@ endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message(">> Setting up ${CMAKE_BUILD_TYPE} build")
 
 option(USE_CXX11_ABI "enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
+option(USE_FFTW_OPENMP "use OpenMP parallel fftw libraries if found" ON)
+option(USE_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" OFF)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if(${USE_CXX11_ABI})

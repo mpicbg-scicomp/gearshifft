@@ -30,6 +30,16 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Complex>;
 using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::true_type;
+
+#elif defined(FFTW_ENABLED)
+#include "fftw.hpp"
+using namespace gearshifft::fftw;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 #endif
 
 // ----------------------------------------------------------------------------
@@ -46,8 +56,12 @@ boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] )
 {
   // process extra command line arguments for gearshifft
   //  if error or help is shown then do not run any benchmarks
-  if( gearshifft::Options::getInstance().process(argc, argv) == 0 )
-    return instance();
-  else
+  if( gearshifft::Options::getInstance().process(argc, argv) == 0 ) {
+    if( gearshifft::Options::getInstance().getListDevices() ) {
+      std::cout << Context::getListDevices();
+      return nullptr;
+    }else
+      return instance();
+  }else
     return nullptr;
 }
