@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp> // iequals
+#include <boost/algorithm/string.hpp>
 
 namespace gearshifft
 {
@@ -69,6 +70,11 @@ namespace gearshifft
         return "ClFFT";
       }
 
+      static const std::string getListDevices() {
+        auto ss = listClDevices();
+        return ss.str();
+      }
+
       std::string getDeviceInfos() {
         assert(device_used);
         auto ss = getClDeviceInformations(device_used);
@@ -81,13 +87,26 @@ namespace gearshifft
         cl_device_type devtype = CL_DEVICE_TYPE_GPU;
         event = std::make_shared<cl_event>();
 
-        auto options_devtype = Options::getInstance().getDevice();
-        if(boost::iequals(options_devtype, "cpu")) // case insensitive compare
-          devtype = CL_DEVICE_TYPE_CPU;
-        else if(boost::iequals(options_devtype, "acc"))
-          devtype = CL_DEVICE_TYPE_ACCELERATOR;
+        const std::string options_devtype = Options::getInstance().getDevice();
+        std::regex e("^([0-9]+):([0-9]+)$");
+        if(std::regex_search(options_devtype, e)) {
+          std::vector<std::string> token;
+          boost::split(token, options_devtype, boost::is_any_of(":"));
+          unsigned long id_platform = std::stoul(token[0].c_str());
+          unsigned long id_device = std::stoul(token[1].c_str());
+          getPlatformAndDeviceByID(&platform, &device, id_platform, id_device);
+        }else{
+          if(boost::iequals(options_devtype, "cpu")) // case insensitive compare
+            devtype = CL_DEVICE_TYPE_CPU;
+          else if(boost::iequals(options_devtype, "acc"))
+            devtype = CL_DEVICE_TYPE_ACCELERATOR;
+          else if(boost::iequals(options_devtype, "gpu"))
+            devtype = CL_DEVICE_TYPE_GPU;
+          else
+            throw std::runtime_error("Unsupported device type");
+          findClDevice(devtype, &platform, &device);
+        }
 
-        findClDevice(devtype, &platform, &device);
         device_used = device;
         props[1] = (cl_context_properties)platform;
         ctx = clCreateContext( props, 1, &device, nullptr, nullptr, &err );
@@ -99,12 +118,14 @@ namespace gearshifft
 
       void destroy() {
         if(ctx) {
-          CHECK_CL(clReleaseEvent(*event));
+          // @todo crashes at ClFFT/double/2187x625x729/Outplace_Complex with INVALID_EVENT on K20Xm
+          //CHECK_CL(clReleaseEvent(*event));
           CHECK_CL(clReleaseContext( ctx ));
           CHECK_CL(clReleaseDevice(device));
           CHECK_CL( clfftTeardown( ) );
           device = 0;
           ctx = 0;
+          event.reset();
         }
       }
     };

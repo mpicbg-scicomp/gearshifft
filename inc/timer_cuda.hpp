@@ -11,6 +11,7 @@ namespace gearshifft {
     double time = 0.0;
     cudaEvent_t gpustart = 0;
     cudaEvent_t gpustop = 0;
+
     void startTimer() {
       if(gpustart==0){
         CHECK_CUDA(cudaEventCreate(&gpustart));
@@ -18,8 +19,11 @@ namespace gearshifft {
       if(gpustop==0){
         CHECK_CUDA(cudaEventCreate(&gpustop));
       }
+      // complete all issued CUDA calls
+      CHECK_CUDA( cudaDeviceSynchronize() );
       CHECK_CUDA( cudaEventRecord(gpustart) );
     }
+
     double stopTimer() {
       float milliseconds = 0;
       CHECK_CUDA(cudaEventRecord(gpustop));
@@ -27,6 +31,7 @@ namespace gearshifft {
       CHECK_CUDA(cudaEventElapsedTime(&milliseconds, gpustart, gpustop));
       return (time = static_cast<double>(milliseconds));
     }
+
     ~TimerCUDA_() {
       if(gpustart){
         CHECK_CUDA(cudaEventDestroy(gpustart));
