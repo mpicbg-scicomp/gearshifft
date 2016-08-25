@@ -1,6 +1,6 @@
-#include "benchmark_suite.hpp"
-#include "application.hpp"
-#include "options.hpp"
+#include "core/benchmark_suite.hpp"
+#include "core/application.hpp"
+#include "core/options.hpp"
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
@@ -12,7 +12,7 @@ using List = boost::mpl::list<Types...>;
 // ----------------------------------------------------------------------------
 
 #ifdef CUDA_ENABLED
-#include "cufft.hpp"
+#include "libraries/cufft/cufft.hpp"
 using namespace gearshifft::CuFFT;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
@@ -22,7 +22,7 @@ using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::false_type;
 
 #elif defined(OPENCL_ENABLED)
-#include "clfft.hpp"
+#include "libraries/clfft/clfft.hpp"
 using namespace gearshifft::ClFFT;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
@@ -32,7 +32,7 @@ using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::true_type;
 
 #elif defined(FFTW_ENABLED)
-#include "fftw.hpp"
+#include "libraries/fftw/fftw.hpp"
 using namespace gearshifft::fftw;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,

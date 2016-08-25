@@ -1,18 +1,19 @@
 #ifndef CLFFT_HPP_
 #define CLFFT_HPP_
 
-#include "application.hpp"
-#include "timer_opencl.hpp"
-#include "fft.hpp"
+#include "core/application.hpp"
+#include "core/timer_opencl.hpp"
+#include "core/fft.hpp"
+#include "core/traits.hpp"
+
 #include "clfft_helper.hpp"
-#include "traits.hpp"
 
 #include <clFFT.h>
 #include <array>
 #include <algorithm>
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp> // iequals
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string.hpp> // split, is_any_of
 
 namespace gearshifft
 {
