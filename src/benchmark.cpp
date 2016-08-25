@@ -56,8 +56,12 @@ boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] )
 {
   // process extra command line arguments for gearshifft
   //  if error or help is shown then do not run any benchmarks
-  if( gearshifft::Options::getInstance().process(argc, argv) == 0 )
-    return instance();
-  else
+  if( gearshifft::Options::getInstance().process(argc, argv) == 0 ) {
+    if( gearshifft::Options::getInstance().getListDevices() ) {
+      std::cout << Context::getListDevices();
+      return nullptr;
+    }else
+      return instance();
+  }else
     return nullptr;
 }

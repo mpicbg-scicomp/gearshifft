@@ -166,41 +166,98 @@ namespace gearshifft {
       return info;
     }
 
-/**
- *
- */
-    inline int findClDevice(cl_device_type devtype, cl_platform_id* platform, cl_device_id* device)
-    {
+    inline void findClDevice(cl_device_type devtype,
+                             cl_platform_id* platform,
+                             cl_device_id* device) {
       cl_uint num_of_platforms = 0, num_of_devices = 0;
       cl_device_id device_id = 0;
       if (clGetPlatformIDs(0, NULL, &num_of_platforms) != CL_SUCCESS)
-      {
-        std::cerr << "Unable to get platform_id" << std::endl;
-        return 1;
-      }
+        throw std::runtime_error("Unable to get platform_id");
+
       cl_platform_id *platform_ids = new cl_platform_id[num_of_platforms];
-      if (clGetPlatformIDs(num_of_platforms, platform_ids, NULL) != CL_SUCCESS)
-      {
-        std::cerr << "Unable to get platform_id" << std::endl;
+      if (clGetPlatformIDs(num_of_platforms, platform_ids, NULL) != CL_SUCCESS) {
         delete[] platform_ids;
-        return 1;
+        throw std::runtime_error("Unable to get platform id array");
       }
       bool found = false;
-      for(unsigned i=0; i<num_of_platforms; i++)
-        if(clGetDeviceIDs(platform_ids[i], devtype, 1, &device_id, &num_of_devices) == CL_SUCCESS){
+      for(cl_uint i=0; i<num_of_platforms; i++) {
+        if(clGetDeviceIDs(platform_ids[i],
+                          devtype,
+                          1,
+                          &device_id,
+                          &num_of_devices) == CL_SUCCESS){
           found = true;
           *platform = platform_ids[i];
           *device = device_id;
           break;
         }
-      if(!found){
+      }
+      delete[] platform_ids;
+      if(!found) {
         CHECK_CL(clGetPlatformIDs( 1, platform, NULL ));
         CHECK_CL(clGetDeviceIDs( *platform, CL_DEVICE_TYPE_DEFAULT, 1, device, NULL ));
       }
-      delete[] platform_ids;
-      return 0;
     }
 
+    inline std::stringstream listClDevices() {
+      cl_uint num_of_platforms = 0;
+      if (clGetPlatformIDs(0, NULL, &num_of_platforms) != CL_SUCCESS)
+        throw std::runtime_error("Unable to get platform_id");
+
+      cl_platform_id *platform_ids = new cl_platform_id[num_of_platforms];
+      if (clGetPlatformIDs(num_of_platforms, platform_ids, NULL) != CL_SUCCESS) {
+        delete[] platform_ids;
+        throw std::runtime_error("Unable to get platform id array");
+      }
+
+      std::stringstream info;
+      cl_uint num_of_devices = 0;
+      for(cl_uint i=0; i<num_of_platforms; i++) {
+        CHECK_CL( clGetDeviceIDs(platform_ids[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_of_devices) );
+        cl_device_id* devices = new cl_device_id[num_of_devices];
+        if(clGetDeviceIDs(platform_ids[i],
+                          CL_DEVICE_TYPE_ALL,
+                          num_of_devices,
+                          devices,
+                          NULL) != CL_SUCCESS) {
+          delete[] devices;
+          throw std::runtime_error("Unable to get devices");
+        }
+
+        for(cl_uint j=0; j<num_of_devices; ++j) {
+          info << "\"ID\"," << i << ":" << j << "," << getClDeviceInformations(devices[j]).str() << std::endl;
+        } // devices
+        delete[] devices;
+      } // platforms
+      delete[] platform_ids;
+      return info;
+    }
+
+    void getPlatformAndDeviceByID(cl_platform_id* platform_id,
+                                  cl_device_id* device_id,
+                                  cl_uint id_platform,
+                                  cl_uint id_device) {
+      assert(id_platform>=0);
+      assert(id_device>=0);
+      cl_uint num_of_platforms = 0;
+      if(clGetPlatformIDs(0, NULL, &num_of_platforms) != CL_SUCCESS)
+        throw std::runtime_error("Unable to get platform_id");
+      if(num_of_platforms <= id_platform)
+        throw std::runtime_error("Unable to get platform_id");
+
+      cl_platform_id *platform_ids = new cl_platform_id[id_platform+1];
+      CHECK_CL( clGetPlatformIDs(id_platform+1, platform_ids, NULL) );
+
+      cl_uint num_of_devices = 0;
+      CHECK_CL( clGetDeviceIDs(platform_ids[id_platform], CL_DEVICE_TYPE_ALL, 0, NULL, &num_of_devices) );
+      if(num_of_devices <= id_device)
+        throw std::runtime_error("Unable to get device_id");
+
+      cl_device_id* devices = new cl_device_id[id_device+1];
+      CHECK_CL( clGetDeviceIDs(platform_ids[id_platform], CL_DEVICE_TYPE_ALL, id_device+1, devices, NULL) );
+      *platform_id = platform_ids[id_platform];
+      *device_id   = devices[id_device];
+    }
   } // ClFFT
 } // gearshifft
 

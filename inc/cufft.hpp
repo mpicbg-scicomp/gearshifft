@@ -10,6 +10,7 @@
 #include <array>
 #include <cufft.h>
 #include <vector_types.h>
+#include <regex>
 
 namespace gearshifft {
 namespace CuFFT {
@@ -75,17 +76,30 @@ namespace CuFFT {
    */
   struct Context {
 
+    int device = 0;
+
     static const std::string title() {
       return "CuFFT";
     }
 
+    static std::string getListDevices() {
+      return listCudaDevices().str();
+    }
+
     std::string getDeviceInfos() {
-      auto ss = getCUDADeviceInformations(0);
+      auto ss = getCUDADeviceInformations(device);
       return ss.str();
     }
 
     void create() {
-      CHECK_CUDA(cudaSetDevice(0));
+      const std::string options_devtype = Options::getInstance().getDevice();
+      device = atoi(options_devtype.c_str());
+      int nrdev=0;
+      CHECK_CUDA(cudaGetDeviceCount(&nrdev));
+      assert(nrdev>0);
+      if(device<0 || device>=nrdev)
+        device = 0;
+      CHECK_CUDA(cudaSetDevice(device));
     }
 
     void destroy() {

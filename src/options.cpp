@@ -51,7 +51,8 @@ int Options::process(int argc, char* argv[]) {
      composing(), "file with extents (row-wise csv) [>=1 nr. of args possible]")
     ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file location")
     ("verbose,v", "for console output")
-    ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc). If device is not supported by FFT lib, then it is ignored and default is used.")
+    ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
+    ("list-devices,l", "List of available compute devices with IDs, if supported.")
     ;
 
   po::variables_map vm;
@@ -80,6 +81,11 @@ int Options::process(int argc, char* argv[]) {
       verbose_ = true;
     }else{
       verbose_ = false;
+    }
+    if( vm.count("list-devices")  ) {
+      listDevices_ = true;
+    }else{
+      listDevices_ = false;
     }
     // no file and no extent given, use default config
     if( !vm.count("file") && !vm.count("extent") ) {
