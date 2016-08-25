@@ -36,7 +36,7 @@ namespace gearshifft {
     void parseExtent( const std::string& extent );
 
     /// processes command line arguments and apply the values to the variables
-    int process(int argc, char* argv[]);
+    int parse(std::vector<char*>&);
 
     const Extents1DVec& getExtents1D() const {
       return vector1D_;

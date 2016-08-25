@@ -39,10 +39,19 @@ void Options::parseExtent( const std::string& extent ) {
   }
 }
 
-/// processes command line arguments and apply the values to the variables
-int Options::process(int argc, char* argv[]) {
+/**
+   \brief parse command line coming in through vector (future: and remove items already parsed except --help)
+
+   \param[in] _argv vector of pointers copied from the original argv of main
+
+   \return integer return code, 0 = success, 1 = help was found, 2 = error occurred
+   \retval 
+
+*/
+int Options::parse(std::vector<char*>& _argv) {
+  
   namespace po = boost::program_options;
-  po::options_description desc("Options");
+  po::options_description desc("gearshifft options and flags");
   desc.add_options()
     ("help,h", "Print help messages")
     ("extent,e", po::value<std::vector<std::string>>()->multitoken()->
@@ -55,13 +64,17 @@ int Options::process(int argc, char* argv[]) {
     ;
 
   po::variables_map vm;
-  try {
-    po::store(po::parse_command_line(argc, argv, desc),
-              vm); // can throw
+  try{
+
+    po::parsed_options parsed = po::command_line_parser(_argv.size(), _argv.data()// argc, argv
+							).options(desc).allow_unregistered().run();
+
+    po::store(parsed,
+              vm);
 
     if( vm.count("help")  ) {
-      std::cout << "gearshifft extra command line parameters" << std::endl
-                << desc << std::endl;
+      std::cout << desc << std::endl;
+      _argv.back() = "--help";//boost utf does not understand '-h', it will only print it's help message if --help is supplied
       return 1;
     }
     if( vm.count("file")  ) {
@@ -69,6 +82,7 @@ int Options::process(int argc, char* argv[]) {
       for( auto f : files ) {
         parseFile(f);
       }
+      //TODO: remove file 
     }
     if( vm.count("extent")  ) {
       auto extents = vm["extent"].as<std::vector<std::string> >();
@@ -96,9 +110,9 @@ int Options::process(int argc, char* argv[]) {
   }
   catch(po::error& e)
   {
-    std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+    std::cerr << "ERROR: " << e.what() << std::endl ;
     std::cerr << desc << std::endl;
-    return -1;
+    return 2;
   }
   return 0;
 }
