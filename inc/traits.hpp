@@ -38,7 +38,7 @@ namespace gearshifft {
   template<typename T, bool IsComplex>
   struct Precision;
   template<typename T>
-  struct Precision<T, true> { using type = typename T::type; };
+  struct Precision<T, true> { using type = typename T::value_type; };
   template<typename T>
   struct Precision<T, false> { using type = T; };
 }
