@@ -46,17 +46,17 @@ namespace gearshifft {
     }
 
     void copyTo(RealVector& vec) {
-      vec.reserve(size_);
+      vec.resize(size_);
       for( size_t i : boost::counting_range(size_t(0), size_) ){
         vec[i] = data_linear_[i];
       }
     }
 
     void copyTo(ComplexVector& vec) {
-      vec.reserve(size_);
+      vec.resize(size_);
       for( size_t i : boost::counting_range(size_t(0), size_) ){
-        vec[i].x = data_linear_[i];
-        vec[i].y = 0;
+        vec[i].real(data_linear_[i]);
+        vec[i].imag(0);
       }
     }
 
@@ -77,9 +77,9 @@ namespace gearshifft {
     template<bool Normalize>
     constexpr double sub(const ComplexVector& vector, size_t i) const {
       if(Normalize)
-        return 1.0/size_ * (vector[i].x) - data_linear_[i];
+        return 1.0/size_ * (vector[i].real()) - data_linear_[i];
       else
-        return static_cast<double>( vector[i].x - data_linear_[i] );
+        return static_cast<double>( vector[i].real() - data_linear_[i] );
     }
 
     template<bool Normalize>
