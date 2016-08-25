@@ -267,6 +267,10 @@ namespace gearshifft {
 	return "Fftw";
       }
 
+      static std::string getListDevices() {
+        return "CPU only";
+      }
+
       std::string getDeviceInfos() {
 	//obtain number of processors
       
