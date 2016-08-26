@@ -1,8 +1,8 @@
 #ifndef TIMER_OPENCL_HPP_
 #define TIMER_OPENCL_HPP_
 
-#include "clfft_helper.hpp"
 #include "application.hpp"
+#include "libraries/clfft/clfft_helper.hpp"
 #include <CL/cl.h>
 
 namespace gearshifft {

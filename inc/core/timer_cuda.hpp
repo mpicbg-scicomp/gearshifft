@@ -1,8 +1,8 @@
 #ifndef TIMER_CUDA_HPP_
 #define TIMER_CUDA_HPP_
 
-#include "cufft_helper.hpp"
 #include "timer.hpp"
+#include "libraries/cufft/cufft_helper.hpp"
 #include <cuda_runtime.h>
 
 namespace gearshifft {

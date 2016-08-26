@@ -1,15 +1,14 @@
 #ifndef FFTW_HPP_
 #define FFTW_HPP_
 
+
+#include "core/types.hpp"
+#include "core/application.hpp"
+#include "core/timer.hpp"
+#include "core/fft.hpp"
+#include "core/benchmark_suite.hpp"
+
 #include <string.h>
-
-#include "types.hpp"
-#include "application.hpp"
-#include "timer.hpp"
-#include "fft.hpp"
-#include "benchmark_suite.hpp"
-//#include "fftw_helper.hpp"
-
 #include <vector>
 #include <array>
 #include <thread>

@@ -1,11 +1,12 @@
 #ifndef CUFFT_HPP_
 #define CUFFT_HPP_
 
+#include "core/application.hpp"
+#include "core/timer_cuda.hpp"
+#include "core/fft.hpp"
+#include "core/traits.hpp"
+
 #include "cufft_helper.hpp"
-#include "application.hpp"
-#include "timer_cuda.hpp"
-#include "fft.hpp"
-#include "traits.hpp"
 
 #include <array>
 #include <cufft.h>
