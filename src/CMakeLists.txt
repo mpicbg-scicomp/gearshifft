@@ -104,7 +104,7 @@ if(FFTW_FOUND)
   endif()
 
   set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
-  message(">> FFTW -> " ${FFTW_LIBRARIES} " " ${FFTW_INCLUDES})
+  message(">> FFTW -> ${FFTW_LIBRARIES} ${FFTW_INCLUDES}")
 else()
   message("<< FFTW benchmark disabled.")
 endif()
