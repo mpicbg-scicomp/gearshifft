@@ -30,11 +30,16 @@ namespace gearshifft {
       return getInstance().context_;
     }
 
+    bool isContextCreated() const {
+      return context_created_;
+    }
+
     void createContext() {
       TimerCPU timer;
       timer.startTimer();
       context_.create();
       timeContextCreate_ = timer.stopTimer();
+      context_created_ = true;
     }
 
     void destroyContext() {
@@ -42,6 +47,7 @@ namespace gearshifft {
       timer.startTimer();
       context_.destroy();
       timeContextDestroy_ = timer.stopTimer();
+      context_created_ = false;
     }
 
     void addRecord(ResultT r) {
@@ -57,6 +63,7 @@ namespace gearshifft {
 
   private:
     T_Context context_;
+    bool context_created_ = false;
     ResultAllT resultAll_;
     ResultT result_;
     double timeContextCreate_ = 0.0;
@@ -66,19 +73,6 @@ namespace gearshifft {
     ~Application() = default;
   };
 
-  template<typename T_Context>
-  struct FixtureApplication {
-    using ApplicationT = Application<T_Context>;
-
-    FixtureApplication() {
-      ApplicationT::getInstance().createContext();
-    }
-    ~FixtureApplication() {
-      ApplicationT::getInstance().destroyContext();
-      ApplicationT::getInstance().dumpResults();
-    }
-  };
-
-}
+} // gearshifft
 
 #endif

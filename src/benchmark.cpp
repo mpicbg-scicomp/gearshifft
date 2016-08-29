@@ -1,15 +1,8 @@
-#include "core/benchmark_suite.hpp"
-#include "core/application.hpp"
-#include "core/options.hpp"
-
-#include <boost/test/included/unit_test.hpp>
-#include <boost/mpl/list.hpp>
-
-/// List alias
-template<typename... Types>
-using List = boost::mpl::list<Types...>;
+#include "core/benchmark.hpp"
 
 // ----------------------------------------------------------------------------
+template<typename... Types>
+using List = gearshifft::List<Types...>;
 
 #ifdef CUDA_ENABLED
 #include "libraries/cufft/cufft.hpp"
@@ -44,24 +37,17 @@ using FFT_Is_Normalized = std::false_type;
 
 // ----------------------------------------------------------------------------
 
-/// functor for gearshifft benchmarks
-gearshifft::Run<Context, FFT_Is_Normalized, FFTs, Precisions> instance;
-
-/// global application handler as global fixture
-using AppT = gearshifft::FixtureApplication<Context>;
-BOOST_GLOBAL_FIXTURE(AppT);
-
-/// called by Boost UTF
-boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] )
+int main( int argc, char* argv[] )
 {
-  // process extra command line arguments for gearshifft
-  //  if error or help is shown then do not run any benchmarks
-  if( gearshifft::Options::getInstance().process(argc, argv) == 0 ) {
-    if( gearshifft::Options::getInstance().getListDevices() ) {
-      std::cout << Context::getListDevices();
-      return nullptr;
-    }else
-      return instance();
-  }else
-    return nullptr;
+  try {
+    gearshifft::Benchmark<Context> benchmark;
+
+    benchmark.configure(argc, argv);
+    benchmark.run<FFT_Is_Normalized, FFTs, Precisions>();
+
+  }catch(const std::runtime_error& e){
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+  return 0;
 }

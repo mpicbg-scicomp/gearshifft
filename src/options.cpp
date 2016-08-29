@@ -40,9 +40,10 @@ void Options::parseExtent( const std::string& extent ) {
 }
 
 /// processes command line arguments and apply the values to the variables
-int Options::process(int argc, char* argv[]) {
+int Options::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) {
   namespace po = boost::program_options;
-  po::options_description desc("Options");
+
+  po::options_description desc("gearshifft options and flags");
   desc.add_options()
     ("help,h", "Print help messages")
     ("extent,e", po::value<std::vector<std::string>>()->multitoken()->
@@ -53,16 +54,20 @@ int Options::process(int argc, char* argv[]) {
     ("verbose,v", "for console output")
     ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
     ("list-devices,l", "List of available compute devices with IDs, if supported.")
+    ("list-benchmarks,b", "Show registered benchmarks")
+    ("run-benchmarks,r", po::value<std::string>(), "Run specific benchmarks (wildcards possible, e.g. ClFFT/float/*/Inplace_Real)")
     ;
 
   po::variables_map vm;
   try {
-    po::store(po::parse_command_line(argc, argv, desc),
-              vm); // can throw
+    po::parsed_options parsed
+      = po::command_line_parser( _argv.size(),
+                                 _argv.data()
+                               ).options(desc).allow_unregistered().run();
+    po::store(parsed, vm);
 
     if( vm.count("help")  ) {
-      std::cout << "gearshifft extra command line parameters" << std::endl
-                << desc << std::endl;
+      std::cout << desc << std::endl;
       return 1;
     }
     if( vm.count("file")  ) {
@@ -84,6 +89,7 @@ int Options::process(int argc, char* argv[]) {
     }
     if( vm.count("list-devices")  ) {
       listDevices_ = true;
+      return 1;
     }else{
       listDevices_ = false;
     }
@@ -98,13 +104,28 @@ int Options::process(int argc, char* argv[]) {
         parseExtent("32x32x32");
       }
     }
+
+    // use Boost command line arguments
+    if( vm.count("list-benchmarks") ){
+      _boost_vargv.emplace_back(const_cast<char*>("--list_content"));
+    }
+    if( vm.count("run-benchmarks") ){
+      // C / C++ string madness
+      std::string str = "--run_test=" + vm["run-benchmarks"].as<std::string>();
+      char* cstr = new char[str.size()+1];
+      str.copy(cstr, str.size());
+      cstr[str.size()] = '\0';
+      _boost_vargv.emplace_back( cstr );
+    }
+
     po::notify(vm);
   }
   catch(po::error& e)
   {
-    std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+    std::cerr << "ERROR: " << e.what() << std::endl;
     std::cerr << desc << std::endl;
-    return -1;
+    return 2;
   }
+
   return 0;
 }

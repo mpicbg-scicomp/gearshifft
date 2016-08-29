@@ -6,7 +6,7 @@
 #
 # To set manually the paths, define these environment variables:
 # OpenCL_INCPATH    - Include path (e.g. OpenCL_INCPATH=/opt/cuda/4.0/cuda/include)
-# OpenCL_LIBPATH    - Library path (e.h. OpenCL_LIBPATH=/usr/lib64/nvidia)
+# OpenCL_LIBPATH    - Library path (e.g. OpenCL_LIBPATH=/usr/lib64/nvidia)
 #
 # Once done this will define
 #  OPENCL_FOUND            - system has OpenCL
@@ -15,13 +15,9 @@
 #  OPENCL_HAS_CPP_BINDINGS - system has also cl.hpp
 
 # 0.2.0 added variables for our cluster environment
+# 0.3.0 further paths to find OpenCL
 
 FIND_PACKAGE(PackageHandleStandardArgs)
-
-SET (OPENCL_VERSION_STRING "0.2.0")
-SET (OPENCL_VERSION_MAJOR 0)
-SET (OPENCL_VERSION_MINOR 2)
-SET (OPENCL_VERSION_PATCH 0)
 
 IF (APPLE)
 
@@ -136,8 +132,8 @@ ELSE (APPLE)
 	ELSE (WIN32) # linux
   
   		IF (CYGWIN)
-    		SET (CMAKE_FIND_LIBRARY_SUFFIXES .lib)
-    		SET (OCL_LIB_SUFFIX .lib)
+                  SET (CMAKE_FIND_LIBRARY_SUFFIXES .lib)
+                  SET (OCL_LIB_SUFFIX .lib)
   		ENDIF (CYGWIN)
 
                 IF( NOT DEFINED OPENCL_ROOT AND DEFINED ENV{OPENCL_ROOT} )
@@ -152,9 +148,9 @@ ELSE (APPLE)
 
 		# Unix style platforms
 		FIND_LIBRARY(OPENCL_LIBRARIES OpenCL${OCL_LIB_SUFFIX}
-			PATHS ENV LD_LIBRARY_PATH 
-                        ENV OpenCL_LIBPATH 
-                        OPENCL_LIB
+                  PATHS ENV LD_LIBRARY_PATH
+                  PATHS ENV OpenCL_LIBPATH
+                  OPENCL_LIB
 		)
 
 		GET_FILENAME_COMPONENT(OPENCL_LIB_DIR ${OPENCL_LIBRARIES} PATH)
@@ -166,13 +162,13 @@ ELSE (APPLE)
 		FIND_PATH(OPENCL_INCLUDE_DIRS 
                   NAMES "cl.h"
                   PATHS ${_OPENCL_INC_CAND} 
-                  PATHS "/usr/local/cuda/include" 
-                  "/opt/AMDAPP/include" 
-                  ENV OpenCL_INCPATH
+                  PATHS "/usr/local/cuda/include"
+                  PATHS "/usr/cuda/include"
+                  PATHS "/opt/cuda/include"
+                  PATHS "/opt/AMDAPP/include"
+                  PATHS ENV OpenCL_INCPATH
                   PATHS ${OPENCL_INC}
                   PATH_SUFFIXES "CL")
-
-		FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include" ENV OpenCL_INCPATH OPENCL_INC)
 
 	ENDIF (WIN32)
 
