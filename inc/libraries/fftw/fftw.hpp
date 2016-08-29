@@ -81,6 +81,7 @@ namespace gearshifft {
 
 	static void plan_with_threads(int nthreads = -1){
 
+	  
 	  int av_procs = std::thread::hardware_concurrency();
 	  
 	  if(nthreads<1 || nthreads>av_procs)
@@ -267,20 +268,24 @@ namespace gearshifft {
       }
 
       static std::string getListDevices() {
-        return "CPU only";
+	int av_procs = std::thread::hardware_concurrency();
+	std::ostringstream msg;
+	msg << av_procs << "xCPU(s) detected\n";
+        return msg.str();
       }
 
       std::string getDeviceInfos() {
 	//obtain number of processors
       
 	std::ostringstream msg;
-	msg << std::thread::hardware_concurrency() << "xCPU";
+	msg << std::thread::hardware_concurrency() << "xCPU(s)";
 	return msg.str();
       }
 
       void create() {
-
-
+	
+	
+	
       }
 
       void destroy() {
@@ -378,7 +383,10 @@ namespace gearshifft {
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
 
 	traits::thread_api<TPrecision>::init_threads();
-	traits::thread_api<TPrecision>::plan_with_threads(-1);
+
+	
+	int plan_n_procs = n_procs_to_use();
+	traits::thread_api<TPrecision>::plan_with_threads(plan_n_procs);
 
       }
 
@@ -429,7 +437,18 @@ namespace gearshifft {
 	return data_size_ + data_transform_size_;
       }
 
-      
+      int n_procs_to_use() {
+
+	const std::string options_devtype = Options::getInstance().getDevice();
+	auto fitr = options_devtype.find('x');
+	int value = -1;
+	if(fitr != std::string::npos){
+	  std::string count_str = options_devtype.substr(0,fitr);
+	  value = stoi(count_str);
+	}
+
+	return value;
+      }
       //////////////////////////////////////////////////////////////////////////////////////
       // --- next methods are benchmarked ---
 
