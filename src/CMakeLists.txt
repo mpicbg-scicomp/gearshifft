@@ -12,50 +12,36 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message(FATAL_ERROR "${PROJECT_NAME} requires g++ 5.0 or greater.")
   endif()
   set(CMAKE_CXX_FLAGS "--std=gnu++14" ${CMAKE_CXX_FLAGS})
-  #gcc4.8+ uses dwarf-4. If you have gdb <7.0 then use this line
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
+  #gcc4.8+ uses dwarf-4. If you have gdb <7.5 then use this line
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
   #gdb 7.0-7.5 may require
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif()
 
-find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
-include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-set(PRECISION "" CACHE STRING "Specify precision [float,double].")
+set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
+if(DEV_TESTS)
+  message(">> Test mode")
+  add_definitions(-DDEV_TESTS)
+  set(TESTS tests.cpp)
+endif()
+
 #------------------------------------------------------------------------------
 # CUDA+CUFFT
 #------------------------------------------------------------------------------
-set(CUDA_CC "" CACHE STRING "Specify your CUDA ComputeCapability")
 find_package(CUDA)
 if(CUDA_FOUND)
   include(FindCUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    #for gcc5.x and cuda
-    list(APPEND CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED")
-  endif()
-  # --- CUDA device architectures ---
-  if(CUDA_CC)
-    message(">> Set CUDA gencode for ComputeCapability ${CUDA_CC}")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${CUDA_CC},code=sm_${CUDA_CC}")
-  else()
-    message(">> All CUDA gencodes are created")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_20,code=sm_20")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_30,code=sm_30")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_32,code=sm_32")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_35,code=sm_35")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_50,code=sm_50")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_52,code=sm_52")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=sm_53")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_53,code=compute_53")
-  endif(CUDA_CC)
   list(APPEND FFTLIBS "cufft")
   message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
 else()
-  message("cuFFT benchmark disabled.")
+  message("<< cuFFT benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
@@ -72,30 +58,82 @@ if(OPENCL_FOUND)
 endif()
 
 if(NOT CLFFT_FOUND)
-  message("clFFT benchmark disabled.")
+  message("<< clFFT benchmark disabled.")
 endif()
-if(NOT CLFFT_FOUND AND NOT CUDA_FOUND)
-  message(FATAL_ERROR "-> No FFT library for benchmark found !!!")
+
+#------------------------------------------------------------------------------
+# ROCM+HCFFT
+#------------------------------------------------------------------------------
+find_package(hcFFT)
+if(HCFFT_FOUND)
+  include_directories(${HCFFT_INCLUDE_DIRS})
+  list(APPEND FFTLIBS "hcfft")
+  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
+  message(">> Warning: no runner for hcfft implemented yet")
+endif()
+
+if(NOT HCFFT_FOUND)
+  message("<< hcFFT benchmark disabled.")
+endif()
+
+#------------------------------------------------------------------------------
+# FFTW
+#------------------------------------------------------------------------------
+find_package(FFTW COMPONENTS float double)
+if(FFTW_FOUND)
+  include_directories(${FFTW_INCLUDE_DIR})
+  link_directories(${FFTW_LIBRARY_DIR})
+  list(APPEND FFTLIBS "fftw")
+  find_package(OpenMP)
+
+  foreach(_LIBSTEM IN LISTS FFTW_SERIAL_LIBS)
+    list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+  endforeach()
+
+  if(USE_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
+    foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+  endif()
+
+  if(USE_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
+    foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+
+  endif()
+
+  set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
+  message(">> FFTW -> ${FFTW_LIBRARIES} ${FFTW_INCLUDES}")
+else()
+  message("<< FFTW benchmark disabled.")
+endif()
+
+
+if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND OR FFTW_FOUND))
+  message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
 endif()
 
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
 #------------------------------------------------------------------------------
-function(add_exec Tlib Ttype)
-  message(">> Target: ${Tlib} ${Ttype}")
-  set(PROJECT_EXEC ${PROJECT_NAME}_${Tlib}_${Ttype})
-  set(PROJECT_EXEC_FLAGS "-DBENCH_PRECISION=${Ttype} -DDEFAULT_RESULT_FILE=${PROJECT_EXEC}")
+function(add_exec Tlib)
+  set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
-  if (Tlib STREQUAL "cufft")
-    set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DCUDA_ENABLED ${PROJECT_EXEC_FLAGS}")
-    set(LIBS ${LIBS} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+  if (Tlib STREQUAL "cufft" OR DEV_TESTS STREQUAL "cufft")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DCUDA_ENABLED)
+    set(LIBS ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+  elseif(Tlib STREQUAL "clfft" OR DEV_TESTS STREQUAL "clfft")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DOPENCL_ENABLED)
+    set(LIBS ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
   endif()
-  if (Tlib STREQUAL "clfft")
+  if (Tlib STREQUAL "fftw")
     set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DOPENCL_ENABLED ${PROJECT_EXEC_FLAGS}")
-    set(LIBS ${LIBS} ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
+      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED ${PROJECT_EXEC_FLAGS}")
+    
+    set(LIBS ${LIBS} ${FFTW_LIBRARIES})
   endif()
+
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
 endfunction()
@@ -104,16 +142,16 @@ endfunction()
 #
 #------------------------------------------------------------------------------
 include_directories(../inc)
-set(SOURCES benchmark.cpp)
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
 
-foreach(FFTLIB ${FFTLIBS})
-  if(PRECISION)
-    add_exec(${FFTLIB} ${PRECISION})
-  else()
-    add_exec(${FFTLIB} "float")
-    add_exec(${FFTLIB} "double")
-  endif()
-endforeach()
+if(DEV_TESTS)
+  set(SOURCES ${TESTS})
+  add_exec("test")
+else()
+  set(SOURCES benchmark.cpp options.cpp)
+  foreach(FFTLIB ${FFTLIBS})
+    add_exec(${FFTLIB})
+  endforeach()
+endif()

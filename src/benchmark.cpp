@@ -1,35 +1,53 @@
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
+#include "core/benchmark.hpp"
 
-#include "application.hpp"
-#include "fixture_benchmark.hpp"
-
+// ----------------------------------------------------------------------------
+template<typename... Types>
+using List = gearshifft::List<Types...>;
 
 #ifdef CUDA_ENABLED
-//@todo measure init and reset time
-#include "cufft.hpp"
+#include "libraries/cufft/cufft.hpp"
+using namespace gearshifft::CuFFT;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_UNNORMALIZED_FFT(CuFFT,
-                                gearshifft::CuFFT::Context,
-                                gearshifft::CuFFT::Inplace_Real,
-                                gearshifft::CuFFT::Outplace_Real,
-                                gearshifft::CuFFT::Inplace_Complex,
-                                gearshifft::CuFFT::Outplace_Complex)
+#elif defined(OPENCL_ENABLED)
+#include "libraries/clfft/clfft.hpp"
+using namespace gearshifft::ClFFT;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::true_type;
 
+#elif defined(FFTW_ENABLED)
+#include "libraries/fftw/fftw.hpp"
+using namespace gearshifft::fftw;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex>;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 #endif
 
-#ifdef OPENCL_ENABLED
-#include "clfft.hpp"
+// ----------------------------------------------------------------------------
 
-// -- Execute Benchmarks --
-RUN_BENCHMARKS_NORMALIZED_FFT(ClFFT,
-                              gearshifft::ClFFT::Context,
-                              gearshifft::ClFFT::Inplace_Real,
-                              gearshifft::ClFFT::Outplace_Real,
-                              gearshifft::ClFFT::Inplace_Complex,
-                              gearshifft::ClFFT::Outplace_Complex
-                              )
+int main( int argc, char* argv[] )
+{
+  try {
+    gearshifft::Benchmark<Context> benchmark;
 
-#endif
+    benchmark.configure(argc, argv);
+    benchmark.run<FFT_Is_Normalized, FFTs, Precisions>();
 
+  }catch(const std::runtime_error& e){
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+  return 0;
+}
