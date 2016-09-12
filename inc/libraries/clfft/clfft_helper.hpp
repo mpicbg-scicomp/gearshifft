@@ -116,6 +116,13 @@ namespace gearshifft {
       }
     }
 
+    inline cl_ulong getMaxGlobalMemSize(cl_device_id dev_id) {
+      cl_ulong value = 0;
+      // print device name
+      CHECK_CL( clGetDeviceInfo(dev_id, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &value, NULL) );
+      return value;
+    }
+
     inline std::stringstream getClDeviceInformations(cl_device_id dev_id) {
       std::stringstream info;
       std::vector<std::pair<std::string,std::string> > values;
@@ -153,7 +160,10 @@ namespace gearshifft {
       // print parallel compute units
       clGetDeviceInfo(dev_id, CL_DEVICE_MAX_COMPUTE_UNITS,
                       sizeof(maxComputeUnits), &maxComputeUnits, NULL);
-      values.emplace_back("ComputeUnits", std::to_string(maxComputeUnits));
+      values.emplace_back("UsedComputeUnits", std::to_string(maxComputeUnits));
+
+      values.emplace_back("MaxGlobalMemSize", std::to_string( getMaxGlobalMemSize(dev_id) ));
+
       info << "\"ClFFT Informations\"";
       for(auto pair : values) {
         info << ",\"" << pair.first << "\",\"" << pair.second << '"';

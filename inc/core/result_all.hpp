@@ -55,19 +55,68 @@ namespace gearshifft {
         });
     }
 
+    void print(std::ostream& stream,
+               const std::string& apptitle,
+               const std::string& dev_infos,
+               double timerContextCreate,
+               double timerContextDestroy) {
+      std::stringstream ss;
+      ss << "; " << dev_infos << std::endl
+         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
+         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
+      ss << apptitle
+         << ", RunsPerBenchmark="<<T_NumberRuns
+         << std::endl;
+
+      for(auto& result : results_) {
+        int nruns = T_NumberRuns;
+        std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
+        std::string complex = result.isComplex() ? "Complex" : "Real";
+
+        ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
+        ss << inplace
+           << ", "<<complex
+           << ", "<<result.getPrecision()
+           << ", Dim="<<result.getDim()
+           << ", Kind="<<result.getDimKindStr()<<" ("<<result.getDimKind()<<")"
+           << ", Ext="<<result.getExtents()
+           << std::endl;
+        if(result.hasError()) {
+          ss << " Error at run="<<result.getErrorRun()
+             << ": "<<result.getError()
+             << std::endl;
+          nruns = result.getErrorRun()+1;
+        }
+        ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
+        ss << std::setfill(' ');
+        double sum;
+        for(int ival=0; ival<T_NumberValues; ++ival) {
+          sum = 0.0;
+          for(int run=0; run<nruns; ++run) {
+            result.setRun(run);
+            sum += result.getValue(ival);
+          }
+          ss << std::setw(28)
+            << static_cast<RecordType>(ival)
+             << ": " << std::setw(16) << sum/nruns
+             << " [avg]"
+             << std::endl;
+        }
+      }
+      stream << ss.str() << std::endl;
+    }
+
     /**
      * Store results in csv file.
      * If verbosity flag is set, then std::cout receives result view.
      */
-    void write(const std::string& apptitle,
-               const std::string& dev_infos,
-               double timerContextCreate,
-               double timerContextDestroy) {
-      std::string fname = Options::getInstance().getOutputFile();
+    void saveCSV(const std::string& fname,
+                 const std::string& apptitle,
+                 const std::string& dev_infos,
+                 double timerContextCreate,
+                 double timerContextDestroy) {
       std::ofstream fs;
       const char sep=',';
-
-      sort();
 
       fs.open(fname, std::ofstream::out);
       fs << "; " << dev_infos << std::endl
@@ -82,7 +131,7 @@ namespace gearshifft {
       fs << std::endl;
 
       // data
-      for(auto result : results_) {
+      for(auto& result : results_) {
         std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
         std::string complex = result.isComplex() ? "Complex" : "Real";
         for(auto run=0; run<T_NumberRuns; ++run) {
@@ -114,55 +163,6 @@ namespace gearshifft {
         } // run
       } // result
       fs.close();
-
-      // if verbosity flag then print results to std::cout
-      if(gearshifft::Options::getInstance().getVerbose())
-      {
-        std::stringstream ss;
-        ss << "; " << dev_infos << std::endl
-           << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
-           << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
-        ss << apptitle
-           << ", RunsPerBenchmark="<<T_NumberRuns
-           << std::endl;
-
-        for(auto result : results_) {
-          int nruns = T_NumberRuns;
-          std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
-          std::string complex = result.isComplex() ? "Complex" : "Real";
-
-          ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
-          ss << inplace
-             << ", "<<complex
-             << ", "<<result.getPrecision()
-             << ", Dim="<<result.getDim()
-             << ", Kind="<<result.getDimKindStr()<<" ("<<result.getDimKind()<<")"
-             << ", Ext="<<result.getExtents()
-             << std::endl;
-          if(result.hasError()) {
-            ss << " Error at run="<<result.getErrorRun()
-               << ": "<<result.getError()
-               << std::endl;
-            nruns = result.getErrorRun()+1;
-          }
-          ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
-          ss << std::setfill(' ');
-          double sum;
-          for(int ival=0; ival<T_NumberValues; ++ival) {
-            sum = 0.0;
-            for(int run=0; run<nruns; ++run) {
-              result.setRun(run);
-              sum += result.getValue(ival);
-            }
-            ss << std::setw(28)
-               << static_cast<RecordType>(ival)
-               << ": " << std::setw(16) << sum/nruns
-               << " [avg]"
-               << std::endl;
-          }
-        }
-        std::cout << ss.str() << std::endl;
-      }
     } // write
 
   private:
