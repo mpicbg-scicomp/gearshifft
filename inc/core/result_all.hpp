@@ -128,6 +128,7 @@ namespace gearshifft {
       for(auto ival=0; ival<T_NumberValues; ++ival) {
         fs << sep << '"' << static_cast<RecordType>(ival) << '"';
       }
+      fs << sep << "\"ID\"";
       fs << std::endl;
 
       // data
@@ -159,6 +160,7 @@ namespace gearshifft {
           for(auto ival=0; ival<T_NumberValues; ++ival) {
             fs << sep << result.getValue(ival);
           }
+          fs << sep << result.getID();
           fs << std::endl;
         } // run
       } // result
