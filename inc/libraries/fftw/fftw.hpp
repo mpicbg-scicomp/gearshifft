@@ -284,6 +284,7 @@ namespace gearshifft {
         std::ostringstream msg;
         msg << "\"SupportedThreads\"," << maxndevs;
         msg << ",\"UsedThreads\"," << ndevs;
+        msg << ",\"TotalMemory\"," << getMemorySize();
 	return msg.str();
       }
 
