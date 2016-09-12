@@ -82,7 +82,7 @@ namespace gearshifft {
 
 	static void plan_with_threads(int nthreads = -1){
 
-	  int av_procs = std::thread::hardware_concurrency();
+          int av_procs = std::thread::hardware_concurrency();
 	  
 	  if(nthreads<1 || nthreads>av_procs)
 	    nthreads = av_procs;
@@ -268,7 +268,10 @@ namespace gearshifft {
       }
 
       static std::string getListDevices() {
-        return "CPU only";
+	int av_procs = std::thread::hardware_concurrency();
+	std::ostringstream msg;
+        msg << av_procs << " CPU Threads supported.\n";
+        return msg.str();
       }
 
       std::string getDeviceInfos() {
@@ -278,7 +281,7 @@ namespace gearshifft {
         if( ndevs==0 || ndevs>maxndevs )
           ndevs = maxndevs;
 
-	std::ostringstream msg;
+        std::ostringstream msg;
         msg << "\"SupportedThreads\"," << maxndevs;
         msg << ",\"UsedThreads\"," << ndevs;
 	return msg.str();
@@ -377,7 +380,7 @@ namespace gearshifft {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-	traits::thread_api<TPrecision>::init_threads();
+        traits::thread_api<TPrecision>::init_threads();
         traits::thread_api<TPrecision>::plan_with_threads(Options::getInstance().getNumberDevices());
       }
 
@@ -428,7 +431,6 @@ namespace gearshifft {
 	return data_size_ + data_transform_size_;
       }
 
-      
       //////////////////////////////////////////////////////////////////////////////////////
       // --- next methods are benchmarked ---
 
