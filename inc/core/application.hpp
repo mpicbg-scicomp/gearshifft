@@ -6,6 +6,8 @@
 #include "timer_cpu.hpp"
 #include "types.hpp"
 
+#include "signal.hpp"
+
 #include <vector>
 #include <array>
 
@@ -55,10 +57,22 @@ namespace gearshifft {
     }
 
     void dumpResults() {
-      resultAll_.write(T_Context::title(),
-                       context_.getDeviceInfos(),
-                       timeContextCreate_,
-                       timeContextDestroy_);
+      if(gearshifft::Options::getInstance().getVerbose()) {
+        resultAll_.print(std::cout,
+                         T_Context::title(),
+                         context_.getDeviceInfos(),
+                         timeContextCreate_,
+                         timeContextDestroy_);
+      }
+
+      std::string fname = Options::getInstance().getOutputFile();
+      resultAll_.sort();
+      resultAll_.saveCSV(fname,
+                         T_Context::title(),
+                         context_.getDeviceInfos(),
+                         timeContextCreate_,
+                         timeContextDestroy_);
+      std::cout << "Results dumped to "+fname << std::endl;
     }
 
   private:

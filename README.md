@@ -1,52 +1,137 @@
-# gearshifft
-Benchmark Suite for Heterogenuous FFT Implementations
+# ![gearshifft](images/gearshifft_logo_img_100.png)
+
+Benchmark Suite for Heterogeneous Implementations of FFTs
 
 This is a simple and easy extensible benchmark system to answer the question, which FFT library performs best under which conditions.
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
-This project is in development, but benchmarks are already possible for cuFFT and clFFT.
+This project is still in development. 
 
-Timer and allocation statistics of a benchmark are stored into a csv file.
+## Requirements
+
+- cmake 2.8+
+- C++14 capable compiler
+- CUDA FFT library cuFFT 7.5+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
+- Boost version 1.56+
+  - should be compiled with same compiler version or ...
+  - ... disable the C++11 ABI for GCC with the `-DUSE_CXX11_ABI=OFF` cmake option 
 
 ## Build
-CUDA: Check src/CMakeLists.txt for device architectures
+Go to the gearshifft directory (created by git clone ...):
 ```
 mkdir build && cd build
 cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After make finished you can run e.g. `./gearshifft_cufft_float`.
-The result file is called e.g. `gearshifft_cufft_float.csv`.
+After make have finished you can run e.g. `./gearshifft_cuFFT`.
 
-## Requirements
-- cmake 2.8+
-- C++14 capable compiler
-- CUDA FFT library cuFFT or clFFT for OpenCL
-- FFTW
-- boost version 1.56+
-  - should be compiled with same compiler version or ...
-  - ... disable the C++11 ABI for GCC with the `-DUSE_CXX11_ABI=OFF` cmake option 
+## Usage
+
+See help message (pass `--help|-h`) for the command line options.
+```
+-h [ --help ]                     Print help messages
+-e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of
+                                  args possible]
+-f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.
+                                  of args possible]
+-o [ --output ] arg (=result.csv) output csv file, will be overwritten!
+-v [ --verbose ]                  for console output
+-d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If
+                                  device is not supported by FFT lib, then it
+                                  is ignored and default is used.
+-n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by
+                                  FFT lib (e.g. clfft and fftw with n CPU
+                                  threads).
+-l [ --list-devices ]             List of available compute devices with IDs,
+                                  if supported.
+-b [ --list-benchmarks ]          Show registered benchmarks
+-r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards
+                                  possible, e.g. ClFFT/float/*/Inplace_Real)
+```
+**Examples**
+
+Runs complete benchmark for clFFT (also applies for cuFFT, fftw, ..)
+```
+./gearshifft_clfft
+// equals
+./gearshifft_clfft -f ../config/extents.csv -o result.csv -d gpu -n 0
+```
+List compute devices
+```
+./gearshifft_clfft -l
+$ "ID",0:0,"ClFFT Informations","Device","Tesla K20Xm","Hardware","OpenCL 1.2 CUDA" <snip>
+$ "ID",1:0,"ClFFT Informations","Device","Intel(R) Xeon(R) CPU E5-2450 0 @ 2.10GHz" <snip>
+```
+Select compute devices by id returned by `--list-devices|-l`
+```
+./gearshifft_clfft -d 1:0
+```
+512x512-point FFT, single and double precision, all transforms, print result to console.
+```
+./gearshifft_clfft -e 512x512 -v
+```
+1048576-point FFT, only real outplace transform in single precision.
+```
+./gearshifft_clfft -e 1048576 -r */float/*/Outplace_Real
+```
+1024-point and 128x256x64-point FFTs, on CPU with 1 thread.
+- If no device parameter is given, then ClFFT/OpenCL will use GPU, if available
+```
+./gearshifft_clfft -e 1024 128,256,64 -d cpu -n 1
+```
+1024x1024-point FFT, double precision inplace transforms.
+- `--list-benchmarks|-b` gives a list of available extents read in `--file|-f` (default is ../config/extents.csv)
+```
+./gearshifft_clfft -r */double/1024x1024/Inplace_*
+```
+
+## Measurement
+
+The FFT scenario is a roundtrip FFT, i.e. forward and backward transformation.
+The result is compared with the original input data and an error is shown, if there was a mismatch.
+If a benchmark cannot be completed due to an error, it proceeds with the next benchmark.
+The library dependent FFT steps are abstracted and some are wrapped by timers.
+- buffer allocation
+- plan creation
+- memory transfers (up-/download)
+- forward and backward transforms
+- cleanup
+- device initialization/teardown (only once per runtime)
+
+## CSV Output
+
+The results of the benchmark runs are stored to CSV, after the last run has been completed.
+To ease evaluation, the entries are sorted by columns 
+- FFT transform kind and precision
+- dimkind (oddshape, powerof2, radix357)
+ - oddshape: at least one extent is not a combination of a power of 2,3,5,7
+ - powerof2: all extents are powers of 2
+ - radix357: extents are combination of powers of 2,3,5,7 and not all are powers of 2
+- extents and runs
+See CSV header for column titles.
 
 ## Tested on ...
 
 - gcc 5.3.0
 - CUDA 7.5.18
 - cuFFT from CUDA 7.5.18
-- clFFT 2.12.0 (against FFTW 3.3.4)
+- clFFT 2.12.0 and 2.12.1
+- FFTW 3.3.4 and 3.3.5
 - OpenCL 1.2-4.4.0.117 (Nvidia)
 - Nvidia Kepler K80 GPU and Kepler K20X GPU
 
 ## Issues
 
-- clFFT does not support arbitrary transform sizes. The benchmark will print only these tests as failed.
-- at the moment this is for single-GPUs, batches are not considered
+- cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
+- clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
+- At the moment this is for single-GPUs, batches are not considered
 
 ## Roadmap
 
 - [x] cuFFT
-- [ ] clFFT: emulation of arbitrary transform sizes / non-supported radices
+- [x] clFFT
+- [x] fftw
 - [ ] hcFFT: ROC based hcFFT library
 - [ ] liFFT: include library independent FFT framework
-- [ ] integration into test environment (ctest)
 - [ ] scripts for creating benchmark summary of the individual results
 - [ ] callbacks to benchmark a typical FFT use case

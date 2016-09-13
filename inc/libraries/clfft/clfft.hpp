@@ -110,7 +110,20 @@ namespace gearshifft
 
         device_used = device;
         props[1] = (cl_context_properties)platform;
-        ctx = clCreateContext( props, 1, &device, nullptr, nullptr, &err );
+        if(devtype == CL_DEVICE_TYPE_CPU) {
+          const size_t ndevs = Options::getInstance().getNumberDevices();
+          if(ndevs>0) {
+            const cl_device_partition_property properties[3] = {
+              CL_DEVICE_PARTITION_BY_COUNTS,
+              static_cast<cl_device_partition_property>(ndevs),
+              CL_DEVICE_PARTITION_BY_COUNTS_LIST_END
+            };
+            cl_device_id subdev_id = 0;
+            CHECK_CL(clCreateSubDevices(device, properties, 1, &subdev_id, NULL));
+            device_used = subdev_id;
+          }
+        }
+        ctx = clCreateContext( props, 1, &device_used, nullptr, nullptr, &err );
         CHECK_CL(err);
         clfftSetupData fftSetup;
         CHECK_CL(clfftInitSetupData(&fftSetup));
@@ -187,8 +200,8 @@ namespace gearshifft
         context_ = Application<Context>::getContext();
         if(context_.ctx==0)
           throw std::runtime_error("Context has not been created.");
-//        queue_ = clCreateCommandQueue( context_.ctx, context_.device, 0, &err );
-        queue_ = clCreateCommandQueue( context_.ctx, context_.device, CL_QUEUE_PROFILING_ENABLE, &err );
+//        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, 0, &err );
+        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, CL_QUEUE_PROFILING_ENABLE, &err );
         CHECK_CL(err);
 
         n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<size_t>());
@@ -261,6 +274,14 @@ namespace gearshifft
         init_backward();
         CHECK_CL(clfftGetTmpBufSize( plan_, &size2 ));
         CHECK_CL(clfftDestroyPlan( &plan_ ));
+
+        auto gmemsize = getMaxGlobalMemSize(context_.device);
+        size_t wanted = std::max(size1,size2) + data_size_ + data_complex_size_;
+        if( gmemsize < wanted ) {
+          std::stringstream ss;
+          ss << gmemsize << "<" << wanted << " (bytes)";
+          throw std::runtime_error("FFT plan + data are exceeding [global] memory. "+ss.str());
+        }
         return std::max(size1,size2);
       }
 

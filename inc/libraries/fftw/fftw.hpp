@@ -7,6 +7,7 @@
 #include "core/timer.hpp"
 #include "core/fft.hpp"
 #include "core/benchmark_suite.hpp"
+#include "get_memory_size.h"
 
 #include <string.h>
 #include <vector>
@@ -81,8 +82,7 @@ namespace gearshifft {
 
 	static void plan_with_threads(int nthreads = -1){
 
-	  
-	  int av_procs = std::thread::hardware_concurrency();
+          int av_procs = std::thread::hardware_concurrency();
 	  
 	  if(nthreads<1 || nthreads>av_procs)
 	    nthreads = av_procs;
@@ -264,32 +264,34 @@ namespace gearshifft {
     struct Context {
 
       static const std::string title() {
-	return "Fftw";
+        return "Fftw";
       }
 
       static std::string getListDevices() {
 	int av_procs = std::thread::hardware_concurrency();
 	std::ostringstream msg;
-	msg << av_procs << "xCPU(s) detected\n";
+        msg << av_procs << " CPU Threads supported.\n";
         return msg.str();
       }
 
       std::string getDeviceInfos() {
-	//obtain number of processors
-      
-	std::ostringstream msg;
-	msg << std::thread::hardware_concurrency() << "xCPU(s)";
+        // Returns the number of supported concurrent threads
+        size_t maxndevs = std::thread::hardware_concurrency();
+        size_t ndevs = Options::getInstance().getNumberDevices();
+        if( ndevs==0 || ndevs>maxndevs )
+          ndevs = maxndevs;
+
+        std::ostringstream msg;
+        msg << "\"SupportedThreads\"," << maxndevs;
+        msg << ",\"UsedThreads\"," << ndevs;
+        msg << ",\"TotalMemory\"," << getMemorySize();
 	return msg.str();
       }
 
       void create() {
-	
-	
-	
       }
 
       void destroy() {
-	
       }
     };
 
@@ -317,9 +319,6 @@ namespace gearshifft {
       using PlanType = typename traits::plan<TPrecision>::PlanType;
 
       static_assert(NDim > 0 && NDim < 4, "[fftw.hpp]\treceived NDim not in [1,3], currently unsupported" );
-      
-      // using FFTExecuteForward  = typename traits::plan::FFTExecuteForward;
-      // using FFTExecuteBackward = typename traits::plan::FFTExecuteBackward;
 
       static constexpr
       bool IsInplace = TFFT::IsInplace;
@@ -329,24 +328,18 @@ namespace gearshifft {
       bool Padding = IsInplace && IsComplex==false;
 
       using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
-    
-      // static constexpr
-      //  fftwType FFTForward  = IsComplex ? traits::plan::FFTComplex : traits::plan::FFTForward;
-      // static constexpr
-      //  fftwType FFTBackward = IsComplex ? traits::plan::FFTComplex : traits::plan::FFTBackward;
 
       //////////////////////////////////////////////////////////////////////////////////////
-      // RUNTIME TIME FIELDS
-    
+
       size_t n_;        // =[1]*..*[dim]
       size_t n_allocated_; // =[1]*..*[dim-1]*([dim]/2+1)
       Extent extents_;
       Extent allocated_extents_;
 
-      PlanType			fwd_plan_           ;
-      PlanType			bwd_plan_           ;
-      value_type*		data_           ;
-      ComplexType*       	data_transform_ ; // intermediate buffer
+      PlanType			fwd_plan_;
+      PlanType			bwd_plan_;
+      value_type*		data_;
+      ComplexType*       	data_transform_; // intermediate buffer
       size_t             	data_size_;
       size_t             	data_transform_size_;
 
@@ -381,17 +374,19 @@ namespace gearshifft {
 
 	data_size_ = sizeof(value_type)*n_allocated_;
 	data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+        size_t total_mem = getMemorySize();
+        if(total_mem < (data_size_+data_transform_size_)) {
+          std::stringstream ss;
+          ss << total_mem << "<" << (data_size_+data_transform_size_) << " (bytes)";
+          throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
+        }
 
-	traits::thread_api<TPrecision>::init_threads();
-
-	
-	int plan_n_procs = n_procs_to_use();
-	traits::thread_api<TPrecision>::plan_with_threads(plan_n_procs);
-
+        traits::thread_api<TPrecision>::init_threads();
+        traits::thread_api<TPrecision>::plan_with_threads(Options::getInstance().getNumberDevices());
       }
 
       ~FftwImpl(){
-	
+
 	destroy();
 
 	traits::thread_api<TPrecision>::cleanup_threads();
@@ -437,33 +432,17 @@ namespace gearshifft {
 	return data_size_ + data_transform_size_;
       }
 
-      int n_procs_to_use() {
-
-	const std::string options_devtype = Options::getInstance().getDevice();
-	auto fitr = options_devtype.find('x');
-	int value = -1;
-	if(fitr != std::string::npos){
-	  std::string count_str = options_devtype.substr(0,fitr);
-	  value = stoi(count_str);
-	}
-
-	return value;
-      }
       //////////////////////////////////////////////////////////////////////////////////////
       // --- next methods are benchmarked ---
 
       void malloc() {
-
 	data_ = (value_type*)traits::memory_api<TPrecision>::malloc(data_size_);
 	if(IsInplace){
 	  data_transform_ = reinterpret_cast<ComplexType*>(data_);
 	}
 	else{
 	  data_transform_ = (ComplexType*)traits::memory_api<TPrecision>::malloc(data_transform_size_);
-	}
-
-
-	
+        }
       }
 
 
@@ -480,7 +459,6 @@ namespace gearshifft {
 
       template<typename THostData>
       void upload(THostData* input) {
-
 	
 	if(!Padding){
 	  memcpy(data_,input,data_size_);
@@ -510,7 +488,6 @@ namespace gearshifft {
 
       template<typename THostData>
       void download(THostData* output) {
-
 	
 	if(!Padding){
 	  memcpy(output,data_,data_size_);
@@ -538,7 +515,6 @@ namespace gearshifft {
       }
 
       void destroy() {
-
 		
 	if(data_)
 	  traits::memory_api<TPrecision>::free(data_);

@@ -36,6 +36,10 @@ namespace gearshifft {
       return device_;
     }
 
+    size_t getNumberDevices() const {
+      return ndevices_;
+    }
+
     void parseFile(const std::string& file);
 
     void parseExtent( const std::string& extent );
@@ -61,6 +65,7 @@ namespace gearshifft {
     std::string outputFile_;
     std::string device_;
     bool listDevices_ = false;
+    size_t ndevices_ = 0;
 
     Extents1DVec vector1D_;
     Extents2DVec vector2D_;

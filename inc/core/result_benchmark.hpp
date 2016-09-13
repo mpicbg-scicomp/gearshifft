@@ -19,6 +19,8 @@ namespace gearshifft
 
     template<bool isComplex, bool isInplace, size_t T_NDim>
     void init(const std::array<size_t, T_NDim>& ce, const char* precision) {
+      static size_t sid = 0;
+      id_ = sid++;
       total_ = 1;
       for(auto i=0; i<T_NDim; ++i) {
         extents_[i] = ce[i];
@@ -84,6 +86,9 @@ namespace gearshifft
       assert(idx<T_NumberValues);
       return values_[run_][idx];
     }
+    size_t getID() const {
+      return id_;
+    }
     std::string getPrecision() const { return precision_; }
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
@@ -104,7 +109,7 @@ namespace gearshifft
 
   private:
     /// result object id
-    //size_t id_ = 0;
+    size_t id_ = 0;
     int run_ = 0;
     /// fft dimension
     size_t dim_ = 0;
