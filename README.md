@@ -13,17 +13,17 @@ This project is still in development.
 - CUDA FFT library cuFFT 7.5+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.56+
   - should be compiled with same compiler version or ...
-  - ... disable the C++11 ABI for GCC with the `-DUSE_CXX11_ABI=OFF` cmake option 
+  - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
 
 ## Build
 Go to the gearshifft directory (created by git clone ...):
 ```
-mkdir build && cd build
+mkdir release && cd release
 cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After make have finished you can run e.g. `./gearshifft_cuFFT`.
+After make have finished you can run e.g. `./gearshifft_cufft`.
 
 ## Usage
 
@@ -90,12 +90,14 @@ Select compute devices by id returned by `--list-devices|-l`
 The FFT scenario is a roundtrip FFT, i.e. forward and backward transformation.
 The result is compared with the original input data and an error is shown, if there was a mismatch.
 If a benchmark cannot be completed due to an error, it proceeds with the next benchmark.
-The library dependent FFT steps are abstracted and some are wrapped by timers.
+The library dependent FFT steps are abstracted, where following steps are wrapped by timers.
 - buffer allocation
 - plan creation
 - memory transfers (up-/download)
 - forward and backward transforms
 - cleanup
+- timer which measures FFT process from upload to download (called "Time Device")
+- total time (allocation, plan, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
 
 ## CSV Output
@@ -112,9 +114,9 @@ See CSV header for column titles.
 
 ## Tested on ...
 
-- gcc 5.3.0
-- CUDA 7.5.18
-- cuFFT from CUDA 7.5.18
+- gcc 5.3.0, gcc 6.2.0
+- CUDA 7.5.18, CUDA 8.0
+- cuFFT from CUDA 7.5.18 and CUDA 8.0
 - clFFT 2.12.0 and 2.12.1
 - FFTW 3.3.4 and 3.3.5
 - OpenCL 1.2-4.4.0.117 (Nvidia)
@@ -125,6 +127,7 @@ See CSV header for column titles.
 - cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - At the moment this is for single-GPUs, batches are not considered
+- if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment)
 
 ## Roadmap
 
