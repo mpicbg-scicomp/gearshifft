@@ -2,21 +2,20 @@ cmake_minimum_required(VERSION 2.8)
 
 project(gearshifft CXX)
 
-list(APPEND CMAKE_MODULE_PATH "../cmake")
+include(CheckCXXCompilerFlag)
 
-set(CMAKE_CXX_STANDARD 14)
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0
-        OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0))
-    message(FATAL_ERROR "${PROJECT_NAME} requires g++ 5.0 or greater.")
+if (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|Intel)$")
+  CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
+  if (HAS_CPP14_FLAG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  else()
+    message(FATAL_ERROR "gearshifft requires C++14 support!")
   endif()
-  set(CMAKE_CXX_FLAGS "--std=gnu++14" ${CMAKE_CXX_FLAGS})
-  #gcc4.8+ uses dwarf-4. If you have gdb <7.5 then use this line
-  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
-  #gdb 7.0-7.5 may require
-  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif()
+
+#------------------------------------------------------------------------------
+# Boost
+#------------------------------------------------------------------------------
 
 find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
@@ -24,18 +23,12 @@ if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
-if(DEV_TESTS)
-  message(">> Test mode")
-  add_definitions(-DDEV_TESTS)
-  set(TESTS tests.cpp)
-endif()
-
 #------------------------------------------------------------------------------
 # CUDA+CUFFT
 #------------------------------------------------------------------------------
+
 find_package(CUDA)
-if(CUDA_FOUND)
+if(CUDA_FOUND AND GEARSHIFFT_CUFFT)
   include(FindCUDA)
   include_directories(${CUDA_INCLUDE_DIRS})
   list(APPEND FFTLIBS "cufft")
@@ -47,8 +40,9 @@ endif()
 #------------------------------------------------------------------------------
 # OPENCL+CLFFT
 #------------------------------------------------------------------------------
+
 find_package(OpenCL)
-if(OPENCL_FOUND)
+if(OPENCL_FOUND AND GEARSHIFFT_CLFFT)
   find_package(clFFT)
   if(CLFFT_FOUND)
     include_directories(${CLFFT_INCLUDE_DIRS})
@@ -64,8 +58,9 @@ endif()
 #------------------------------------------------------------------------------
 # ROCM+HCFFT
 #------------------------------------------------------------------------------
+
 find_package(hcFFT)
-if(HCFFT_FOUND)
+if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
   include_directories(${HCFFT_INCLUDE_DIRS})
   list(APPEND FFTLIBS "hcfft")
   message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
@@ -79,8 +74,9 @@ endif()
 #------------------------------------------------------------------------------
 # FFTW
 #------------------------------------------------------------------------------
+
 find_package(FFTW COMPONENTS float double)
-if(FFTW_FOUND)
+if(FFTW_FOUND AND GEARSHIFFT_FFTW)
   include_directories(${FFTW_INCLUDE_DIR})
   link_directories(${FFTW_LIBRARY_DIR})
   list(APPEND FFTLIBS "fftw")
@@ -90,13 +86,13 @@ if(FFTW_FOUND)
     list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
   endforeach()
 
-  if(USE_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
+  if(GEARSHIFFT_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
     foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
   endif()
 
-  if(USE_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
+  if(GEARSHIFFT_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
     foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
@@ -110,13 +106,14 @@ else()
 endif()
 
 
-if(NOT (CLFFT_FOUND OR CUDA_FOUND OR HCFFT_FOUND OR FFTW_FOUND))
+if(NOT FFTLIBS)
   message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
 endif()
 
 #------------------------------------------------------------------------------
 # Helper function to add specific FFT library benchmark
 #------------------------------------------------------------------------------
+
 function(add_exec Tlib)
   set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
@@ -141,7 +138,8 @@ endfunction()
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-include_directories(../inc)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc)
 
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)

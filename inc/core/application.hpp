@@ -6,8 +6,6 @@
 #include "timer_cpu.hpp"
 #include "types.hpp"
 
-#include "signal.hpp"
-
 #include <vector>
 #include <array>
 

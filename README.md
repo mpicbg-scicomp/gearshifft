@@ -18,12 +18,12 @@ This project is still in development.
 ## Build
 Go to the gearshifft directory (created by git clone ...):
 ```
-mkdir build && cd build
+mkdir release && cd release
 cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After make have finished you can run e.g. `./gearshifft_cuFFT`.
+After make have finished you can run e.g. `./gearshifft_cufft`.
 
 ## Usage
 
@@ -90,12 +90,14 @@ Select compute devices by id returned by `--list-devices|-l`
 The FFT scenario is a roundtrip FFT, i.e. forward and backward transformation.
 The result is compared with the original input data and an error is shown, if there was a mismatch.
 If a benchmark cannot be completed due to an error, it proceeds with the next benchmark.
-The library dependent FFT steps are abstracted and some are wrapped by timers.
+The library dependent FFT steps are abstracted, where following steps are wrapped by timers.
 - buffer allocation
 - plan creation
 - memory transfers (up-/download)
 - forward and backward transforms
 - cleanup
+- timer which measures FFT process from upload to download (called "Time Device")
+- total time (allocation, plan, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
 
 ## CSV Output

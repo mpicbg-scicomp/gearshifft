@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+# cmake general setup
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
@@ -23,21 +25,45 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message(">> Setting up ${CMAKE_BUILD_TYPE} build")
 
-option(USE_CXX11_ABI "enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
-option(USE_FFTW_OPENMP "use OpenMP parallel fftw libraries if found" ON)
-option(USE_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" OFF)
+# gearshifft cmake options
+
+option(GEARSHIFFT_CXX11_ABI "enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
+option(GEARSHIFFT_FFTW_OPENMP "use OpenMP parallel fftw libraries if found" ON)
+option(GEARSHIFFT_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" OFF)
+option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if available?" ON)
+option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
+option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
+option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+
+#
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if(${USE_CXX11_ABI})
+  if(${GEARSHIFFT_CXX11_ABI})
     add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+    message(">> CXX11_ABI enabled.")
   else()
     add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+    message(">> CXX11_ABI disabled.")
   endif()
+
+  if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0
+        OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0))
+    message(FATAL_ERROR "gearshifft requires g++ 5.0 or greater.")
+  endif()
+  #gcc4.8+ uses dwarf-4. If you have gdb <7.5 then use this line
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
+  #gdb 7.0-7.5 may require
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-# if libraries are compiled with different ABI, then set the matching version here
-#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-# or
-#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+
+set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
+if(DEV_TESTS)
+  message(">> Test mode")
+  add_definitions(-DDEV_TESTS)
+  set(TESTS tests.cpp)
+endif()
 
 add_subdirectory(src)
