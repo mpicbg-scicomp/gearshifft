@@ -1,7 +1,6 @@
 #ifndef FFTW_HPP_
 #define FFTW_HPP_
 
-
 #include "core/types.hpp"
 #include "core/application.hpp"
 #include "core/timer.hpp"
@@ -289,6 +288,8 @@ namespace fftw {
     }
 
     void create() {
+      fftwf_forget_wisdom();
+      fftw_forget_wisdom();
     }
 
     void destroy() {
@@ -304,7 +305,8 @@ namespace fftw {
    */
   template<typename TFFT, // see fft_abstract.hpp (FFT_Inplace_Real, ...)
            typename TPrecision, // double, float
-           size_t   NDim // 1..3
+           size_t   NDim, // 1..3
+           typename TUseWisdom = std::false_type // use FFTW Wisdom file "wisdom[f]" located in working directory
            >
   struct FftwImpl
   {
@@ -383,6 +385,15 @@ namespace fftw {
 
         traits::thread_api<TPrecision>::init_threads();
         traits::thread_api<TPrecision>::plan_with_threads(Options::getInstance().getNumberDevices());
+        if(TUseWisdom::value) {
+          if(std::is_same<TPrecision,float>::value) {
+            if(fftwf_import_wisdom_from_filename("wisdomf")!=1) // fails if file is locked or user has insufficient permissions
+              throw std::runtime_error("Wisdom file 'wisdomf' could not be loaded.");
+          } else {
+            if(fftw_import_wisdom_from_filename("wisdom")!=1)
+              throw std::runtime_error("Wisdom file 'wisdom' could not be loaded.");
+          }
+        }
       }
 
     ~FftwImpl(){
@@ -532,11 +543,15 @@ namespace fftw {
 
     }
   };
-
+  typedef std::true_type TFftwUseWisdom;
   typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU> Inplace_Real;
   typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU> Outplace_Real;
   typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU> Inplace_Complex;
   typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU> Outplace_Complex;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU, TFftwUseWisdom> Inplace_Real_Wisdom;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU, TFftwUseWisdom> Outplace_Real_Wisdom;
+  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU, TFftwUseWisdom> Inplace_Complex_Wisdom;
+  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU, TFftwUseWisdom> Outplace_Complex_Wisdom;
 
 } // namespace Fftw
 } // namespace gearshifft

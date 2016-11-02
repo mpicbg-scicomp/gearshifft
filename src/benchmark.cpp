@@ -31,6 +31,10 @@ using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
                                Outplace_Complex>;
+/*using FFTs              = List<Inplace_Real_Wisdom,
+                               Inplace_Complex_Wisdom,
+                               Outplace_Real_Wisdom,
+                               Outplace_Complex_Wisdom>;*/
 using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::false_type;
 #endif

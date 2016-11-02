@@ -39,8 +39,9 @@ namespace gearshifft {
  * Functor being called from FixtureBenchmark::benchmark()
  */
   template<typename TFFT, // FFT_*_* [inplace.., real..]
-           template <typename,typename,size_t> typename TPlan,
-           typename TDeviceTimer
+           template <typename,typename,size_t,typename... > typename TPlan,
+           typename TDeviceTimer,
+           typename... TPlanArgs
            >
   struct FFT : public TFFT {
     /**
@@ -60,7 +61,7 @@ namespace gearshifft {
 
       // prepare plan object
       // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-      auto plan = TPlan<TFFT, PrecisionT, NDim> (extents);
+      auto plan = TPlan<TFFT, PrecisionT, NDim, TPlanArgs...> (extents);
       result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
       result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
       result.setValue(RecordType::DevTransferSize, plan.getTransferSize());
