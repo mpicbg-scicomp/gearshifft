@@ -274,7 +274,7 @@ namespace fftw {
   struct FftwWisdomLoader {
     std::string source;
     FftwWisdomLoader(const char* filename) {
-
+      std::cout << "Loading wisdom: " << filename << std::endl;
       std::ifstream ifs;
       std::stringstream ss;
       std::string line;
@@ -493,7 +493,16 @@ namespace fftw {
                                                    data_,
                                                    traits::fftw_direction::backward,
                                                    TFftwConfig::PlanFlags);//leave this here for now
-
+      if(!fwd_plan_)
+        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
+          throw std::runtime_error("fftw forward plan could not be created as wisdom is not available for this problem.");
+        else
+          throw std::runtime_error("fftw forward plan could not be created.");
+      if(!bwd_plan_)
+        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
+          throw std::runtime_error("fftw backward plan could not be created as wisdom is not available for this problem.");
+        else
+          throw std::runtime_error("fftw backward plan could not be created.");
     }
 
     // recreates plan if needed
@@ -535,7 +544,6 @@ namespace fftw {
     void execute_forward() {
 
       traits::plan<TPrecision>::execute(fwd_plan_);
-
     }
 
     void execute_backward() {
