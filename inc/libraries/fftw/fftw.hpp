@@ -45,16 +45,17 @@ namespace fftw {
     template <typename T>
     struct thread_api {};
 
+
     template <>
     struct thread_api<double> {
-
 
       static int init_threads() {
         int res = fftw_init_threads();
         return res;
       }
 
-      static void plan_with_threads(int nthreads = -1){
+      static void plan_with_threads(int nthreads = -1,
+                                    double timelimit=FFTW_NO_TIMELIMIT){
 
         int av_procs = std::thread::hardware_concurrency();
 
@@ -62,7 +63,7 @@ namespace fftw {
           nthreads = av_procs;
 
         fftw_plan_with_nthreads(nthreads);
-
+        fftw_set_timelimit(timelimit);
       }
 
       static void cleanup_threads(){
@@ -80,7 +81,8 @@ namespace fftw {
         return res;
       }
 
-      static void plan_with_threads(int nthreads = -1){
+      static void plan_with_threads(int nthreads = -1,
+                                    double timelimit=FFTW_NO_TIMELIMIT){
 
         int av_procs = std::thread::hardware_concurrency();
 
@@ -88,7 +90,7 @@ namespace fftw {
           nthreads = av_procs;
 
         fftwf_plan_with_nthreads(nthreads);
-
+        fftwf_set_timelimit(timelimit);
       }
 
       static void cleanup_threads(){
@@ -97,17 +99,10 @@ namespace fftw {
 
     };
 
-    
     enum class fftw_direction {
       backward = FFTW_BACKWARD,
       forward = FFTW_FORWARD
     };
-
-    // there are more, see http://www.fftw.org/doc/Planner-Flags.html#Planner-Flags
-    using FftwRigorMeasure  = std::integral_constant<unsigned int, FFTW_MEASURE>;
-    using FftwRigorWisdom   = std::integral_constant<unsigned int, FFTW_WISDOM_ONLY>;
-    using FftwRigorEstimate = std::integral_constant<unsigned int, FFTW_ESTIMATE>;
-
 
 
     template<typename T_Precision=float>
@@ -129,11 +124,12 @@ namespace fftw {
 
       }
 
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              RealType* _in,
                              ComplexType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -143,15 +139,16 @@ namespace fftw {
                                             converted.data(),
                                             _in,
                                             _out,
-                                            T_FftwRigor::value );
+                                            plan_flags );
         return value;
       }
 
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              ComplexType* _in,
                              RealType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -161,15 +158,16 @@ namespace fftw {
                                             converted.data(),
                                             _in,
                                             _out,
-                                            T_FftwRigor::value );
+                                            plan_flags );
         return value;
       }
 
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              ComplexType* _in,
                              ComplexType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -181,7 +179,7 @@ namespace fftw {
                                         _in,
                                         _out,
                                         static_cast<int>(_dir),
-                                        T_FftwRigor::value );
+                                        plan_flags );
         return value;
       }
 
@@ -207,11 +205,12 @@ namespace fftw {
       }
 
       // //ND
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              RealType* _in,
                              ComplexType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -222,15 +221,16 @@ namespace fftw {
                                            converted.data(),
                                            _in,
                                            _out,
-                                           T_FftwRigor::value );
+                                           plan_flags );
         return value;
       }
 
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              ComplexType* _in,
                              RealType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -241,15 +241,16 @@ namespace fftw {
                                            converted.data(),
                                            _in,
                                            _out,
-                                           T_FftwRigor::value );
+                                           plan_flags );
         return value;
       }
 
-      template <typename T_FftwRigor, size_t NDims>
+      template <size_t NDims>
       static PlanType create(const std::array<std::size_t,NDims>& _shape,
                              ComplexType* _in,
                              ComplexType* _out,
-                             fftw_direction _dir = fftw_direction::forward){
+                             fftw_direction _dir = fftw_direction::forward,
+                             unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
         for(int i = 0;i < NDims;++i)
@@ -261,17 +262,71 @@ namespace fftw {
                                        _in,
                                        _out,
                                        static_cast<int>(_dir),
-                                       T_FftwRigor::value );
+                                       plan_flags );
         return value;
       }
 
     };
   }  // namespace traits
 
+
+  template<typename T_Precision>
+  struct FftwWisdomLoader {
+    std::string source;
+    FftwWisdomLoader(const char* filename) {
+
+      std::ifstream ifs;
+      std::stringstream ss;
+      std::string line;
+      ifs.open(filename, std::ifstream::in);
+
+      if(ifs.is_open()) {
+        while ( getline (ifs,line) )
+        {
+          ss << line;
+        }
+        ifs.close();
+        source = ss.str();
+      }
+    }
+
+    int import() {
+      if(std::is_same<T_Precision,float>::value)
+        return fftwf_import_wisdom_from_string(source.c_str());
+      else
+        return fftw_import_wisdom_from_string(source.c_str());
+    }
+
+  }; // FftwWisdomLoader
+
+
+  template<bool IfTrue = false>
+  struct ImportWisdomIf {
+    template <typename T_Precision, typename T_FftwConfig>
+    void import() { }
+  };
+
+  template<>
+  struct ImportWisdomIf<true> {
+
+    template <typename T_Precision, typename T_FftwConfig>
+    void import() {
+      static
+        FftwWisdomLoader<T_Precision> wisdom(
+          std::is_same<T_Precision,float>::value
+          ? T_FftwConfig::WisdomFileSinglePrecision
+          : T_FftwConfig::WisdomFileDoublePrecision );
+      if( !wisdom.import() )
+        throw std::runtime_error("Wisdom file could not be loaded.");
+    }
+  };
+
+
   /**
    * FFTW implicit context init and reset wrapper. Time is benchmarked.
    */
-  struct Context {
+  template<typename T_FftwConfig>
+  struct FftwContext {
 
     static const std::string title() {
       return "Fftw";
@@ -285,6 +340,8 @@ namespace fftw {
     }
 
     std::string getDeviceInfos() {
+      static constexpr unsigned PlanFlags = T_FftwConfig::PlanFlags;
+      static constexpr double PlanTimeLimit = T_FftwConfig::PlanTimeLimit;
       // Returns the number of supported concurrent threads
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = Options::getInstance().getNumberDevices();
@@ -292,9 +349,15 @@ namespace fftw {
         ndevs = maxndevs;
 
       std::ostringstream msg;
-      msg << "\"SupportedThreads\"," << maxndevs;
-      msg << ",\"UsedThreads\"," << ndevs;
-      msg << ",\"TotalMemory\"," << getMemorySize();
+      msg << "\"SupportedThreads\"," << maxndevs
+          << ",\"UsedThreads\"," << ndevs
+          << ",\"TotalMemory\"," << getMemorySize()
+          << ",\"PlanFlags\",\"" <<
+        (PlanFlags==FFTW_MEASURE ? "FFTW_MEASURE" : PlanFlags==FFTW_ESTIMATE ? "FFTW_ESTIMATE":"FFTW_WISDOM_ONLY");
+      if(PlanTimeLimit > 0.0)
+        msg << "\",\"FftwTimeLimit [s]\"," << PlanTimeLimit;
+      else
+        msg << "\",\"FftwTimeLimit [s]\"," << "\"None\"";
       return msg.str();
     }
 
@@ -303,6 +366,7 @@ namespace fftw {
 
     void destroy() {
     }
+
   };
 
 
@@ -315,7 +379,7 @@ namespace fftw {
   template<typename TFFT, // see fft_abstract.hpp (FFT_Inplace_Real, ...)
            typename TPrecision, // double, float
            size_t   NDim, // 1..3
-           typename TFftwRigor = traits::FftwRigorMeasure
+           typename TFftwConfig
            >
   struct FftwImpl
   {
@@ -328,7 +392,6 @@ namespace fftw {
     using ComplexType = typename traits::plan<TPrecision>::ComplexType;
     using RealType = typename traits::plan<TPrecision>::RealType;
     using PlanType = typename traits::plan<TPrecision>::PlanType;
-    bool UseWisdom = std::is_same<TFftwRigor, typename traits::FftwRigorWisdom>::value; // true => use FFTW Wisdom file "wisdom[f]" located in working directory
 
     static_assert(NDim > 0 && NDim < 4, "[fftw.hpp]\treceived NDim not in [1,3], currently unsupported" );
 
@@ -367,6 +430,7 @@ namespace fftw {
         data_size_(0),
         data_transform_size_(0)
       {
+
         extents_ = interpret_as::column_major(cextents);
         allocated_extents_ = extents_;
 
@@ -386,24 +450,19 @@ namespace fftw {
 
         data_size_ = sizeof(value_type)*n_allocated_;
         data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
-        size_t total_mem = getMemorySize();
-        if(total_mem < (data_size_+data_transform_size_)) {
+        //size_t total_mem = getMemorySize();
+        size_t total_mem = 99*getMemorySize()/100;
+        if(total_mem < 2*(data_size_+data_transform_size_)) { // includes host input buffers
           std::stringstream ss;
-          ss << total_mem << "<" << (data_size_+data_transform_size_) << " (bytes)";
+          ss << total_mem << "<" << 2*(data_size_+data_transform_size_) << " (bytes)";
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
         traits::thread_api<TPrecision>::init_threads();
         traits::thread_api<TPrecision>::plan_with_threads(Options::getInstance().getNumberDevices());
-        if(UseWisdom) {
-          if(std::is_same<TPrecision,float>::value) {
-            if(fftwf_import_wisdom_from_filename("wisdomf")!=1) // fails if file is locked or user has insufficient permissions
-              throw std::runtime_error("Wisdom file 'wisdomf' could not be loaded.");
-          } else {
-            if(fftw_import_wisdom_from_filename("wisdom")!=1)
-              throw std::runtime_error("Wisdom file 'wisdom' could not be loaded.");
-          }
-        } // UseWisdom
+
+        ImportWisdomIf<TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY>()
+          .template import<TPrecision, TFftwConfig>();
       }
 
     ~FftwImpl(){
@@ -424,14 +483,16 @@ namespace fftw {
     void init_forward() {
 
       //Note: these calls clear the content of data_ et al
-      fwd_plan_ = traits::plan<TPrecision>::template create<TFftwRigor>(extents_,
-                                                               data_,
-                                                               data_transform_,
-                                                               traits::fftw_direction::forward);
-      bwd_plan_ = traits::plan<TPrecision>::template create<TFftwRigor>(extents_,
-                                                               data_transform_,
-                                                               data_,
-                                                               traits::fftw_direction::backward);//leave this here for now
+      fwd_plan_ = traits::plan<TPrecision>::create(extents_,
+                                                   data_,
+                                                   data_transform_,
+                                                   traits::fftw_direction::forward,
+                                                   TFftwConfig::PlanFlags);
+      bwd_plan_ = traits::plan<TPrecision>::create(extents_,
+                                                   data_transform_,
+                                                   data_,
+                                                   traits::fftw_direction::backward,
+                                                   TFftwConfig::PlanFlags);//leave this here for now
 
     }
 
@@ -560,21 +621,17 @@ namespace fftw {
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU> Outplace_Complex;
+  template<typename T_FftwConfig>
+  using Inplace_Real = gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU, T_FftwConfig>;
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU, traits::FftwRigorWisdom> Inplace_Real_Wisdom;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU, traits::FftwRigorWisdom> Outplace_Real_Wisdom;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU, traits::FftwRigorWisdom> Inplace_Complex_Wisdom;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU, traits::FftwRigorWisdom> Outplace_Complex_Wisdom;
+  template<typename T_FftwConfig>
+  using Outplace_Real = gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU, T_FftwConfig>;
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU, traits::FftwRigorEstimate> Inplace_Real_Estimate;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU, traits::FftwRigorEstimate> Outplace_Real_Estimate;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU, traits::FftwRigorEstimate> Inplace_Complex_Estimate;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU, traits::FftwRigorEstimate> Outplace_Complex_Estimate;
+  template<typename T_FftwConfig>
+  using Inplace_Complex = gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU, T_FftwConfig>;
 
+  template<typename T_FftwConfig>
+  using Outplace_Complex = gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU, T_FftwConfig>;
 } // namespace fftw
 } // namespace gearshifft
 
