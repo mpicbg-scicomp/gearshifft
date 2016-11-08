@@ -125,50 +125,64 @@ namespace gearshifft {
 
     inline std::stringstream getClDeviceInformations(cl_device_id dev_id) {
       std::stringstream info;
-      std::vector<std::pair<std::string,std::string> > values;
+
+      std::vector<std::string> values;
+      auto keys = {CL_DEVICE_NAME, CL_DEVICE_VERSION, CL_DRIVER_VERSION, CL_DEVICE_OPENCL_C_VERSION};
+      
       char* value = nullptr;
       size_t valueSize = 0;
-      cl_uint maxComputeUnits;
-      // print device name
-      clGetDeviceInfo(dev_id, CL_DEVICE_NAME, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
-      clGetDeviceInfo(dev_id, CL_DEVICE_NAME, valueSize, value, NULL);
-      values.emplace_back("Device", value);
-      free(value);
+      std::stringstream msg;
 
-      // print hardware device version
-      clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
-      clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, valueSize, value, NULL);
-      values.emplace_back("Hardware", value);
-      free(value);
+      for(auto key : keys){
+	clGetDeviceInfo(dev_id, key, 0, NULL, &valueSize);
+	value = (char*) malloc(valueSize);
+	clGetDeviceInfo(dev_id, key, valueSize, value, NULL);
+	msg.str("");
+	msg << "\"" << value << "\"";
+	values.emplace_back(msg.str());
+	free(value);
+      }
+	
+      // // print device name
+      // clGetDeviceInfo(dev_id, CL_DEVICE_NAME, 0, NULL, &valueSize);
+      // value = (char*) malloc(valueSize);
+      // clGetDeviceInfo(dev_id, CL_DEVICE_NAME, valueSize, value, NULL);
+      // values.emplace_back(value);
+      // free(value);
 
-      // print software driver version
-      clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
-      clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, valueSize, value, NULL);
-      values.emplace_back("Software", value);
-      free(value);
+      // // print hardware device version
+      // clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, 0, NULL, &valueSize);
+      // value = (char*) malloc(valueSize);
+      // clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, valueSize, value, NULL);
+      // values.emplace_back("Hardware", value);
+      // free(value);
 
-      // print c version supported by compiler for device
-      clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
-      clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
-      values.emplace_back("OpenCL", value);
-      free(value);
+      // // print software driver version
+      // clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, 0, NULL, &valueSize);
+      // value = (char*) malloc(valueSize);
+      // clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, valueSize, value, NULL);
+      // values.emplace_back("Software", value);
+      // free(value);
+
+      // // print c version supported by compiler for device
+      // clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
+      // value = (char*) malloc(valueSize);
+      // clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
+      // values.emplace_back("OpenCL", value);
+      // free(value);
 
       // print parallel compute units
+      cl_uint maxComputeUnits;
       clGetDeviceInfo(dev_id, CL_DEVICE_MAX_COMPUTE_UNITS,
                       sizeof(maxComputeUnits), &maxComputeUnits, NULL);
-      values.emplace_back("UsedComputeUnits", std::to_string(maxComputeUnits));
+      values.emplace_back(std::to_string(maxComputeUnits));
+      values.emplace_back(std::to_string( getMaxGlobalMemSize(dev_id) ));
 
-      values.emplace_back("MaxGlobalMemSize", std::to_string( getMaxGlobalMemSize(dev_id) ));
-
-      info << "\"ClFFT Informations\"";
-      for(auto pair : values) {
-        info << ",\"" << pair.first << "\",\"" << pair.second << '"';
-      }
-
+      auto values_item = values.begin();
+      for(;values_item!=values.end()-1;++values_item)
+	info << *values_item << ",";
+      info << *values_item;
+      
       // clFFT version
       cl_uint  major, minor, patch;
       clfftGetVersion(&major, &minor, &patch);
