@@ -37,7 +37,7 @@ struct FftwConfig {
 #else
   static constexpr unsigned PlanFlags = FFTW_MEASURE;
 #endif
-#if defined(GEARSHIFFT_FFTW_MEASURE) && defined(GEARSHIFFT_FFTW_TIMELIMIT)
+#if defined(GEARSHIFFT_FFTW_USE_MEASURE) && defined(GEARSHIFFT_FFTW_TIMELIMIT)
   static constexpr double PlanTimeLimit = GEARSHIFFT_FFTW_TIMELIMIT;
 #else
   static constexpr double PlanTimeLimit = FFTW_NO_TIMELIMIT;

@@ -131,8 +131,8 @@ function(add_exec Tlib)
     elseif(Tlib MATCHES "wisdom")
       list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_USE_WISDOM")
     else()
-      list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_TIMELIMIT=3600") # time limit for plan creation in seconds
-      message(">> FFTW Plan Time Limit = 3600s")
+      list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_USE_MEASURE -DGEARSHIFFT_FFTW_TIMELIMIT=${GEARSHIFFT_FFTW_TIMELIMIT}") # time limit for plan creation in seconds
+      message(">> FFTW Plan Time Limit = ${GEARSHIFFT_FFTW_TIMELIMIT} s")
     endif()
 
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
