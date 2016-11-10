@@ -430,7 +430,6 @@ namespace fftw {
         data_size_(0),
         data_transform_size_(0)
       {
-
         extents_ = interpret_as::column_major(cextents);
         allocated_extents_ = extents_;
 
@@ -451,7 +450,7 @@ namespace fftw {
         data_size_ = sizeof(value_type)*n_allocated_;
         data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
         //size_t total_mem = getMemorySize();
-        size_t total_mem = 99*getMemorySize()/100;
+        size_t total_mem = 95*getMemorySize()/100; // keep some memory available, otherwise an out-of-memory killer becomes more likely
         if(total_mem < 2*(data_size_+data_transform_size_)) { // includes host input buffers
           std::stringstream ss;
           ss << total_mem << "<" << 2*(data_size_+data_transform_size_) << " (bytes)";

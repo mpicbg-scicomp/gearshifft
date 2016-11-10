@@ -324,6 +324,7 @@ namespace gearshifft
                                &queue_,
                                nullptr, // callback
                                nullptr)); // user data
+        CHECK_CL( clFinish(queue_) );
       }
 
 
@@ -347,6 +348,7 @@ namespace gearshifft
                                  0, // callback
                                  0)); // user data
         }
+        CHECK_CL( clFinish(queue_) );
       }
 
       void execute_forward() {
@@ -360,6 +362,7 @@ namespace gearshifft
                                        &data_,  // input
                                        IsInplace ? &data_ : &data_complex_, // output
                                        0)); // tmpBuffer
+        CHECK_CL( clFinish(queue_) );
       }
 
       void execute_backward() {
@@ -373,6 +376,7 @@ namespace gearshifft
                                        IsInplace ? &data_ : &data_complex_, // input
                                        &data_, // output
                                        nullptr)); // tmpBuffer
+        CHECK_CL( clFinish(queue_) );
       }
 
       template<typename THostData>
@@ -403,6 +407,7 @@ namespace gearshifft
                                          nullptr, // event_wait_list
                                          context_.event.get() )); // event
         }
+        CHECK_CL( clFinish(queue_) );
       }
 
       template<typename THostData>
@@ -433,6 +438,7 @@ namespace gearshifft
                                         nullptr, // event_wait_list
                                         context_.event.get() )); // event
         }
+        CHECK_CL( clFinish(queue_) );
       }
 
       void destroy() {
@@ -456,10 +462,17 @@ namespace gearshifft
       }
     };
 
+/*  // OpenCL timer seems to be not reliable, so for proper timings we stick with CPU timer
     typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, TimerGPU<Context> > Inplace_Real;
     typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerGPU<Context> > Outplace_Real;
     typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerGPU<Context> > Inplace_Complex;
-    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerGPU<Context> > Outplace_Complex;
+    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerGPU<Context> > Outplace_Complex;*/
+
+    typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, TimerCPU > Inplace_Real;
+    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerCPU > Outplace_Real;
+    typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerCPU > Inplace_Complex;
+    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerCPU > Outplace_Complex;
+
   } // namespace ClFFT
 } // gearshifft
 
