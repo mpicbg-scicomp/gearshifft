@@ -128,6 +128,7 @@ See CSV header for column titles.
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - At the moment this is for single-GPUs, batches are not considered
 - if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment)
+- in case the boost version (e.g. 1.62.0) you have is more recent than your cmake (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 
 ## Roadmap
 
