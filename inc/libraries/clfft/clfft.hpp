@@ -282,8 +282,8 @@ namespace gearshifft
         size_t size2 = 0;
 
         if(context_.usesHostMemory()) {
-//          wanted += 2*data_size_; // also consider already located data of benchmark in RAM
-          wanted += 8*data_size_; // conservative to prevent OOMs
+          wanted += 2*data_size_; // also consider already located data of benchmark in RAM
+//          wanted += 8*data_size_; // conservative to prevent OOMs
         }
 
         if( gmemsize > wanted ) {
@@ -295,8 +295,8 @@ namespace gearshifft
           wanted += std::max(size1,size2);
         }
 
-        if( gmemsize < wanted ) {
-          std::cerr << "  " << wanted << " of " << gmemsize << std::endl;
+        if( gmemsize <= wanted ) {
+//          std::cerr << "  " << wanted << " of " << gmemsize << std::endl;
           std::stringstream ss;
           ss << gmemsize << "<" << wanted << " (bytes)";
           throw std::runtime_error("FFT plan + data are exceeding [global] memory. "+ss.str());
