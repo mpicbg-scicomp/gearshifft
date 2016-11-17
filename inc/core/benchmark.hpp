@@ -1,6 +1,5 @@
 #ifndef BENCHMARK_HPP_
 #define BENCHMARK_HPP_
-#define BOOST_TEST_DISABLE_ALT_STACK
 #define BOOST_TEST_NO_MAIN
 #define BOOST_TEST_ALTERNATIVE_INIT_API
 
@@ -8,7 +7,7 @@
 #include "options.hpp"
 #include "benchmark_suite.hpp"
 
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 namespace gearshifft {
