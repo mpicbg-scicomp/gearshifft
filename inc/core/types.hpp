@@ -55,10 +55,11 @@ namespace gearshifft {
   enum struct RecordType {
     Device = 0,
     Allocation,
-    PlanInit,
+    PlanInitFwd,
+    PlanInitInv,
     Upload,
     FFT,
-    FFTInverse,
+    FFTInv,
     Download,
     PlanDestroy,
     Total,
@@ -71,12 +72,12 @@ namespace gearshifft {
   inline
   std::ostream& operator<< (std::ostream & os, RecordType r) {
     switch (r) {
-    case RecordType::Device: return os << "Time_Device [ms]";
     case RecordType::Allocation: return os << "Time_Allocation [ms]";
-    case RecordType::PlanInit: return os << "Time_PlanInit [ms]";
+    case RecordType::PlanInitFwd: return os << "Time_PlanInitFwd [ms]";
+    case RecordType::PlanInitInv: return os << "Time_PlanInitInv [ms]";
     case RecordType::Upload: return os << "Time_Upload [ms]";
     case RecordType::FFT: return os << "Time_FFT [ms]";
-    case RecordType::FFTInverse: return os << "Time_iFFT [ms]";
+    case RecordType::FFTInv: return os << "Time_iFFT [ms]";
     case RecordType::Download: return os << "Time_Download [ms]";
     case RecordType::PlanDestroy: return os << "Time_PlanDestroy [ms]";
     case RecordType::Total: return os << "Time_Total [ms]";

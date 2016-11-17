@@ -58,7 +58,7 @@ namespace gearshifft {
       if(gearshifft::Options::getInstance().getVerbose()) {
         resultAll_.print(std::cout,
                          T_Context::title(),
-                         context_.getDeviceInfos(),
+                         context_.get_used_device_properties(),
                          timeContextCreate_,
                          timeContextDestroy_);
       }
@@ -67,7 +67,7 @@ namespace gearshifft {
       resultAll_.sort();
       resultAll_.saveCSV(fname,
                          T_Context::title(),
-                         context_.getDeviceInfos(),
+                         context_.get_used_device_properties(),
                          timeContextCreate_,
                          timeContextDestroy_);
       std::cout << "Results dumped to "+fname << std::endl;

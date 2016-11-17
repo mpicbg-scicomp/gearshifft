@@ -123,6 +123,12 @@ namespace gearshifft {
       return value;
     }
 
+    inline cl_device_type getDeviceType(cl_device_id dev_id) {
+      cl_device_type dev_type;
+      CHECK_CL( clGetDeviceInfo(dev_id, CL_DEVICE_TYPE, sizeof(cl_device_type), &dev_type, NULL) );
+      return dev_type;
+    }
+
     inline std::stringstream getClDeviceInformations(cl_device_id dev_id) {
       std::stringstream info;
       std::vector<std::pair<std::string,std::string> > values;

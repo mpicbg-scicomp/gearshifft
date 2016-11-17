@@ -23,7 +23,7 @@ namespace CuFFT {
       using RealType = cufftReal;
       static constexpr cufftType FFTForward = CUFFT_R2C;
       static constexpr cufftType FFTComplex = CUFFT_C2C;
-      static constexpr cufftType FFTBackward = CUFFT_C2R;
+      static constexpr cufftType FFTInverse = CUFFT_C2R;
 
       struct FFTExecuteForward{
         void operator()(cufftHandle plan, RealType* in, ComplexType* out){
@@ -33,7 +33,7 @@ namespace CuFFT {
           CHECK_CUDA(cufftExecC2C(plan, in, out, CUFFT_FORWARD));
         }
       };
-      struct FFTExecuteBackward{
+      struct FFTExecuteInverse{
         void operator()(cufftHandle plan, ComplexType* in, RealType* out){
           CHECK_CUDA(cufftExecC2R(plan, in, out));
         }
@@ -50,7 +50,7 @@ namespace CuFFT {
       using RealType = cufftDoubleReal;
       static constexpr cufftType FFTForward = CUFFT_D2Z;
       static constexpr cufftType FFTComplex = CUFFT_Z2Z;
-      static constexpr cufftType FFTBackward = CUFFT_Z2D;
+      static constexpr cufftType FFTInverse = CUFFT_Z2D;
 
       struct FFTExecuteForward{
         void operator()(cufftHandle plan, RealType* in, ComplexType* out){
@@ -60,7 +60,7 @@ namespace CuFFT {
           CHECK_CUDA(cufftExecZ2Z(plan, in, out, CUFFT_FORWARD));
         }
       };
-      struct FFTExecuteBackward{
+      struct FFTExecuteInverse{
         void operator()(cufftHandle plan, ComplexType* in, RealType* out){
           CHECK_CUDA(cufftExecZ2D(plan, in, out));
         }
@@ -83,11 +83,11 @@ namespace CuFFT {
       return "CuFFT";
     }
 
-    static std::string getListDevices() {
+    static std::string get_device_list() {
       return listCudaDevices().str();
     }
 
-    std::string getDeviceInfos() {
+    std::string get_used_device_properties() {
       auto ss = getCUDADeviceInformations(device);
       return ss.str();
     }
@@ -181,7 +181,7 @@ namespace CuFFT {
    * This class handles:
    * - {1D, 2D, 3D} x {R2C, C2R, C2C} x {inplace, outplace} x {float, double}.
    */
-  template<typename TFFT, // see fft_abstract.hpp (FFT_Inplace_Real, ...)
+  template<typename TFFT, // see fft.hpp (FFT_Inplace_Real, ...)
            typename TPrecision, // double, float
            size_t   NDim // 1..3
            >
@@ -191,7 +191,7 @@ namespace CuFFT {
     using ComplexType = typename Types::ComplexType;
     using RealType = typename Types::RealType;
     using FFTExecuteForward  = typename Types::FFTExecuteForward;
-    using FFTExecuteBackward = typename Types::FFTExecuteBackward;
+    using FFTExecuteInverse = typename Types::FFTExecuteInverse;
 
     static constexpr
      bool IsInplace = TFFT::IsInplace;
@@ -202,7 +202,7 @@ namespace CuFFT {
     static constexpr
      cufftType FFTForward  = IsComplex ? Types::FFTComplex : Types::FFTForward;
     static constexpr
-     cufftType FFTBackward = IsComplex ? Types::FFTComplex : Types::FFTBackward;
+     cufftType FFTInverse = IsComplex ? Types::FFTComplex : Types::FFTInverse;
 
     using RealOrComplexType  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
@@ -239,21 +239,21 @@ namespace CuFFT {
     /**
      * Returns allocated memory on device for FFT
      */
-    size_t getAllocSize() {
+    size_t get_allocation_size() {
       return data_size_ + data_complex_size_;
     }
 
     /**
      * Returns data to be transfered to and from device for FFT
      */
-    size_t getTransferSize() {
+    size_t get_transfer_size() {
       return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
     }
 
     /**
      * Returns estimated allocated memory on device for FFT plan
      */
-    size_t getPlanSize() {
+    size_t get_plan_size() {
       size_t size1 = 0;
       size_t size2 = 0;
       if(use64bit_)
@@ -264,9 +264,9 @@ namespace CuFFT {
       CHECK_CUDA(cufftDestroy(plan_));
       plan_=0;
       if(use64bit_)
-        size2 = estimateAllocSize64<FFTBackward>(plan_,extents_);
+        size2 = estimateAllocSize64<FFTInverse>(plan_,extents_);
       else{
-        size2 = estimateAllocSize<FFTBackward>(plan_,extents_);
+        size2 = estimateAllocSize<FFTInverse>(plan_,extents_);
       }
       CHECK_CUDA(cufftDestroy(plan_));
       plan_=0;
@@ -288,7 +288,7 @@ namespace CuFFT {
     /**
      * Allocate buffers on CUDA device
      */
-    void malloc() {
+    void allocate() {
       CHECK_CUDA(cudaMalloc(&data_, data_size_));
 
       if(IsInplace) {
@@ -307,14 +307,14 @@ namespace CuFFT {
     }
 
     // recreates plan if needed
-    void init_backward() {
+    void init_inverse() {
       if(IsComplex==false){
         CHECK_CUDA(cufftDestroy(plan_));
         plan_=0;
         if(use64bit_)
-          makePlan64<FFTBackward>(plan_, extents_);
+          makePlan64<FFTInverse>(plan_, extents_);
         else
-          makePlan<FFTBackward>(plan_, extents_);
+          makePlan<FFTInverse>(plan_, extents_);
       }
     }
 
@@ -322,8 +322,8 @@ namespace CuFFT {
       FFTExecuteForward()(plan_, data_, data_complex_);
     }
 
-    void execute_backward() {
-      FFTExecuteBackward()(plan_, data_complex_, data_);
+    void execute_inverse() {
+      FFTExecuteInverse()(plan_, data_complex_, data_);
     }
 
     template<typename THostData>
@@ -334,7 +334,7 @@ namespace CuFFT {
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
         CHECK_CUDA(cudaMemcpy2D(data_, pitch, input, w, w, h, cudaMemcpyHostToDevice));
       }else{
-        CHECK_CUDA(cudaMemcpy(data_, input, getTransferSize(), cudaMemcpyHostToDevice));
+        CHECK_CUDA(cudaMemcpy(data_, input, get_transfer_size(), cudaMemcpyHostToDevice));
       }
     }
 
@@ -346,7 +346,7 @@ namespace CuFFT {
         size_t pitch  = (extents_[NDim-1]/2+1) * sizeof(ComplexType);
         CHECK_CUDA(cudaMemcpy2D(output, w, data_, pitch, w, h, cudaMemcpyDeviceToHost));
       }else{
-        CHECK_CUDA(cudaMemcpy(output, data_, getTransferSize(), cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy(output, data_, get_transfer_size(), cudaMemcpyDeviceToHost));
       }
     }
 
@@ -364,10 +364,22 @@ namespace CuFFT {
     }
   };
 
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, CuFFTImpl, TimerGPU> Inplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, CuFFTImpl, TimerGPU> Outplace_Real;
-  typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, CuFFTImpl, TimerGPU> Inplace_Complex;
-  typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, CuFFTImpl, TimerGPU> Outplace_Complex;
+    using Inplace_Real = gearshifft::FFT<FFT_Inplace_Real,
+                                         FFT_Plan_Reusable,
+                                         CuFFTImpl,
+                                         TimerGPU >;
+    using Outplace_Real = gearshifft::FFT<FFT_Outplace_Real,
+                                          FFT_Plan_Reusable,
+                                          CuFFTImpl,
+                                          TimerGPU >;
+    using Inplace_Complex = gearshifft::FFT<FFT_Inplace_Complex,
+                                            FFT_Plan_Reusable,
+                                            CuFFTImpl,
+                                            TimerGPU >;
+    using Outplace_Complex = gearshifft::FFT<FFT_Outplace_Complex,
+                                             FFT_Plan_Reusable,
+                                             CuFFTImpl,
+                                             TimerGPU >;
 
 } // namespace CuFFT
 } // namespace gearshifft
