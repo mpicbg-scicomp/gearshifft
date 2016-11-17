@@ -100,7 +100,7 @@ namespace fftw {
     };
 
     enum class fftw_direction {
-      backward = FFTW_BACKWARD,
+      inverse = FFTW_BACKWARD,
       forward = FFTW_FORWARD
     };
 
@@ -332,14 +332,14 @@ namespace fftw {
       return "Fftw";
     }
 
-    static std::string getListDevices() {
+    static std::string get_device_list() {
       int av_procs = std::thread::hardware_concurrency();
       std::ostringstream msg;
       msg << av_procs << " CPU Threads supported.\n";
       return msg.str();
     }
 
-    std::string getDeviceInfos() {
+    std::string get_used_device_properties() {
       static constexpr unsigned PlanFlags = T_FftwConfig::PlanFlags;
       static constexpr double PlanTimeLimit = T_FftwConfig::PlanTimeLimit;
       // Returns the number of supported concurrent threads
@@ -451,9 +451,9 @@ namespace fftw {
         data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
         //size_t total_mem = getMemorySize();
         size_t total_mem = 95*getMemorySize()/100; // keep some memory available, otherwise an out-of-memory killer becomes more likely
-        if(total_mem < 2*(data_size_+data_transform_size_)) { // includes host input buffers
+        if(total_mem < 3*data_size_+data_transform_size_) { // includes host input buffers
           std::stringstream ss;
-          ss << total_mem << "<" << 2*(data_size_+data_transform_size_) << " (bytes)";
+          ss << total_mem << "<" << 3*data_size_+data_transform_size_ << " (bytes)";
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
@@ -474,7 +474,7 @@ namespace fftw {
     /**
      * Returns allocated memory for FFT
      */
-    size_t getAllocSize() {
+    size_t get_allocation_size() {
       return data_size_ + data_transform_size_;
     }
 
@@ -487,34 +487,34 @@ namespace fftw {
                                                    data_transform_,
                                                    traits::fftw_direction::forward,
                                                    TFftwConfig::PlanFlags);
-      bwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_transform_,
-                                                   data_,
-                                                   traits::fftw_direction::backward,
-                                                   TFftwConfig::PlanFlags);//leave this here for now
       if(!fwd_plan_)
         if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
           throw std::runtime_error("fftw forward plan could not be created as wisdom is not available for this problem.");
         else
           throw std::runtime_error("fftw forward plan could not be created.");
-      if(!bwd_plan_)
-        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
-          throw std::runtime_error("fftw backward plan could not be created as wisdom is not available for this problem.");
-        else
-          throw std::runtime_error("fftw backward plan could not be created.");
     }
 
-    // recreates plan if needed
-    void init_backward() {
+    //
+    void init_inverse() {
+      bwd_plan_ = traits::plan<TPrecision>::create(extents_,
+                                                   data_transform_,
+                                                   data_,
+                                                   traits::fftw_direction::inverse,
+                                                   TFftwConfig::PlanFlags);//leave this here for now
+      if(!bwd_plan_)
+        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
+          throw std::runtime_error("fftw inverse plan could not be created as wisdom is not available for this problem.");
+        else
+          throw std::runtime_error("fftw inverse plan could not be created.");
 
     }
 
     /**
      * Returns estimated allocated memory on device for FFT plan, accessing the plan size in fftw is impossible
      following @tdd11235813 advice:
-     getPlanSize() should return 0, Sizes of transform buffers are already returned by getAllocSize().
+     get_plan_size() should return 0, Sizes of transform buffers are already returned by get_allocation_size().
     */
-    size_t getPlanSize() {
+    size_t get_plan_size() {
       
       return 0;
     }
@@ -522,14 +522,14 @@ namespace fftw {
     /**
      * Returns data to be transfered to and from device for FFT
      */
-    size_t getTransferSize() {
+    size_t get_transfer_size() {
       return data_size_ + data_transform_size_;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // --- next methods are benchmarked ---
 
-    void malloc() {
+    void allocate() {
       data_ = (value_type*)traits::memory_api<TPrecision>::malloc(data_size_);
       if(IsInplace){
         data_transform_ = reinterpret_cast<ComplexType*>(data_);
@@ -545,7 +545,7 @@ namespace fftw {
       traits::plan<TPrecision>::execute(fwd_plan_);
     }
 
-    void execute_backward() {
+    void execute_inverse() {
 
       traits::plan<TPrecision>::execute(bwd_plan_);
     }
@@ -629,16 +629,32 @@ namespace fftw {
   };
 
   template<typename T_FftwConfig>
-  using Inplace_Real = gearshifft::FFT<gearshifft::FFT_Inplace_Real, FftwImpl, TimerCPU, T_FftwConfig>;
+  using Inplace_Real = gearshifft::FFT<FFT_Inplace_Real,
+                                       FFT_Plan_Not_Reusable,
+                                       FftwImpl,
+                                       TimerCPU,
+                                       T_FftwConfig>;
 
   template<typename T_FftwConfig>
-  using Outplace_Real = gearshifft::FFT<gearshifft::FFT_Outplace_Real, FftwImpl, TimerCPU, T_FftwConfig>;
+  using Outplace_Real = gearshifft::FFT<FFT_Outplace_Real,
+                                        FFT_Plan_Not_Reusable,
+                                        FftwImpl,
+                                        TimerCPU,
+                                        T_FftwConfig>;
 
   template<typename T_FftwConfig>
-  using Inplace_Complex = gearshifft::FFT<gearshifft::FFT_Inplace_Complex, FftwImpl, TimerCPU, T_FftwConfig>;
+  using Inplace_Complex = gearshifft::FFT<FFT_Inplace_Complex,
+                                          FFT_Plan_Not_Reusable,
+                                          FftwImpl,
+                                          TimerCPU,
+                                          T_FftwConfig>;
 
   template<typename T_FftwConfig>
-  using Outplace_Complex = gearshifft::FFT<gearshifft::FFT_Outplace_Complex, FftwImpl, TimerCPU, T_FftwConfig>;
+  using Outplace_Complex = gearshifft::FFT<FFT_Outplace_Complex,
+                                           FFT_Plan_Not_Reusable,
+                                           FftwImpl,
+                                           TimerCPU,
+                                           T_FftwConfig>;
 } // namespace fftw
 } // namespace gearshifft
 

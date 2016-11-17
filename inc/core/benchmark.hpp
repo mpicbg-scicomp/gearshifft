@@ -41,7 +41,7 @@ namespace gearshifft {
 
       if( Options::getInstance().parse(vargv, boost_vargv_) ) {
         if( gearshifft::Options::getInstance().getListDevices() ) {
-          std::cout << Context::getListDevices() << std::endl;
+          std::cout << Context::get_device_list() << std::endl;
         }
       }
       else

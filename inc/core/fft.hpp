@@ -35,15 +35,19 @@ namespace gearshifft {
     static constexpr auto IsInplace = false;
   };
 
+  using FFT_Plan_Reusable = std::true_type;
+  using FFT_Plan_Not_Reusable = std::false_type;
+
 /**
  * Functor being called from FixtureBenchmark::benchmark()
  */
-  template<typename TFFT, // FFT_*_* [inplace.., real..]
-           template <typename,typename,size_t,typename... > typename TPlan,
-           typename TDeviceTimer,
-           typename... TPlanArgs
+  template<typename T_FFT, // FFT_*_* [inplace.., real..]
+           typename T_ReusePlan, // can plan be reused ?
+           template <typename,typename,size_t,typename... > typename T_UserImpl,
+           typename T_DeviceTimer,
+           typename... T_UserImplArgs
            >
-  struct FFT : public TFFT {
+  struct FFT : public T_FFT {
     /**
      * Called by FixtureBenchmark
      * \tparam T_Result ResultBenchmark<NR_RUNS, NR_RECORDS>, also see class Application.
@@ -54,66 +58,79 @@ namespace gearshifft {
     void operator()(T_Result& result,
                     T_Vector& vec,
                     const std::array<size_t,NDim>& extents
-      ) {
+      ) const {
       using PrecisionT = typename Precision<typename T_Vector::value_type,
-                                            TFFT::IsComplex >::type;
+                                            T_FFT::IsComplex >::type;
       assert(vec.size());
 
       // prepare plan object
       // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-      auto plan = TPlan<TFFT, PrecisionT, NDim, TPlanArgs...> (extents);
-      result.setValue(RecordType::DevBufferSize, plan.getAllocSize());
-      result.setValue(RecordType::DevPlanSize, plan.getPlanSize());
-      result.setValue(RecordType::DevTransferSize, plan.getTransferSize());
+      auto fft = T_UserImpl<T_FFT, PrecisionT, NDim, T_UserImplArgs...> (extents);
+      result.setValue(RecordType::DevBufferSize, fft.get_allocation_size());
+      result.setValue(RecordType::DevPlanSize, fft.get_plan_size());
+      result.setValue(RecordType::DevTransferSize, fft.get_transfer_size());
 
       TimerCPU ttotal;
       TimerCPU talloc;
       TimerCPU tplaninit;
+      TimerCPU tplaninitinv;
       TimerCPU tplandestroy;
-      TDeviceTimer tdevupload;
-      TDeviceTimer tdevdownload;
-      TDeviceTimer tdevfft;
-      TDeviceTimer tdevfftinverse;
-      TimerCPU tdevtotal;
+      T_DeviceTimer tdevupload;
+      T_DeviceTimer tdevdownload;
+      T_DeviceTimer tdevfft;
+      T_DeviceTimer tdevfftinverse;
       /// --- Total CPU ---
       ttotal.startTimer();
-      /// --- Malloc ---
+
+      // allocate memory
       talloc.startTimer();
-      plan.malloc();
+      fft.allocate();
       result.setValue(RecordType::Allocation, talloc.stopTimer());
 
-      /// --- Create plan ---
+      // init forward plan
       tplaninit.startTimer();
-      plan.init_forward();
-      result.setValue(RecordType::PlanInit, tplaninit.stopTimer());
+      fft.init_forward();
+      result.setValue(RecordType::PlanInitFwd, tplaninit.stopTimer());
 
-      /// --- FFT+iFFT GPU ---
-      tdevtotal.startTimer();
+      if(T_ReusePlan::value == false) {
+        // init inverse plan
+        tplaninitinv.startTimer();
+        fft.init_inverse();
+        result.setValue(RecordType::PlanInitInv, tplaninitinv.stopTimer());
+      }
 
+      // upload data
       tdevupload.startTimer();
-      plan.upload(vec.data());
+      fft.upload(vec.data());
       result.setValue(RecordType::Upload, tdevupload.stopTimer());
 
+      // execute forward transform
       tdevfft.startTimer();
-      plan.execute_forward();
+      fft.execute_forward();
       result.setValue(RecordType::FFT, tdevfft.stopTimer());
 
-      plan.init_backward();
+      if(T_ReusePlan::value == true) {
+        // init inverse plan
+        tplaninitinv.startTimer();
+        fft.init_inverse();
+        result.setValue(RecordType::PlanInitInv, tplaninitinv.stopTimer());
+      }
 
+      // execute inverse transform
       tdevfftinverse.startTimer();
-      plan.execute_backward();
-      result.setValue(RecordType::FFTInverse, tdevfftinverse.stopTimer());
+      fft.execute_inverse();
+      result.setValue(RecordType::FFTInv, tdevfftinverse.stopTimer());
 
+      // download data
       tdevdownload.startTimer();
-      plan.download(vec.data());
+      fft.download(vec.data());
       result.setValue(RecordType::Download, tdevdownload.stopTimer());
-
-      result.setValue(RecordType::Device, tdevtotal.stopTimer());
 
       /// --- Cleanup ---
       tplandestroy.startTimer();
-      plan.destroy();
+      fft.destroy();
       result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
+
       result.setValue(RecordType::Total, ttotal.stopTimer());
     }
   };

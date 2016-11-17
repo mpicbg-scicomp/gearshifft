@@ -66,17 +66,18 @@ namespace gearshifft
       cl_device_id device_used = 0;
       cl_context ctx = 0;
       std::shared_ptr<cl_event> event;
+      bool uses_cpu_ram = false; // false, if an accelerator with own memory is used
 
       static const std::string title() {
         return "ClFFT";
       }
 
-      static const std::string getListDevices() {
+      static const std::string get_device_list() {
         auto ss = listClDevices();
         return ss.str();
       }
 
-      std::string getDeviceInfos() {
+      std::string get_used_device_properties() {
         assert(device_used);
         auto ss = getClDeviceInformations(device_used);
         return ss.str();
@@ -89,7 +90,7 @@ namespace gearshifft
         event = std::make_shared<cl_event>();
 
         const std::string options_devtype = Options::getInstance().getDevice();
-        std::regex e("^([0-9]+):([0-9]+)$");
+        std::regex e("^([0-9]+):([0-9]+)$"); // get user specified platform and device id
         if(std::regex_search(options_devtype, e)) {
           std::vector<std::string> token;
           boost::split(token, options_devtype, boost::is_any_of(":"));
@@ -97,20 +98,24 @@ namespace gearshifft
           unsigned long id_device = std::stoul(token[1].c_str());
           getPlatformAndDeviceByID(&platform, &device, id_platform, id_device);
         }else{
-          if(boost::iequals(options_devtype, "cpu")) // case insensitive compare
+          if(boost::iequals(options_devtype, "cpu")) { // case insensitive compare
             devtype = CL_DEVICE_TYPE_CPU;
-          else if(boost::iequals(options_devtype, "acc"))
+          } else if(boost::iequals(options_devtype, "acc")) {
             devtype = CL_DEVICE_TYPE_ACCELERATOR;
-          else if(boost::iequals(options_devtype, "gpu"))
+          } else if(boost::iequals(options_devtype, "gpu")) {
             devtype = CL_DEVICE_TYPE_GPU;
-          else
+          } else
             throw std::runtime_error("Unsupported device type");
           findClDevice(devtype, &platform, &device);
         }
 
+        devtype = getDeviceType(device);
+        if(devtype!=CL_DEVICE_TYPE_GPU && devtype!=CL_DEVICE_TYPE_ACCELERATOR)
+          uses_cpu_ram=true;
+
         device_used = device;
         props[1] = (cl_context_properties)platform;
-        if(devtype == CL_DEVICE_TYPE_CPU) {
+        if(devtype == CL_DEVICE_TYPE_CPU) { // if only subset of cores is requested
           const size_t ndevs = Options::getInstance().getNumberDevices();
           if(ndevs>0) {
             const cl_device_partition_property properties[3] = {
@@ -141,6 +146,10 @@ namespace gearshifft
           ctx = 0;
           event.reset();
         }
+      }
+
+      bool usesHostMemory() const {
+        return uses_cpu_ram;
       }
     };
 
@@ -252,36 +261,47 @@ namespace gearshifft
       /**
        * Returns data to be transfered to and from device for FFT
        */
-      size_t getTransferSize() {
+      size_t get_transfer_size() {
         return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
       }
 
       /**
        * Returns allocated memory on device for FFT
        */
-      size_t getAllocSize() {
+      size_t get_allocation_size() {
         return data_size_ + data_complex_size_;
       }
 
       /**
        * Returns estimated allocated memory on device for FFT plan
        */
-      size_t getPlanSize() {
+      size_t get_plan_size() {
+        size_t gmemsize = 95*static_cast<size_t>(getMaxGlobalMemSize(context_.device))/100;
+        size_t wanted = data_size_ + data_complex_size_;
         size_t size1 = 0;
         size_t size2 = 0;
-        init_forward();
-        CHECK_CL(clfftGetTmpBufSize( plan_, &size1 ));
-        init_backward();
-        CHECK_CL(clfftGetTmpBufSize( plan_, &size2 ));
-        CHECK_CL(clfftDestroyPlan( &plan_ ));
 
-        auto gmemsize = getMaxGlobalMemSize(context_.device);
-        size_t wanted = std::max(size1,size2) + data_size_ + data_complex_size_;
-        if( gmemsize < wanted ) {
+        if(context_.usesHostMemory()) {
+          wanted += 2*data_size_; // also consider already located data of benchmark in RAM
+//          wanted += 8*data_size_; // conservative to prevent OOMs
+        }
+
+        if( gmemsize > wanted ) {
+          init_forward();
+          CHECK_CL(clfftGetTmpBufSize( plan_, &size1 ));
+          init_inverse();
+          CHECK_CL(clfftGetTmpBufSize( plan_, &size2 ));
+          CHECK_CL(clfftDestroyPlan( &plan_ ));
+          wanted += std::max(size1,size2);
+        }
+
+        if( gmemsize <= wanted ) {
+//          std::cerr << "  " << wanted << " of " << gmemsize << std::endl;
           std::stringstream ss;
           ss << gmemsize << "<" << wanted << " (bytes)";
           throw std::runtime_error("FFT plan + data are exceeding [global] memory. "+ss.str());
         }
+
         return std::max(size1,size2);
       }
 
@@ -290,7 +310,7 @@ namespace gearshifft
       /**
        * Allocate buffers on OpenCL device
        */
-      void malloc() {
+      void allocate() {
         cl_int err;
         data_ = clCreateBuffer( context_.ctx,
                                 CL_MEM_READ_WRITE,
@@ -331,7 +351,7 @@ namespace gearshifft
       /**
        * If real-transform: create clfft backward plan with layout, precision, strides and distances
        */
-      void init_backward() {
+      void init_inverse() {
         if(IsComplex==false){
           CHECK_CL(clfftDestroyPlan( &plan_ ));
           CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_.data()));
@@ -365,7 +385,7 @@ namespace gearshifft
         CHECK_CL( clFinish(queue_) );
       }
 
-      void execute_backward() {
+      void execute_inverse() {
         CHECK_CL(clfftEnqueueTransform(plan_,
                                        CLFFT_BACKWARD,
                                        1, // numQueuesAndEvents
@@ -401,7 +421,7 @@ namespace gearshifft
                                          data_,
                                          CL_FALSE, // blocking_write
                                          0, // offset
-                                         getTransferSize(),
+                                         get_transfer_size(),
                                          input,
                                          0, // num_events_in_wait_list
                                          nullptr, // event_wait_list
@@ -432,7 +452,7 @@ namespace gearshifft
                                         data_,
                                         CL_FALSE, // blocking_write
                                         0, // offset
-                                        getTransferSize(),
+                                        get_transfer_size(),
                                         output,
                                         0, // num_events_in_wait_list
                                         nullptr, // event_wait_list
@@ -468,10 +488,22 @@ namespace gearshifft
     typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerGPU<Context> > Inplace_Complex;
     typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerGPU<Context> > Outplace_Complex;*/
 
-    typedef gearshifft::FFT<gearshifft::FFT_Inplace_Real, ClFFTImpl, TimerCPU > Inplace_Real;
-    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Real, ClFFTImpl, TimerCPU > Outplace_Real;
-    typedef gearshifft::FFT<gearshifft::FFT_Inplace_Complex, ClFFTImpl, TimerCPU > Inplace_Complex;
-    typedef gearshifft::FFT<gearshifft::FFT_Outplace_Complex, ClFFTImpl, TimerCPU > Outplace_Complex;
+    using Inplace_Real = gearshifft::FFT<FFT_Inplace_Real,
+                                         FFT_Plan_Reusable,
+                                         ClFFTImpl,
+                                         TimerCPU >;
+    using Outplace_Real = gearshifft::FFT<FFT_Outplace_Real,
+                                          FFT_Plan_Reusable,
+                                          ClFFTImpl,
+                                          TimerCPU >;
+    using Inplace_Complex = gearshifft::FFT<FFT_Inplace_Complex,
+                                            FFT_Plan_Reusable,
+                                            ClFFTImpl,
+                                            TimerCPU >;
+    using Outplace_Complex = gearshifft::FFT<FFT_Outplace_Complex,
+                                             FFT_Plan_Reusable,
+                                             ClFFTImpl,
+                                             TimerCPU >;
 
   } // namespace ClFFT
 } // gearshifft
