@@ -17,7 +17,7 @@ namespace gearshifft {
    * FFT output will be [normalized and] compared to original input.
    */
   template<typename T_Context,
-           typename T_Functor,
+           typename T_FFT_Wrapper,
            typename T_FFT_Normalized,
            typename T_Precision,
            typename T_Extents
@@ -28,7 +28,7 @@ namespace gearshifft {
     static constexpr int NR_RUNS = ApplicationT::NR_RUNS;
     static constexpr double ERROR_BOUND = ApplicationT::ERROR_BOUND;
     static constexpr size_t NDim = std::tuple_size<T_Extents>::value;
-    using VectorT = typename std::conditional<T_Functor::IsComplex,
+    using VectorT = typename std::conditional<T_FFT_Wrapper::IsComplex,
                                               typename BenchmarkData<T_Precision,NDim>::ComplexVector,
                                               typename BenchmarkData<T_Precision,NDim>::RealVector>::type;
     static_assert(NDim<=3,"NDim<=3");
@@ -39,9 +39,9 @@ namespace gearshifft {
       auto data_set = BenchmarkData<T_Precision,NDim>::getInstancePtr(extents);
       data_set->copyTo(data_buffer);
       assert(data_buffer.data());
-      auto fft = T_Functor();
+      auto fft = T_FFT_Wrapper();
       ResultT result;
-      result.template init<T_Functor::IsComplex, T_Functor::IsInplace >
+      result.template init<T_FFT_Wrapper::IsComplex, T_FFT_Wrapper::IsInplace >
                        (extents, ToString<T_Precision>::value() );
       try {
         // warmup

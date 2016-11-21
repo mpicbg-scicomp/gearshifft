@@ -113,10 +113,12 @@ int Options::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) 
     if( vm.count("run-benchmarks") ){
       // C / C++ string madness
       std::string str = "--run_test=" + vm["run-benchmarks"].as<std::string>();
-      char* cstr = new char[str.size()+1];
-      str.copy(cstr, str.size());
-      cstr[str.size()] = '\0';
-      _boost_vargv.emplace_back( cstr );
+      if(tmp_)
+        throw std::runtime_error("This is not supposed to happen, the pointer should be null.");
+      tmp_ = new char[str.size()+1];
+      str.copy(tmp_, str.size());
+      tmp_[str.size()] = '\0';
+      _boost_vargv.emplace_back( tmp_ );
     }
 
     po::notify(vm);
@@ -129,4 +131,9 @@ int Options::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) 
   }
 
   return 0;
+}
+
+Options::~Options() {
+  delete[] tmp_;
+  tmp_ = nullptr;
 }

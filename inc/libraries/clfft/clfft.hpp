@@ -65,7 +65,6 @@ namespace gearshifft
       cl_device_id device = 0;
       cl_device_id device_used = 0;
       cl_context ctx = 0;
-      std::shared_ptr<cl_event> event;
       bool uses_cpu_ram = false; // false, if an accelerator with own memory is used
 
       static const std::string title() {
@@ -87,7 +86,6 @@ namespace gearshifft
         cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
         cl_int err = CL_SUCCESS;
         cl_device_type devtype = CL_DEVICE_TYPE_GPU;
-        event = std::make_shared<cl_event>();
 
         const std::string options_devtype = Options::getInstance().getDevice();
         std::regex e("^([0-9]+):([0-9]+)$"); // get user specified platform and device id
@@ -137,14 +135,11 @@ namespace gearshifft
 
       void destroy() {
         if(ctx) {
-          // @todo crashes at ClFFT/double/2187x625x729/Outplace_Complex with INVALID_EVENT on K20Xm
-          //CHECK_CL(clReleaseEvent(*event));
           CHECK_CL(clReleaseContext( ctx ));
           CHECK_CL(clReleaseDevice(device));
           CHECK_CL( clfftTeardown( ) );
           device = 0;
           ctx = 0;
-          event.reset();
         }
       }
 
@@ -209,11 +204,18 @@ namespace gearshifft
         context_ = Application<Context>::getContext();
         if(context_.ctx==0)
           throw std::runtime_error("Context has not been created.");
-//        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, 0, &err );
-        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, CL_QUEUE_PROFILING_ENABLE, &err );
-        CHECK_CL(err);
 
         n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<size_t>());
+        // check supported sizes : http://clmathlibraries.github.io/clFFT/
+        if((std::is_same<TPrecision,float>::value && n_>=(1<<24))
+           ||
+           (std::is_same<TPrecision,double>::value && n_>=(1<<22)))
+          throw std::runtime_error("Unsupported lengths.");
+
+        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, 0, &err );
+//        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, CL_QUEUE_PROFILING_ENABLE, &err );
+        CHECK_CL(err);
+
 
         auto cl_extents = interpret_as::row_major(cextents);
         std::copy(cl_extents.begin(), cl_extents.end(), extents_.begin());
@@ -378,7 +380,7 @@ namespace gearshifft
                                        &queue_,
                                        0, // numWaitEvents
                                        0, // waitEvents
-                                       context_.event.get(), // outEvents
+                                       nullptr,//context_.event.get(), // outEvents
                                        &data_,  // input
                                        IsInplace ? &data_ : &data_complex_, // output
                                        0)); // tmpBuffer
@@ -392,7 +394,7 @@ namespace gearshifft
                                        &queue_,
                                        0, // numWaitEvents
                                        nullptr, // waitEvents
-                                       context_.event.get(), // outEvents
+                                       nullptr,//context_.event.get(), // outEvents
                                        IsInplace ? &data_ : &data_complex_, // input
                                        &data_, // output
                                        nullptr)); // tmpBuffer
@@ -415,7 +417,7 @@ namespace gearshifft
                                              input,
                                              0, // num_events_in_wait_list
                                              nullptr, // event_wait_list
-                                             context_.event.get() )); // event
+                                             nullptr ));//context_.event.get() )); // event
         }else{
           CHECK_CL(clEnqueueWriteBuffer( queue_,
                                          data_,
@@ -425,7 +427,7 @@ namespace gearshifft
                                          input,
                                          0, // num_events_in_wait_list
                                          nullptr, // event_wait_list
-                                         context_.event.get() )); // event
+                                         nullptr));//context_.event.get() )); // event
         }
         CHECK_CL( clFinish(queue_) );
       }
@@ -446,7 +448,7 @@ namespace gearshifft
                                             output,
                                             0, // num_events_in_wait_list
                                             nullptr, // event_wait_list
-                                            context_.event.get() )); // event
+                                            nullptr));//context_.event.get() )); // event
         }else{
           CHECK_CL(clEnqueueReadBuffer( queue_,
                                         data_,
@@ -456,7 +458,7 @@ namespace gearshifft
                                         output,
                                         0, // num_events_in_wait_list
                                         nullptr, // event_wait_list
-                                        context_.event.get() )); // event
+                                        nullptr));//context_.event.get() )); // event
         }
         CHECK_CL( clFinish(queue_) );
       }
