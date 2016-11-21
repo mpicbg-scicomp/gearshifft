@@ -64,10 +64,10 @@ namespace gearshifft {
            typename T_FFTs,
            typename T_Precisions
            >
-  struct Run {
+  struct BenchmarkSuite {
     const std::string title_;
-    Run( ) : title_(T_Context::title()) { }
-    Run( const char* title ) : title_(title) { }
+    BenchmarkSuite( ) : title_(T_Context::title()) { }
+    BenchmarkSuite( const char* title ) : title_(title) { }
 
     /// Functor for mpl::for_each<T_Precisions>
     struct Apply {
@@ -108,7 +108,7 @@ namespace gearshifft {
       boost::mpl::for_each<T_Precisions>( apply );
       return apply.result();
     }
-  }; // Run
+  }; // BenchmarkSuite
 }
 
 #endif

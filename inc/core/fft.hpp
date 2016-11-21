@@ -39,7 +39,7 @@ namespace gearshifft {
   using FFT_Plan_Not_Reusable = std::false_type;
 
 /**
- * Functor being called from FixtureBenchmark::benchmark()
+ * Functor being called by BenchmarkExecutor
  */
   template<typename T_FFT, // FFT_*_* [inplace.., real..]
            typename T_ReusePlan, // can plan be reused ?
@@ -49,7 +49,7 @@ namespace gearshifft {
            >
   struct FFT : public T_FFT {
     /**
-     * Called by FixtureBenchmark
+     * Called by BenchmarkExecutor
      * \tparam T_Result ResultBenchmark<NR_RUNS, NR_RECORDS>, also see class Application.
      * \tparam T_Vector
      * \tparam NDim Number of FFT dimensions

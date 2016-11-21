@@ -58,7 +58,7 @@ namespace gearshifft {
       AppT::getInstance().createContext();
 
       auto init_function = []() {
-        Run<Context, T_FFT_Is_Normalized, T_FFTs, T_Precisions> instance;
+        BenchmarkSuite<Context, T_FFT_Is_Normalized, T_FFTs, T_Precisions> instance;
         ::boost::unit_test::framework::master_test_suite().add( instance() );
         return true;
       };

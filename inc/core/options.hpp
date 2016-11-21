@@ -59,6 +59,7 @@ namespace gearshifft {
 
   private:
     Options() = default;
+    ~Options();
 
   private:
     bool verbose_ = false;
@@ -70,6 +71,7 @@ namespace gearshifft {
     Extents1DVec vector1D_;
     Extents2DVec vector2D_;
     Extents3DVec vector3D_;
+    char* tmp_ = nullptr;
   };
 }
 
