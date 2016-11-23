@@ -149,3 +149,8 @@ fftw/haswell was run on:
 ```
 2x Intel(R) Xeon(R) CPU E5-2680 v3 (12 cores) @ 2.50GHz, MultiThreading disabled, 128 GB SSD local disk, 64 GB RAM
 ```
+The wisdom files were generated with:
+```bash
+../fftw-3.3.5TF/fftw-3.3.5/tools/fftwf-wisdom -v -c -n -T 24 -o wisdomf  # single precision
+../fftw-3.3.5T/fftw-3.3.5/tools/fftw-wisdom -v -c -n -T 24 -o wisdom     # double precision
+```
