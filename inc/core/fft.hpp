@@ -43,9 +43,9 @@ namespace gearshifft {
  */
   template<typename T_FFT, // FFT_*_* [inplace.., real..]
            typename T_ReusePlan, // can plan be reused ?
-           template <typename,typename,size_t,typename... > typename T_UserImpl,
+           template <typename,typename,size_t,typename... > typename T_Client, // user implementation FFT client
            typename T_DeviceTimer,
-           typename... T_UserImplArgs
+           typename... T_ClientArgs
            >
   struct FFT : public T_FFT {
     /**
@@ -65,7 +65,7 @@ namespace gearshifft {
 
       // prepare plan object
       // templates in: FFT type: in[,out][complex], PlanImpl, Precision, NDim
-      auto fft = T_UserImpl<T_FFT, PrecisionT, NDim, T_UserImplArgs...> (extents);
+      auto fft = T_Client<T_FFT, PrecisionT, NDim, T_ClientArgs...> (extents);
       result.setValue(RecordType::DevBufferSize, fft.get_allocation_size());
       result.setValue(RecordType::DevPlanSize, fft.get_plan_size());
       result.setValue(RecordType::DevTransferSize, fft.get_transfer_size());
