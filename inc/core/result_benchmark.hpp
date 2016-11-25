@@ -142,6 +142,8 @@ namespace gearshifft
     }
 
     bool isNotOnlyDivBy_2_3_5_7(size_t e) {
+      if(e==2 || e==3 || e==5 || e==7)
+        return false;
       size_t t = e;
       size_t sqr = static_cast<size_t>(sqrt(e));
       for( size_t d=2; d<=sqr; ++d ) {
