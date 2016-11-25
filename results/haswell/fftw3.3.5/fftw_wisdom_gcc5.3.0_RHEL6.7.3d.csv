@@ -2,56 +2,56 @@
 ; "Time_ContextCreate [ms]", 0.000293
 ; "Time_ContextDestroy [ms]", 0.000331
 "library","inplace","complex","precision","dim","kind","nx","ny","nz","run","success","0","Time_Allocation [ms]","Time_PlanInitFwd [ms]","Time_PlanInitInv [ms]","Time_Upload [ms]","Time_FFT [ms]","Time_iFFT [ms]","Time_Download [ms]","Time_PlanDestroy [ms]","Time_Total [ms]","Size_DeviceBuffer [bytes]","Size_DevicePlan [bytes]","Size_DeviceTransfer [bytes]","ID"
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000584,0,0,0,0,0,0,0,0,216,0,216,28
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000618,0,0,0,0,0,0,0,0,648,0,648,29
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Complex","float",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000481,0,0,0,0,0,0,0,0,1000,0,1000,45
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Complex","float",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000689,0,0,0,0,0,0,0,0,1944,0,1944,30
-"Fftw","Inplace","Complex","float",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Complex","float",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Complex","float",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Complex","float",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000616,0,0,0,0,0,0,0,0,2744,0,2744,56
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00063,0,0,0,0,0,0,0,0,5000,0,5000,46
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Complex","float",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000528,0,0,0,0,0,0,0,0,19208,0,19208,57
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Complex","float",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Complex","float",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000538,0,0,0,0,0,0,0,0,25000,0,25000,47
-"Fftw","Inplace","Complex","float",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Complex","float",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Complex","float",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Complex","float",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000584,0,0,0,0,0,0,0,0,216,0,216,28
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000618,0,0,0,0,0,0,0,0,648,0,648,29
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Complex","float",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000481,0,0,0,0,0,0,0,0,1000,0,1000,45
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Complex","float",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000689,0,0,0,0,0,0,0,0,1944,0,1944,30
+"Fftw","Inplace","Complex","float",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Complex","float",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Complex","float",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Complex","float",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000616,0,0,0,0,0,0,0,0,2744,0,2744,56
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00063,0,0,0,0,0,0,0,0,5000,0,5000,46
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Complex","float",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000528,0,0,0,0,0,0,0,0,19208,0,19208,57
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Complex","float",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Complex","float",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000538,0,0,0,0,0,0,0,0,25000,0,25000,47
+"Fftw","Inplace","Complex","float",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Complex","float",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Complex","float",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Complex","float",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000647,0,0,0,0,0,0,0,0,54872,0,54872,64
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
-"Fftw","Inplace","Complex","float",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.002138,0,0,0,0,0,0,0,0,134456,0,134456,58
-"Fftw","Inplace","Complex","float",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Complex","float",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Complex","float",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Complex","float",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Complex","float",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.002138,0,0,0,0,0,0,0,0,134456,0,134456,58
+"Fftw","Inplace","Complex","float",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Complex","float",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Complex","float",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Complex","float",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.004068,0,0,0,0,0,0,0,0,1.04257e+06,0,1.04257e+06,65
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
 "Fftw","Inplace","Complex","float",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
@@ -342,56 +342,56 @@
 "Fftw","Inplace","Complex","float",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Inplace","Complex","float",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Inplace","Complex","float",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000598,0,0,0,0,0,0,0,0,144,0,144,28
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000366,0,0,0,0,0,0,0,0,360,0,360,29
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Real","float",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000672,0,0,0,0,0,0,0,0,600,0,600,45
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Inplace","Real","float",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00054,0,0,0,0,0,0,0,0,1080,0,1080,30
-"Fftw","Inplace","Real","float",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Real","float",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Real","float",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Real","float",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000711,0,0,0,0,0,0,0,0,1568,0,1568,56
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000612,0,0,0,0,0,0,0,0,2600,0,2600,46
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Real","float",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000628,0,0,0,0,0,0,0,0,9800,0,9800,57
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Real","float",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Inplace","Real","float",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00062,0,0,0,0,0,0,0,0,13000,0,13000,47
-"Fftw","Inplace","Real","float",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Real","float",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Real","float",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Inplace","Real","float",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Real","float",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000598,0,0,0,0,0,0,0,0,144,0,144,28
+"Fftw","Inplace","Real","float",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Real","float",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Real","float",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Real","float",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Inplace","Real","float",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000366,0,0,0,0,0,0,0,0,360,0,360,29
+"Fftw","Inplace","Real","float",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Real","float",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Real","float",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Real","float",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Inplace","Real","float",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000672,0,0,0,0,0,0,0,0,600,0,600,45
+"Fftw","Inplace","Real","float",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Real","float",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Real","float",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Real","float",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Inplace","Real","float",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00054,0,0,0,0,0,0,0,0,1080,0,1080,30
+"Fftw","Inplace","Real","float",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Real","float",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Real","float",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Real","float",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Inplace","Real","float",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000711,0,0,0,0,0,0,0,0,1568,0,1568,56
+"Fftw","Inplace","Real","float",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Real","float",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Real","float",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Real","float",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Inplace","Real","float",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000612,0,0,0,0,0,0,0,0,2600,0,2600,46
+"Fftw","Inplace","Real","float",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Real","float",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Real","float",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Real","float",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Inplace","Real","float",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000628,0,0,0,0,0,0,0,0,9800,0,9800,57
+"Fftw","Inplace","Real","float",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Real","float",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Real","float",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Real","float",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Inplace","Real","float",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00062,0,0,0,0,0,0,0,0,13000,0,13000,47
+"Fftw","Inplace","Real","float",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Real","float",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Real","float",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Inplace","Real","float",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000618,0,0,0,0,0,0,0,0,28880,0,28880,64
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
-"Fftw","Inplace","Real","float",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000521,0,0,0,0,0,0,0,0,68600,0,68600,58
-"Fftw","Inplace","Real","float",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Real","float",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Real","float",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Inplace","Real","float",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Real","float",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000521,0,0,0,0,0,0,0,0,68600,0,68600,58
+"Fftw","Inplace","Real","float",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Real","float",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Real","float",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Inplace","Real","float",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.003361,0,0,0,0,0,0,0,0,522728,0,522728,65
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
 "Fftw","Inplace","Real","float",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
@@ -682,56 +682,56 @@
 "Fftw","Inplace","Real","float",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Inplace","Real","float",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Inplace","Real","float",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000558,0,0,0,0,0,0,0,0,432,0,432,28
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00045,0,0,0,0,0,0,0,0,1296,0,1296,29
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Complex","float",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000639,0,0,0,0,0,0,0,0,2000,0,2000,45
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Complex","float",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000711,0,0,0,0,0,0,0,0,3888,0,3888,30
-"Fftw","Outplace","Complex","float",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Complex","float",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Complex","float",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Complex","float",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000701,0,0,0,0,0,0,0,0,5488,0,5488,56
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000737,0,0,0,0,0,0,0,0,10000,0,10000,46
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Complex","float",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000535,0,0,0,0,0,0,0,0,38416,0,38416,57
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Complex","float",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Complex","float",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0007,0,0,0,0,0,0,0,0,50000,0,50000,47
-"Fftw","Outplace","Complex","float",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Complex","float",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Complex","float",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Complex","float",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000558,0,0,0,0,0,0,0,0,432,0,432,28
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00045,0,0,0,0,0,0,0,0,1296,0,1296,29
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Complex","float",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000639,0,0,0,0,0,0,0,0,2000,0,2000,45
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Complex","float",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000711,0,0,0,0,0,0,0,0,3888,0,3888,30
+"Fftw","Outplace","Complex","float",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Complex","float",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Complex","float",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Complex","float",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000701,0,0,0,0,0,0,0,0,5488,0,5488,56
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000737,0,0,0,0,0,0,0,0,10000,0,10000,46
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Complex","float",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000535,0,0,0,0,0,0,0,0,38416,0,38416,57
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Complex","float",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Complex","float",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0007,0,0,0,0,0,0,0,0,50000,0,50000,47
+"Fftw","Outplace","Complex","float",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Complex","float",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Complex","float",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Complex","float",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000705,0,0,0,0,0,0,0,0,109744,0,109744,64
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
-"Fftw","Outplace","Complex","float",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.003523,0,0,0,0,0,0,0,0,268912,0,268912,58
-"Fftw","Outplace","Complex","float",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Complex","float",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Complex","float",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Complex","float",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Complex","float",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.003523,0,0,0,0,0,0,0,0,268912,0,268912,58
+"Fftw","Outplace","Complex","float",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Complex","float",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Complex","float",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Complex","float",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.003743,0,0,0,0,0,0,0,0,2.08514e+06,0,2.08514e+06,65
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
 "Fftw","Outplace","Complex","float",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
@@ -1022,56 +1022,56 @@
 "Fftw","Outplace","Complex","float",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Outplace","Complex","float",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Outplace","Complex","float",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000693,0,0,0,0,0,0,0,0,324,0,324,28
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000672,0,0,0,0,0,0,0,0,972,0,972,29
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Real","float",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000569,0,0,0,0,0,0,0,0,1500,0,1500,45
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
-"Fftw","Outplace","Real","float",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000555,0,0,0,0,0,0,0,0,2916,0,2916,30
-"Fftw","Outplace","Real","float",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Real","float",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Real","float",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Real","float",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000681,0,0,0,0,0,0,0,0,4116,0,4116,56
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000736,0,0,0,0,0,0,0,0,7500,0,7500,46
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Real","float",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000785,0,0,0,0,0,0,0,0,28812,0,28812,57
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Real","float",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
-"Fftw","Outplace","Real","float",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0006,0,0,0,0,0,0,0,0,37500,0,37500,47
-"Fftw","Outplace","Real","float",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Real","float",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Real","float",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
-"Fftw","Outplace","Real","float",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Real","float",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000693,0,0,0,0,0,0,0,0,324,0,324,28
+"Fftw","Outplace","Real","float",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Real","float",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Real","float",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Real","float",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,28
+"Fftw","Outplace","Real","float",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000672,0,0,0,0,0,0,0,0,972,0,972,29
+"Fftw","Outplace","Real","float",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Real","float",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Real","float",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Real","float",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,29
+"Fftw","Outplace","Real","float",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000569,0,0,0,0,0,0,0,0,1500,0,1500,45
+"Fftw","Outplace","Real","float",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Real","float",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Real","float",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Real","float",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,45
+"Fftw","Outplace","Real","float",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000555,0,0,0,0,0,0,0,0,2916,0,2916,30
+"Fftw","Outplace","Real","float",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Real","float",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Real","float",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Real","float",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,30
+"Fftw","Outplace","Real","float",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000681,0,0,0,0,0,0,0,0,4116,0,4116,56
+"Fftw","Outplace","Real","float",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Real","float",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Real","float",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Real","float",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,56
+"Fftw","Outplace","Real","float",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000736,0,0,0,0,0,0,0,0,7500,0,7500,46
+"Fftw","Outplace","Real","float",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Real","float",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Real","float",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Real","float",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,46
+"Fftw","Outplace","Real","float",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000785,0,0,0,0,0,0,0,0,28812,0,28812,57
+"Fftw","Outplace","Real","float",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Real","float",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Real","float",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Real","float",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,57
+"Fftw","Outplace","Real","float",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0006,0,0,0,0,0,0,0,0,37500,0,37500,47
+"Fftw","Outplace","Real","float",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Real","float",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Real","float",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
+"Fftw","Outplace","Real","float",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,47
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00071,0,0,0,0,0,0,0,0,82308,0,82308,64
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,64
-"Fftw","Outplace","Real","float",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000591,0,0,0,0,0,0,0,0,201684,0,201684,58
-"Fftw","Outplace","Real","float",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Real","float",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Real","float",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
-"Fftw","Outplace","Real","float",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Real","float",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000591,0,0,0,0,0,0,0,0,201684,0,201684,58
+"Fftw","Outplace","Real","float",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Real","float",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Real","float",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
+"Fftw","Outplace","Real","float",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,58
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000785,0,0,0,0,0,0,0,0,1.56385e+06,0,1.56385e+06,65
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
 "Fftw","Outplace","Real","float",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,65
@@ -1362,56 +1362,56 @@
 "Fftw","Outplace","Real","float",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Outplace","Real","float",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
 "Fftw","Outplace","Real","float",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,55
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000573,0,0,0,0,0,0,0,0,432,0,432,96
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000689,0,0,0,0,0,0,0,0,1296,0,1296,97
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Complex","double",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000661,0,0,0,0,0,0,0,0,2000,0,2000,113
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Complex","double",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0007,0,0,0,0,0,0,0,0,3888,0,3888,98
-"Fftw","Inplace","Complex","double",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Complex","double",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Complex","double",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Complex","double",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000592,0,0,0,0,0,0,0,0,5488,0,5488,124
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000526,0,0,0,0,0,0,0,0,10000,0,10000,114
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Complex","double",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000564,0,0,0,0,0,0,0,0,38416,0,38416,125
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Complex","double",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Complex","double",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000582,0,0,0,0,0,0,0,0,50000,0,50000,115
-"Fftw","Inplace","Complex","double",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Complex","double",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Complex","double",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Complex","double",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000573,0,0,0,0,0,0,0,0,432,0,432,96
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000689,0,0,0,0,0,0,0,0,1296,0,1296,97
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Complex","double",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000661,0,0,0,0,0,0,0,0,2000,0,2000,113
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Complex","double",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0007,0,0,0,0,0,0,0,0,3888,0,3888,98
+"Fftw","Inplace","Complex","double",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Complex","double",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Complex","double",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Complex","double",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000592,0,0,0,0,0,0,0,0,5488,0,5488,124
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000526,0,0,0,0,0,0,0,0,10000,0,10000,114
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Complex","double",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000564,0,0,0,0,0,0,0,0,38416,0,38416,125
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Complex","double",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Complex","double",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000582,0,0,0,0,0,0,0,0,50000,0,50000,115
+"Fftw","Inplace","Complex","double",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Complex","double",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Complex","double",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Complex","double",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000596,0,0,0,0,0,0,0,0,109744,0,109744,132
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
-"Fftw","Inplace","Complex","double",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000604,0,0,0,0,0,0,0,0,268912,0,268912,126
-"Fftw","Inplace","Complex","double",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Complex","double",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Complex","double",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Complex","double",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Complex","double",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000604,0,0,0,0,0,0,0,0,268912,0,268912,126
+"Fftw","Inplace","Complex","double",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Complex","double",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Complex","double",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Complex","double",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00087,0,0,0,0,0,0,0,0,2.08514e+06,0,2.08514e+06,133
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
 "Fftw","Inplace","Complex","double",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
@@ -1702,56 +1702,56 @@
 "Fftw","Inplace","Complex","double",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Inplace","Complex","double",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Inplace","Complex","double",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000599,0,0,0,0,0,0,0,0,288,0,288,96
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000541,0,0,0,0,0,0,0,0,720,0,720,97
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Real","double",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000878,0,0,0,0,0,0,0,0,1200,0,1200,113
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Inplace","Real","double",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000652,0,0,0,0,0,0,0,0,2160,0,2160,98
-"Fftw","Inplace","Real","double",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Real","double",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Real","double",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Real","double",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000744,0,0,0,0,0,0,0,0,3136,0,3136,124
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000645,0,0,0,0,0,0,0,0,5200,0,5200,114
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Real","double",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000642,0,0,0,0,0,0,0,0,19600,0,19600,125
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Real","double",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Inplace","Real","double",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000541,0,0,0,0,0,0,0,0,26000,0,26000,115
-"Fftw","Inplace","Real","double",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Real","double",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Real","double",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Inplace","Real","double",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Real","double",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000599,0,0,0,0,0,0,0,0,288,0,288,96
+"Fftw","Inplace","Real","double",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Real","double",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Real","double",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Real","double",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Inplace","Real","double",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000541,0,0,0,0,0,0,0,0,720,0,720,97
+"Fftw","Inplace","Real","double",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Real","double",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Real","double",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Real","double",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Inplace","Real","double",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000878,0,0,0,0,0,0,0,0,1200,0,1200,113
+"Fftw","Inplace","Real","double",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Real","double",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Real","double",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Real","double",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Inplace","Real","double",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000652,0,0,0,0,0,0,0,0,2160,0,2160,98
+"Fftw","Inplace","Real","double",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Real","double",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Real","double",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Real","double",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Inplace","Real","double",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000744,0,0,0,0,0,0,0,0,3136,0,3136,124
+"Fftw","Inplace","Real","double",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Real","double",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Real","double",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Real","double",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Inplace","Real","double",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000645,0,0,0,0,0,0,0,0,5200,0,5200,114
+"Fftw","Inplace","Real","double",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Real","double",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Real","double",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Real","double",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Inplace","Real","double",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000642,0,0,0,0,0,0,0,0,19600,0,19600,125
+"Fftw","Inplace","Real","double",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Real","double",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Real","double",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Real","double",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Inplace","Real","double",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000541,0,0,0,0,0,0,0,0,26000,0,26000,115
+"Fftw","Inplace","Real","double",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Real","double",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Real","double",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Inplace","Real","double",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000618,0,0,0,0,0,0,0,0,57760,0,57760,132
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
-"Fftw","Inplace","Real","double",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000693,0,0,0,0,0,0,0,0,137200,0,137200,126
-"Fftw","Inplace","Real","double",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Real","double",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Real","double",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Inplace","Real","double",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Real","double",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000693,0,0,0,0,0,0,0,0,137200,0,137200,126
+"Fftw","Inplace","Real","double",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Real","double",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Real","double",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Inplace","Real","double",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000879,0,0,0,0,0,0,0,0,1.04546e+06,0,1.04546e+06,133
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
 "Fftw","Inplace","Real","double",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
@@ -2042,56 +2042,56 @@
 "Fftw","Inplace","Real","double",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Inplace","Real","double",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Inplace","Real","double",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000698,0,0,0,0,0,0,0,0,864,0,864,96
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000669,0,0,0,0,0,0,0,0,2592,0,2592,97
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Complex","double",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000845,0,0,0,0,0,0,0,0,4000,0,4000,113
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Complex","double",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000733,0,0,0,0,0,0,0,0,7776,0,7776,98
-"Fftw","Outplace","Complex","double",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Complex","double",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Complex","double",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Complex","double",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00077,0,0,0,0,0,0,0,0,10976,0,10976,124
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000608,0,0,0,0,0,0,0,0,20000,0,20000,114
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Complex","double",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000592,0,0,0,0,0,0,0,0,76832,0,76832,125
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Complex","double",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Complex","double",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000598,0,0,0,0,0,0,0,0,100000,0,100000,115
-"Fftw","Outplace","Complex","double",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Complex","double",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Complex","double",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Complex","double",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000698,0,0,0,0,0,0,0,0,864,0,864,96
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000669,0,0,0,0,0,0,0,0,2592,0,2592,97
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Complex","double",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000845,0,0,0,0,0,0,0,0,4000,0,4000,113
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Complex","double",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000733,0,0,0,0,0,0,0,0,7776,0,7776,98
+"Fftw","Outplace","Complex","double",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Complex","double",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Complex","double",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Complex","double",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.00077,0,0,0,0,0,0,0,0,10976,0,10976,124
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000608,0,0,0,0,0,0,0,0,20000,0,20000,114
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Complex","double",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000592,0,0,0,0,0,0,0,0,76832,0,76832,125
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Complex","double",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Complex","double",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000598,0,0,0,0,0,0,0,0,100000,0,100000,115
+"Fftw","Outplace","Complex","double",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Complex","double",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Complex","double",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Complex","double",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000663,0,0,0,0,0,0,0,0,219488,0,219488,132
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
-"Fftw","Outplace","Complex","double",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000844,0,0,0,0,0,0,0,0,537824,0,537824,126
-"Fftw","Outplace","Complex","double",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Complex","double",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Complex","double",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Complex","double",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Complex","double",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000844,0,0,0,0,0,0,0,0,537824,0,537824,126
+"Fftw","Outplace","Complex","double",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Complex","double",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Complex","double",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Complex","double",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000884,0,0,0,0,0,0,0,0,4.17027e+06,0,4.17027e+06,133
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
 "Fftw","Outplace","Complex","double",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
@@ -2382,56 +2382,56 @@
 "Fftw","Outplace","Complex","double",3,"radix357",625,625,3125,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Outplace","Complex","double",3,"radix357",625,625,3125,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
 "Fftw","Outplace","Complex","double",3,"radix357",625,625,3125,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,123
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000706,0,0,0,0,0,0,0,0,648,0,648,96
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000895,0,0,0,0,0,0,0,0,1944,0,1944,97
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Real","double",3,"oddshape",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000708,0,0,0,0,0,0,0,0,3000,0,3000,113
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
-"Fftw","Outplace","Real","double",3,"oddshape",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000894,0,0,0,0,0,0,0,0,5832,0,5832,98
-"Fftw","Outplace","Real","double",3,"oddshape",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Real","double",3,"oddshape",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Real","double",3,"oddshape",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Real","double",3,"oddshape",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000872,0,0,0,0,0,0,0,0,8232,0,8232,124
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000705,0,0,0,0,0,0,0,0,15000,0,15000,114
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Real","double",3,"oddshape",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0006,0,0,0,0,0,0,0,0,57624,0,57624,125
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Real","double",3,"oddshape",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
-"Fftw","Outplace","Real","double",3,"oddshape",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000677,0,0,0,0,0,0,0,0,75000,0,75000,115
-"Fftw","Outplace","Real","double",3,"oddshape",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Real","double",3,"oddshape",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Real","double",3,"oddshape",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
-"Fftw","Outplace","Real","double",3,"oddshape",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Real","double",3,"radix357",3,3,3,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000706,0,0,0,0,0,0,0,0,648,0,648,96
+"Fftw","Outplace","Real","double",3,"radix357",3,3,3,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Real","double",3,"radix357",3,3,3,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Real","double",3,"radix357",3,3,3,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Real","double",3,"radix357",3,3,3,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,96
+"Fftw","Outplace","Real","double",3,"radix357",3,3,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000895,0,0,0,0,0,0,0,0,1944,0,1944,97
+"Fftw","Outplace","Real","double",3,"radix357",3,3,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Real","double",3,"radix357",3,3,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Real","double",3,"radix357",3,3,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Real","double",3,"radix357",3,3,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,97
+"Fftw","Outplace","Real","double",3,"radix357",5,5,5,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000708,0,0,0,0,0,0,0,0,3000,0,3000,113
+"Fftw","Outplace","Real","double",3,"radix357",5,5,5,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Real","double",3,"radix357",5,5,5,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Real","double",3,"radix357",5,5,5,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Real","double",3,"radix357",5,5,5,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,113
+"Fftw","Outplace","Real","double",3,"radix357",3,9,9,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000894,0,0,0,0,0,0,0,0,5832,0,5832,98
+"Fftw","Outplace","Real","double",3,"radix357",3,9,9,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Real","double",3,"radix357",3,9,9,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Real","double",3,"radix357",3,9,9,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Real","double",3,"radix357",3,9,9,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,98
+"Fftw","Outplace","Real","double",3,"radix357",7,7,7,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000872,0,0,0,0,0,0,0,0,8232,0,8232,124
+"Fftw","Outplace","Real","double",3,"radix357",7,7,7,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Real","double",3,"radix357",7,7,7,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Real","double",3,"radix357",7,7,7,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Real","double",3,"radix357",7,7,7,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,124
+"Fftw","Outplace","Real","double",3,"radix357",5,5,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000705,0,0,0,0,0,0,0,0,15000,0,15000,114
+"Fftw","Outplace","Real","double",3,"radix357",5,5,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Real","double",3,"radix357",5,5,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Real","double",3,"radix357",5,5,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Real","double",3,"radix357",5,5,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,114
+"Fftw","Outplace","Real","double",3,"radix357",7,7,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.0006,0,0,0,0,0,0,0,0,57624,0,57624,125
+"Fftw","Outplace","Real","double",3,"radix357",7,7,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Real","double",3,"radix357",7,7,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Real","double",3,"radix357",7,7,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Real","double",3,"radix357",7,7,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,125
+"Fftw","Outplace","Real","double",3,"radix357",5,25,25,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000677,0,0,0,0,0,0,0,0,75000,0,75000,115
+"Fftw","Outplace","Real","double",3,"radix357",5,25,25,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Real","double",3,"radix357",5,25,25,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Real","double",3,"radix357",5,25,25,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
+"Fftw","Outplace","Real","double",3,"radix357",5,25,25,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,115
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,19,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000793,0,0,0,0,0,0,0,0,164616,0,164616,132
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,19,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,19,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,19,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,19,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,132
-"Fftw","Outplace","Real","double",3,"oddshape",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000727,0,0,0,0,0,0,0,0,403368,0,403368,126
-"Fftw","Outplace","Real","double",3,"oddshape",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Real","double",3,"oddshape",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Real","double",3,"oddshape",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
-"Fftw","Outplace","Real","double",3,"oddshape",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Real","double",3,"radix357",7,49,49,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000727,0,0,0,0,0,0,0,0,403368,0,403368,126
+"Fftw","Outplace","Real","double",3,"radix357",7,49,49,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Real","double",3,"radix357",7,49,49,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Real","double",3,"radix357",7,49,49,3,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
+"Fftw","Outplace","Real","double",3,"radix357",7,49,49,4,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,126
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,361,0,"fftw forward plan could not be created as wisdom is not available for this problem.",0,0.000727,0,0,0,0,0,0,0,0,3.1277e+06,0,3.1277e+06,133
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,361,1,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
 "Fftw","Outplace","Real","double",3,"oddshape",19,19,361,2,"Skipped",0,0,0,0,0,0,0,0,0,0,0,0,0,133
