@@ -137,5 +137,20 @@ See CSV header for column titles.
 - [x] fftw
 - [ ] hcFFT: ROC based hcFFT library
 - [ ] liFFT: include library independent FFT framework
-- [ ] scripts for creating benchmark summary of the individual results
 - [ ] callbacks to benchmark a typical FFT use case
+
+## Results
+fftw/haswell contains results for FFTW_MEASURE, FFTW_ESTIMATE and FFTW_WISDOM_ONLY. The planning time limit is set to FFTW_NO_TIMELIMIT (can be set with cmake option GEARSHIFFT_FFTW_TIMELIMIT).
+fftw was compiled with:
+```
+--enable-static=yes --enable-shared=yes --with-gnu-ld  --enable-silent-rules --with-pic --enable-openmp --enable-sse2
+```
+fftw/haswell was run on:
+```
+2x Intel(R) Xeon(R) CPU E5-2680 v3 (12 cores) @ 2.50GHz, MultiThreading disabled, 128 GB SSD local disk, 64 GB RAM
+```
+The wisdom files were generated with:
+```bash
+../fftw-3.3.5TF/fftw-3.3.5/tools/fftwf-wisdom -v -c -n -T 24 -o wisdomf  # single precision
+../fftw-3.3.5T/fftw-3.3.5/tools/fftw-wisdom -v -c -n -T 24 -o wisdom     # double precision
+```
