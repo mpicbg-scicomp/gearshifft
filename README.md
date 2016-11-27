@@ -92,13 +92,13 @@ The result is compared with the original input data and an error is shown, if th
 If a benchmark cannot be completed due to an error, it proceeds with the next benchmark.
 The library dependent FFT steps are abstracted, where following steps are wrapped by timers.
 - buffer allocation
-- plan creation
+- plan creation (forward/backward plan)
 - memory transfers (up-/download)
 - forward and backward transforms
 - cleanup
-- timer which measures FFT process from upload to download (called "Time Device")
-- total time (allocation, plan, transfers, FFTs, cleanup)
+- total time (allocation, planning, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
+Furthermore, the required buffer sizes to run the FFT are recorded.
 
 ## CSV Output
 
@@ -115,31 +115,22 @@ See CSV header for column titles.
 ## Tested on ...
 
 - gcc 5.3.0, gcc 6.2.0
-- CUDA 7.5.18, CUDA 8.0
-- cuFFT from CUDA 7.5.18 and CUDA 8.0
-- clFFT 2.12.0 and 2.12.1
+- cuFFT from CUDA 7.5.18 and CUDA 8.0.44
+- clFFT 2.12.0, 2.12.1, 2.12.2
 - FFTW 3.3.4 and 3.3.5
-- OpenCL 1.2-4.4.0.117 (Nvidia)
-- Nvidia Kepler K80 GPU and Kepler K20X GPU
+- OpenCL 1.2-4.4.0.117 (Nvidia, Intel)
+- Nvidia Kepler K80 GPU, K20Xm GPU, GTX1080, Haswell CPUs E5-2680
 
 ## Issues
 
 - cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
+ - fixed as of CUDA 8.0.44
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - At the moment this is for single-GPUs, batches are not considered
-- if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment)
+- if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the boost version (e.g. 1.62.0) you have is more recent than your cmake (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 
-## Roadmap
-
-- [x] cuFFT
-- [x] clFFT
-- [x] fftw
-- [ ] hcFFT: ROC based hcFFT library
-- [ ] liFFT: include library independent FFT framework
-- [ ] callbacks to benchmark a typical FFT use case
-
-## Results
+## Results (FFTW)
 fftw/haswell contains results for FFTW_MEASURE, FFTW_ESTIMATE and FFTW_WISDOM_ONLY. The planning time limit is set to FFTW_NO_TIMELIMIT (can be set with cmake option GEARSHIFFT_FFTW_TIMELIMIT).
 fftw was compiled with:
 ```
