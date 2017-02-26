@@ -53,8 +53,7 @@ namespace gearshifft {
   using Real2D = std::complex<REAL>;
 
   enum struct RecordType {
-    Device = 0,
-    Allocation,
+    Allocation = 0,
     PlanInitFwd,
     PlanInitInv,
     Upload,

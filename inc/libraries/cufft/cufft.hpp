@@ -247,6 +247,7 @@ namespace CuFFT {
      * Returns data to be transfered to and from device for FFT
      */
     size_t get_transfer_size() {
+      // when inplace-real then alloc'd data is bigger than data to be transferred
       return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
     }
 
