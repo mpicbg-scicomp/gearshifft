@@ -3,8 +3,7 @@
 
 #include "types.hpp"
 
-#include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include <numeric>
 #include <vector>
 
@@ -59,16 +58,15 @@ namespace gearshifft {
     }
 
     template<bool Normalize, typename TVector>
-    double check_deviation(const TVector& data) const
-      {
-        double diff_sum = 0;
-        double diff;
-        for( size_t i=0; i<size_; ++i ){
-          diff = sub<Normalize>(data,i);
-          diff_sum += diff*diff;
-        }
-        return sqrt(diff_sum/(size_-1.0));
+    double check_deviation(const TVector& data) const {
+      double diff_sum = 0;
+      double diff;
+      for( size_t i=0; i<size_; ++i ){
+        diff = sub<Normalize>(data,i);
+        diff_sum += diff*diff;
       }
+      return sqrt(diff_sum/(size_-1.0));
+    }
 
   private:
 
@@ -95,13 +93,11 @@ namespace gearshifft {
         extents_ = extents;
         size_ = std::accumulate(extents_.begin(), extents_.end(), 1, std::multiplies<size_t>());
 
-        srand(2016); // seed for random number stream
-
         // allocate variables for all test cases
         data_linear_.resize(size_);
         for( size_t i=0; i<size_; ++i )
         {
-          data_linear_[i] = 1.0*rand()/RAND_MAX;
+          data_linear_[i] = 1.0;
         }
       }
 
