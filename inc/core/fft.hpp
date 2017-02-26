@@ -70,68 +70,62 @@ namespace gearshifft {
       result.setValue(RecordType::DevPlanSize, fft.get_plan_size());
       result.setValue(RecordType::DevTransferSize, fft.get_transfer_size());
 
-      TimerCPU ttotal;
-      TimerCPU talloc;
-      TimerCPU tplaninit;
-      TimerCPU tplaninitinv;
-      TimerCPU tplandestroy;
-      T_DeviceTimer tdevupload;
-      T_DeviceTimer tdevdownload;
-      T_DeviceTimer tdevfft;
-      T_DeviceTimer tdevfftinverse;
+      TimerCPU tcpu_total;
+      TimerCPU tcpu;
+      T_DeviceTimer tdev;
       /// --- Total CPU ---
-      ttotal.startTimer();
+      tcpu_total.startTimer();
 
       // allocate memory
-      talloc.startTimer();
+      tcpu.startTimer();
       fft.allocate();
-      result.setValue(RecordType::Allocation, talloc.stopTimer());
+      result.setValue(RecordType::Allocation, tcpu.stopTimer());
 
       // init forward plan
-      tplaninit.startTimer();
+      tcpu.startTimer();
       fft.init_forward();
-      result.setValue(RecordType::PlanInitFwd, tplaninit.stopTimer());
+      result.setValue(RecordType::PlanInitFwd, tcpu.stopTimer());
 
       if(T_ReusePlan::value == false) {
         // init inverse plan
-        tplaninitinv.startTimer();
+        tcpu.startTimer();
         fft.init_inverse();
-        result.setValue(RecordType::PlanInitInv, tplaninitinv.stopTimer());
+        result.setValue(RecordType::PlanInitInv, tcpu.stopTimer());
       }
 
       // upload data
-      tdevupload.startTimer();
+      tdev.startTimer();
       fft.upload(vec.data());
-      result.setValue(RecordType::Upload, tdevupload.stopTimer());
+      result.setValue(RecordType::Upload, tdev.stopTimer());
 
       // execute forward transform
-      tdevfft.startTimer();
+      tdev.startTimer();
       fft.execute_forward();
-      result.setValue(RecordType::FFT, tdevfft.stopTimer());
+      result.setValue(RecordType::FFT, tdev.stopTimer());
 
       if(T_ReusePlan::value == true) {
         // init inverse plan
-        tplaninitinv.startTimer();
+        tcpu.startTimer();
         fft.init_inverse();
-        result.setValue(RecordType::PlanInitInv, tplaninitinv.stopTimer());
+        result.setValue(RecordType::PlanInitInv, tcpu.stopTimer());
       }
 
       // execute inverse transform
-      tdevfftinverse.startTimer();
+      tdev.startTimer();
       fft.execute_inverse();
-      result.setValue(RecordType::FFTInv, tdevfftinverse.stopTimer());
+      result.setValue(RecordType::FFTInv, tdev.stopTimer());
 
       // download data
-      tdevdownload.startTimer();
+      tdev.startTimer();
       fft.download(vec.data());
-      result.setValue(RecordType::Download, tdevdownload.stopTimer());
+      result.setValue(RecordType::Download, tdev.stopTimer());
 
       /// --- Cleanup ---
-      tplandestroy.startTimer();
+      tcpu.startTimer();
       fft.destroy();
-      result.setValue(RecordType::PlanDestroy, tplandestroy.stopTimer());
+      result.setValue(RecordType::PlanDestroy, tcpu.stopTimer());
 
-      result.setValue(RecordType::Total, ttotal.stopTimer());
+      result.setValue(RecordType::Total, tcpu_total.stopTimer());
     }
   };
 
