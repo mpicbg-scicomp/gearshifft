@@ -16,6 +16,7 @@ namespace gearshifft {
   public:
     /// Number of benchmark runs after warmup
     static constexpr int NR_RUNS = 5;
+    static constexpr int NR_WARMUP_RUNS = 1;
     static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
     using ResultAllT = ResultAll<NR_RUNS, NR_RECORDS>;
     using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
