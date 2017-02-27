@@ -97,7 +97,7 @@ namespace gearshifft {
         data_linear_.resize(size_);
         for( size_t i=0; i<size_; ++i )
         {
-          data_linear_[i] = 1.0;
+          data_linear_[i] = 0.125*(i&7);
         }
       }
 
