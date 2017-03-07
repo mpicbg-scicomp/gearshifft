@@ -167,24 +167,32 @@ namespace gearshifft
       static constexpr auto IsComplex = TFFT::IsComplex;
       static constexpr auto IsInplaceReal = IsInplace && IsComplex==false;
       static constexpr clfftDim FFTDim = NDim==1 ? CLFFT_1D : NDim==2 ? CLFFT_2D : CLFFT_3D;
-      using RealOrComplexType = typename std::conditional<IsComplex,ComplexType,RealType>::type;
+      using value_type = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
       Context context_;
-      cl_command_queue queue_ = 0;
+      cl_command_queue queue_ = nullptr;
       clfftPlanHandle plan_   = 0;
       /// input buffer
-      cl_mem data_            = 0;
+      cl_mem data_            = nullptr;
       /// intermediate output buffer (transformed input values)
-      cl_mem data_complex_    = 0;
-      /// data size of input buffer
-      size_t data_size_       = 0;
-      /// data size of intermediate output buffer
+      cl_mem data_complex_    = nullptr;
+      /// size in bytes of FFT input data
+      size_t data_size_         = 0;
+      /// size in bytes of FFT(input) for out-of-place transforms
       size_t data_complex_size_ = 0;
 
-      /// total length (product of extents)
-      size_t n_;
-      /// FFT extents
-      std::array<size_t, 3> extents_ = {{0}};
+      /// extents of the FFT input data
+      Extent extents_   = {{0}};
+      /// extents of the FFT complex data (=FFT(input))
+      Extent extents_complex_ = {{0}};
+      /// product of corresponding extents
+      size_t n_         = 0;
+      /// product of corresponding extents
+      size_t n_complex_ = 0;
+
+      /// FFT extents for OpenCL clFFT
+      std::array<size_t, 3> extents_cl_ = {{0}};
+
       /// strides setting in input data, for clfft kernel
       size_t strides_[3] = {1};
       /// strides setting in output data, for clfft kernel
@@ -205,28 +213,45 @@ namespace gearshifft
         if(context_.ctx==0)
           throw std::runtime_error("Context has not been created.");
 
-        n_ = std::accumulate(cextents.begin(), cextents.end(), 1, std::multiplies<size_t>());
+        extents_ = interpret_as::row_major(cextents);
+        extents_complex_ = extents_;
+        n_ = std::accumulate(extents_.begin(),
+                             extents_.end(),
+                             1,
+                             std::multiplies<size_t>());
+        std::copy(extents_.begin(), extents_.end(), extents_cl_.begin());
+
+        if(IsComplex==false){
+          extents_complex_.front() = (extents_.front()/2 + 1);
+        }
+
+        n_complex_ = std::accumulate(extents_complex_.begin(),
+                                     extents_complex_.end(),
+                                     1,
+                                     std::multiplies<size_t>());
+
+        data_size_ = (IsInplace ? 2*n_complex_ : n_) * sizeof(value_type);
+        if(IsInplace==false)
+          data_complex_size_ = n_complex_ * sizeof(ComplexType);
+
+
         // check supported sizes : http://clmathlibraries.github.io/clFFT/
         if((std::is_same<TPrecision,float>::value && n_>=(1<<24))
            ||
            (std::is_same<TPrecision,double>::value && n_>=(1<<22)))
           throw std::runtime_error("Unsupported lengths.");
 
+
         queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, 0, &err );
 //        queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, CL_QUEUE_PROFILING_ENABLE, &err );
         CHECK_CL(err);
 
 
-        auto cl_extents = interpret_as::row_major(cextents);
-        std::copy(cl_extents.begin(), cl_extents.end(), extents_.begin());
-
-        size_t n_half = n_ / extents_[0] * (extents_[0]/2 + 1);
-
         // strides_ for clfft kernel, if less than 3D, strides_ will be ignored
         if(IsInplaceReal) {
           strides_[1] = 2 * (extents_[0]/2+1);
-          strides_[2] = 2 * n_half / extents_[NDim-1];
-          dist_       = 2 * n_half;
+          strides_[2] = 2 * n_complex_ / extents_[NDim-1];
+          dist_       = 2 * n_complex_;
         }else{
           strides_[1] = extents_[0];
           strides_[2] = n_ / extents_[NDim-1];
@@ -235,8 +260,8 @@ namespace gearshifft
 
         if(IsComplex==false){
           strides_complex_[1] = extents_[0]/2+1;
-          strides_complex_[2] = n_half / extents_[NDim-1];
-          dist_complex_       = n_half;
+          strides_complex_[2] = n_complex_ / extents_[NDim-1];
+          dist_complex_       = n_complex_;
         }else{ // Complex, inplace, outplace
           strides_complex_[1] = extents_[0];
           strides_complex_[2] = n_ / extents_[NDim-1];
@@ -251,9 +276,6 @@ namespace gearshifft
           region_[1] = height; // in counts (OpenCL1.1 is wrong here speaking of bytes)
           region_[2] = 1; // in counts (same)
         }
-
-        data_size_ = dist_ * sizeof(RealOrComplexType);
-        data_complex_size_ = ( IsInplace ? 0 : IsComplex ? n_ : n_half ) * sizeof(ComplexType);
       }
 
       ~ClFFTImpl() {
@@ -261,7 +283,10 @@ namespace gearshifft
       }
 
       /**
-       * Returns data to be transfered to and from device for FFT
+       * Returns size in bytes of one data transfer.
+       *
+       * Upload and download have the same size due to round-trip FFT.
+       * \return Size in bytes of FFT data to be transferred (to device or to host memory buffer).
        */
       size_t get_transfer_size() {
         return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
@@ -285,7 +310,6 @@ namespace gearshifft
 
         if(context_.usesHostMemory()) {
           wanted += 2*data_size_; // also consider already located data of benchmark in RAM
-//          wanted += 8*data_size_; // conservative to prevent OOMs
         }
 
         if( gmemsize > wanted ) {
@@ -298,7 +322,6 @@ namespace gearshifft
         }
 
         if( gmemsize <= wanted ) {
-//          std::cerr << "  " << wanted << " of " << gmemsize << std::endl;
           std::stringstream ss;
           ss << gmemsize << "<" << wanted << " (bytes)";
           throw std::runtime_error("FFT plan + data are exceeding [global] memory. "+ss.str());
@@ -332,7 +355,7 @@ namespace gearshifft
        * Create clfft forward plan with layout, precision, strides and distances
        */
       void init_forward() {
-        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_.data()));
+        CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_cl_.data()));
         CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
         CHECK_CL(clfftSetLayout(plan_,
                                 traits::FFTLayout<IsComplex>::value,
@@ -356,7 +379,7 @@ namespace gearshifft
       void init_inverse() {
         if(IsComplex==false){
           CHECK_CL(clfftDestroyPlan( &plan_ ));
-          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_.data()));
+          CHECK_CL(clfftCreateDefaultPlan(&plan_, context_.ctx, FFTDim, extents_cl_.data()));
           CHECK_CL(clfftSetPlanPrecision(plan_, traits::FFTPrecision<TPrecision>::value));
           CHECK_CL(clfftSetLayout(plan_,
                                   traits::FFTLayout<IsComplex>::value_transformed,

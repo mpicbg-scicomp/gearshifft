@@ -147,16 +147,16 @@ namespace CuFFT {
    * Plan Creator depending on FFT transform type (CUFFT_R2C, ...).
    */
   template<cufftType FFTType>
-  void makePlan(cufftHandle& plan, const std::array<size_t,3>& e){
-    CHECK_CUDA(cufftPlan3d(&plan, e[0], e[1], e[2], FFTType));
-  }
-  template<cufftType FFTType>
   void makePlan(cufftHandle& plan, const std::array<size_t,1>& e){
     CHECK_CUDA(cufftPlan1d(&plan, e[0], FFTType, 1));
   }
   template<cufftType FFTType>
   void makePlan(cufftHandle& plan, const std::array<size_t,2>& e){
     CHECK_CUDA(cufftPlan2d(&plan, e[0], e[1], FFTType));
+  }
+  template<cufftType FFTType>
+  void makePlan(cufftHandle& plan, const std::array<size_t,3>& e){
+    CHECK_CUDA(cufftPlan3d(&plan, e[0], e[1], e[2], FFTType));
   }
 
   template<cufftType FFTType, size_t NDim>
@@ -204,28 +204,48 @@ namespace CuFFT {
     static constexpr
      cufftType FFTInverse = IsComplex ? Types::FFTComplex : Types::FFTInverse;
 
-    using RealOrComplexType  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
+    using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
-    size_t n_;        // =[1]*..*[dim]
-    Extent extents_;
+    /// extents of the FFT input data
+    Extent extents_   = {{0}};
+    /// extents of the FFT complex data (=FFT(input))
+    Extent extents_complex_ = {{0}};
+    /// product of corresponding extents
+    size_t n_         = 0;
+    /// product of corresponding extents
+    size_t n_complex_ = 0;
 
-    cufftHandle        plan_           = 0;
-    RealOrComplexType* data_           = nullptr;
-    ComplexType*       data_complex_   = nullptr; // intermediate buffer
-    size_t             data_size_;
-    size_t             data_complex_size_;
-    bool               use64bit_       = false;
+    cufftHandle  plan_              = 0;
+    value_type*  data_              = nullptr;
+    ComplexType* data_complex_      = nullptr;
+    /// size in bytes of FFT input data
+    size_t       data_size_         = 0;
+    /// size in bytes of FFT(input) for out-of-place transforms
+    size_t       data_complex_size_ = 0;
+    /// if data sizes exceed 32-bit limit, the 64-bit cufft API is used
+    bool         use64bit_          = false;
 
     CuFFTImpl(const Extent& cextents) {
       extents_ = interpret_as::column_major(cextents);
+      extents_complex_ = extents_;
       n_ = std::accumulate(extents_.begin(),
                            extents_.end(),
-                           static_cast<size_t>(1),
+                           1,
                            std::multiplies<size_t>());
-      size_t n_half = n_ / extents_[NDim-1] * (extents_[NDim-1]/2 + 1);
 
-      data_size_ = ( IsInplaceReal ? 2*n_half : n_ ) * sizeof(RealOrComplexType);
-      data_complex_size_ = ( IsInplace ? 0 : IsComplex ? n_ : n_half ) * sizeof(ComplexType);
+      if(IsComplex==false){
+        extents_complex_.back() = (extents_.back()/2 + 1);
+      }
+
+      n_complex_ = std::accumulate(extents_complex_.begin(),
+                                   extents_complex_.end(),
+                                   1,
+                                   std::multiplies<size_t>());
+
+      data_size_ = (IsInplaceReal? 2*n_complex_ : n_) * sizeof(value_type);
+      if(IsInplace==false)
+        data_complex_size_ = n_complex_ * sizeof(ComplexType);
+
       // There are some additional restrictions when using 64-bit API of cufft
       // see http://docs.nvidia.com/cuda/cufft/#unique_1972991535
       if(data_size_ >= (1ull<<32) || data_complex_size_ >= (1ull<<32))
@@ -244,7 +264,10 @@ namespace CuFFT {
     }
 
     /**
-     * Returns data to be transfered to and from device for FFT
+     * Returns size in bytes of one data transfer.
+     *
+     * Upload and download have the same size due to round-trip FFT.
+     * \return Size in bytes of FFT data to be transferred (to device or to host memory buffer).
      */
     size_t get_transfer_size() {
       return IsInplaceReal ? n_*sizeof(RealType) : data_size_;

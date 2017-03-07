@@ -400,60 +400,57 @@ namespace fftw {
     static constexpr
     bool IsComplex = TFFT::IsComplex;
     static constexpr
-    bool Padding = IsInplace && IsComplex==false;
+    bool IsInplaceReal = IsInplace && IsComplex==false;
 
     using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
     //////////////////////////////////////////////////////////////////////////////////////
 
-    size_t n_;        // =[1]*..*[dim]
-    size_t n_allocated_; // =[1]*..*[dim-1]*([dim]/2+1)
-    Extent extents_;
-    Extent allocated_extents_;
+    /// extents of the FFT input data
+    Extent extents_   = {{0}};
+    /// extents of the FFT complex data (=FFT(input))
+    Extent extents_complex_ = {{0}};
+    /// product of corresponding extents
+    size_t n_         = 0;
+    /// product of corresponding extents
+    size_t n_complex_ = 0;
 
-    PlanType      fwd_plan_;
-    PlanType      bwd_plan_;
-    value_type*   data_;
-    ComplexType*        data_transform_; // intermediate buffer
-    size_t              data_size_;
-    size_t              data_transform_size_;
+    PlanType      fwd_plan_          = nullptr;
+    PlanType      bwd_plan_          = nullptr;
+    value_type*   data_              = nullptr;
+    ComplexType*  data_complex_      = nullptr;
+    /// size in bytes of FFT input data
+    size_t        data_size_         = 0;
+    /// size in bytes of FFT(input) for out-of-place transforms
+    size_t        data_complex_size_ = 0;
 
-    FftwImpl(const Extent& cextents)
-      : n_(0),
-        n_allocated_(0),
-        extents_(),
-        allocated_extents_(),
-        fwd_plan_(nullptr),
-        bwd_plan_(nullptr),
-        data_(nullptr),
-        data_transform_(nullptr),
-        data_size_(0),
-        data_transform_size_(0)
-      {
+    FftwImpl(const Extent& cextents) {
         extents_ = interpret_as::column_major(cextents);
-        allocated_extents_ = extents_;
+        extents_complex_ = extents_;
 
         n_ = std::accumulate(extents_.begin(),
                              extents_.end(),
                              1,
                              std::multiplies<std::size_t>());
 
-        if(Padding){
-          allocated_extents_.back() = 2*(extents_.back()/2 + 1);
+        if(IsComplex==false){
+          extents_complex_.back() = (extents_.back()/2 + 1);
         }
 
-        n_allocated_ = std::accumulate(allocated_extents_.begin(),
-                                       allocated_extents_.end(),
-                                       1,
-                                       std::multiplies<std::size_t>());
+        n_complex_ = std::accumulate(extents_complex_.begin(),
+                                     extents_complex_.end(),
+                                     1,
+                                     std::multiplies<size_t>());
 
-        data_size_ = sizeof(value_type)*n_allocated_;
-        data_transform_size_ = IsInplace ? 0 : n_ * sizeof(ComplexType);
+        data_size_ = (IsInplace ? 2*n_complex_ : n_) * sizeof(value_type);
+        if(IsInplace==false)
+          data_complex_size_ = n_complex_ * sizeof(ComplexType);
+
         //size_t total_mem = getMemorySize();
         size_t total_mem = 95*getMemorySize()/100; // keep some memory available, otherwise an out-of-memory killer becomes more likely
-        if(total_mem < 3*data_size_+data_transform_size_) { // includes host input buffers
+        if(total_mem < 3*data_size_+data_complex_size_) { // includes host input buffers
           std::stringstream ss;
-          ss << total_mem << "<" << 3*data_size_+data_transform_size_ << " (bytes)";
+          ss << total_mem << "<" << 3*data_size_+data_complex_size_ << " (bytes)";
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
@@ -475,7 +472,7 @@ namespace fftw {
      * Returns allocated memory for FFT
      */
     size_t get_allocation_size() {
-      return data_size_ + data_transform_size_;
+      return data_size_ + data_complex_size_;
     }
 
     // create FFT plan handle
@@ -484,7 +481,7 @@ namespace fftw {
       //Note: these calls clear the content of data_ et al
       fwd_plan_ = traits::plan<TPrecision>::create(extents_,
                                                    data_,
-                                                   data_transform_,
+                                                   data_complex_,
                                                    traits::fftw_direction::forward,
                                                    TFftwConfig::PlanFlags);
       if(!fwd_plan_)
@@ -497,7 +494,7 @@ namespace fftw {
     //
     void init_inverse() {
       bwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_transform_,
+                                                   data_complex_,
                                                    data_,
                                                    traits::fftw_direction::inverse,
                                                    TFftwConfig::PlanFlags);//leave this here for now
@@ -520,22 +517,26 @@ namespace fftw {
     }
 
     /**
-     * Returns data to be transfered to and from device for FFT
+     * Returns size in bytes of one data transfer.
+     *
+     * Upload and download have the same size due to round-trip FFT.
+     * \return Size in bytes of FFT data to be transferred (to device or to host memory buffer).
      */
     size_t get_transfer_size() {
-      return data_size_ + data_transform_size_;
+      // when inplace-real then alloc'd data is bigger than data to be transferred
+      return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // --- next methods are benchmarked ---
 
     void allocate() {
-      data_ = (value_type*)traits::memory_api<TPrecision>::malloc(data_size_);
+      data_ = static_cast<value_type*>(traits::memory_api<TPrecision>::malloc(data_size_));
       if(IsInplace){
-        data_transform_ = reinterpret_cast<ComplexType*>(data_);
+        data_complex_ = reinterpret_cast<ComplexType*>(data_);
       }
       else{
-        data_transform_ = (ComplexType*)traits::memory_api<TPrecision>::malloc(data_transform_size_);
+        data_complex_ = static_cast<ComplexType*>(traits::memory_api<TPrecision>::malloc(data_complex_size_));
       }
     }
 
@@ -553,14 +554,14 @@ namespace fftw {
     template<typename THostData>
     void upload(THostData* input) {
 
-      if(!Padding){
+      if(!IsInplaceReal){
         memcpy(data_,input,data_size_);
       }
       else{
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
-        const std::size_t allocated_x = allocated_extents_[NDim-1];
+        const std::size_t allocated_x = extents_complex_[NDim-1];
 
         std::size_t input_index = 0;
         std::size_t data_index = 0;
@@ -582,14 +583,14 @@ namespace fftw {
     template<typename THostData>
     void download(THostData* output) {
 
-      if(!Padding){
+      if(!IsInplaceReal){
         memcpy(output,data_,data_size_);
       }
       else{
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
-        const std::size_t allocated_x = allocated_extents_[NDim-1];
+        const std::size_t allocated_x = extents_complex_[NDim-1];
 
         std::size_t output_index = 0;
         std::size_t data_index = 0;
@@ -613,9 +614,9 @@ namespace fftw {
         traits::memory_api<TPrecision>::free(data_);
       data_ = nullptr;
 
-      if(data_transform_ && !IsInplace)
-        traits::memory_api<TPrecision>::free(data_transform_);
-      data_transform_ = nullptr;
+      if(data_complex_ && !IsInplace)
+        traits::memory_api<TPrecision>::free(data_complex_);
+      data_complex_ = nullptr;
 
       if(fwd_plan_)
         traits::plan<TPrecision>::destroy(fwd_plan_);
