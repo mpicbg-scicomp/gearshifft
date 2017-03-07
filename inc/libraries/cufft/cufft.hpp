@@ -270,6 +270,7 @@ namespace CuFFT {
      * \return Size in bytes of FFT data to be transferred (to device or to host memory buffer).
      */
     size_t get_transfer_size() {
+      // when inplace-real then alloc'd data is bigger than data to be transferred
       return IsInplaceReal ? n_*sizeof(RealType) : data_size_;
     }
 
