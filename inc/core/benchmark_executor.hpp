@@ -34,25 +34,27 @@ namespace gearshifft {
     static_assert(NDim<=3,"NDim<=3");
 
     void operator()(const T_Extents& extents) {
-      int r = 0;
+      auto& dataset = BenchmarkData<T_Precision,NDim>::data(extents);
+
       VectorT data_buffer;
-      auto data_set = BenchmarkData<T_Precision,NDim>::getInstancePtr(extents);
-      data_set->copyTo(data_buffer);
+      dataset.copyTo(data_buffer);
       assert(data_buffer.data());
+
       auto fft = T_FFT_Wrapper();
       ResultT result;
       result.template init<T_FFT_Wrapper::IsComplex, T_FFT_Wrapper::IsInplace >
                        (extents, ToString<T_Precision>::value() );
+      int r = 0;
       try {
         // warmup
         fft(result, data_buffer, extents);
         for(r=0; r<NR_RUNS; ++r)
         {
           result.setRun(r);
-          data_set->copyTo(data_buffer);
+          dataset.copyTo(data_buffer);
           fft(result, data_buffer, extents);
 
-          auto deviation = data_set->template check_deviation
+          auto deviation = dataset.template check_deviation
             <!T_FFT_Normalized::value> (data_buffer);
           if(deviation > ERROR_BOUND) {
             std::stringstream msg;
