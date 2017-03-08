@@ -5,6 +5,7 @@
 #include "core/timer_cuda.hpp"
 #include "core/fft.hpp"
 #include "core/traits.hpp"
+#include "core/context.hpp"
 
 #include "cufft_helper.hpp"
 
@@ -73,9 +74,9 @@ namespace CuFFT {
   }  // namespace traits
 
   /**
-   * CUDA implicit context init and reset wrapper. Time is benchmarked.
+   * CUDA context create() and destroy(). Time is benchmarked.
    */
-  struct Context {
+  struct CuFFTContext : public ContextDefault<> {
 
     int device = 0;
 
@@ -93,7 +94,7 @@ namespace CuFFT {
     }
 
     void create() {
-      const std::string options_devtype = Options::getInstance().getDevice();
+      const std::string options_devtype = options().getDevice();
       device = atoi(options_devtype.c_str());
       int nrdev=0;
       CHECK_CUDA(cudaGetDeviceCount(&nrdev));

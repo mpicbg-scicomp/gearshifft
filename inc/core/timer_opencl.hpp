@@ -17,7 +17,7 @@ namespace gearshifft {
     }
     double stopTimer(){
       cl_ulong time_start, time_end;
-      std::shared_ptr<cl_event> event = Application<Context>::getContext().event;
+      std::shared_ptr<cl_event> event = Context::context().event;
       if(event) {
         CHECK_CL(clWaitForEvents(1,event.get()));
         CHECK_CL(clGetEventProfilingInfo(*event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL));

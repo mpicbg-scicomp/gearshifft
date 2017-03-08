@@ -1,10 +1,11 @@
 #ifndef CLFFT_HPP_
 #define CLFFT_HPP_
 
-#include "core/application.hpp"
-#include "core/timer_opencl.hpp"
+#include "core/options.hpp"
+//#include "core/timer_opencl.hpp"
 #include "core/fft.hpp"
 #include "core/traits.hpp"
+#include "core/context.hpp"
 
 #include "clfft_helper.hpp"
 
@@ -60,12 +61,18 @@ namespace gearshifft
       struct FFTInplace<false>: std::integral_constant< clfftResultLocation, CLFFT_OUTOFPLACE >{};
     } // traits
 
-    struct Context {
+
+
+    struct ClFFTContextAttributes {
       cl_platform_id platform = 0;
       cl_device_id device = 0;
       cl_device_id device_used = 0;
       cl_context ctx = 0;
-      bool uses_cpu_ram = false; // false, if an accelerator with own memory is used
+      bool use_host_memory = false; // false, if an accelerator with own memory is used
+
+    };
+
+    struct ClFFTContext : public ContextDefault<OptionsDefault, ClFFTContextAttributes> {
 
       static const std::string title() {
         return "ClFFT";
@@ -77,8 +84,8 @@ namespace gearshifft
       }
 
       std::string get_used_device_properties() {
-        assert(device_used);
-        auto ss = getClDeviceInformations(device_used);
+        assert(context().device_used);
+        auto ss = getClDeviceInformations(context().device_used);
         return ss.str();
       }
 
@@ -87,14 +94,17 @@ namespace gearshifft
         cl_int err = CL_SUCCESS;
         cl_device_type devtype = CL_DEVICE_TYPE_GPU;
 
-        const std::string options_devtype = Options::getInstance().getDevice();
+        const std::string options_devtype = options().getDevice();
         std::regex e("^([0-9]+):([0-9]+)$"); // get user specified platform and device id
         if(std::regex_search(options_devtype, e)) {
           std::vector<std::string> token;
           boost::split(token, options_devtype, boost::is_any_of(":"));
           unsigned long id_platform = std::stoul(token[0].c_str());
           unsigned long id_device = std::stoul(token[1].c_str());
-          getPlatformAndDeviceByID(&platform, &device, id_platform, id_device);
+          getPlatformAndDeviceByID(&context().platform,
+                                   &context().device,
+                                   id_platform,
+                                   id_device);
         }else{
           if(boost::iequals(options_devtype, "cpu")) { // case insensitive compare
             devtype = CL_DEVICE_TYPE_CPU;
@@ -104,17 +114,19 @@ namespace gearshifft
             devtype = CL_DEVICE_TYPE_GPU;
           } else
             throw std::runtime_error("Unsupported device type");
-          findClDevice(devtype, &platform, &device);
+          findClDevice(devtype,
+                       &context().platform,
+                       &context().device);
         }
 
-        devtype = getDeviceType(device);
+        devtype = getDeviceType(context().device);
         if(devtype!=CL_DEVICE_TYPE_GPU && devtype!=CL_DEVICE_TYPE_ACCELERATOR)
-          uses_cpu_ram=true;
+          context().use_host_memory=true;
 
-        device_used = device;
-        props[1] = (cl_context_properties)platform;
+        context().device_used = context().device;
+        props[1] = reinterpret_cast<cl_context_properties>(context().platform);
         if(devtype == CL_DEVICE_TYPE_CPU) { // if only subset of cores is requested
-          const size_t ndevs = Options::getInstance().getNumberDevices();
+          const size_t ndevs = options().getNumberDevices();
           if(ndevs>0) {
             const cl_device_partition_property properties[3] = {
               CL_DEVICE_PARTITION_BY_COUNTS,
@@ -122,11 +134,15 @@ namespace gearshifft
               CL_DEVICE_PARTITION_BY_COUNTS_LIST_END
             };
             cl_device_id subdev_id = 0;
-            CHECK_CL(clCreateSubDevices(device, properties, 1, &subdev_id, NULL));
-            device_used = subdev_id;
+            CHECK_CL(clCreateSubDevices(context().device,
+                                        properties, 1, &subdev_id, NULL));
+            context().device_used = subdev_id;
           }
         }
-        ctx = clCreateContext( props, 1, &device_used, nullptr, nullptr, &err );
+        context().ctx = clCreateContext( props,
+                                         1,
+                                         &context().device_used,
+                                         nullptr, nullptr, &err );
         CHECK_CL(err);
         clfftSetupData fftSetup;
         CHECK_CL(clfftInitSetupData(&fftSetup));
@@ -134,17 +150,13 @@ namespace gearshifft
       }
 
       void destroy() {
-        if(ctx) {
-          CHECK_CL(clReleaseContext( ctx ));
-          CHECK_CL(clReleaseDevice(device));
+        if(context().ctx) {
+          CHECK_CL(clReleaseContext( context().ctx ));
+          CHECK_CL(clReleaseDevice( context().device ));
           CHECK_CL( clfftTeardown( ) );
-          device = 0;
-          ctx = 0;
+          context().device = 0;
+          context().ctx = 0;
         }
-      }
-
-      bool usesHostMemory() const {
-        return uses_cpu_ram;
       }
     };
 
@@ -169,9 +181,10 @@ namespace gearshifft
       static constexpr clfftDim FFTDim = NDim==1 ? CLFFT_1D : NDim==2 ? CLFFT_2D : CLFFT_3D;
       using value_type = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
-      Context context_;
+      ClFFTContextAttributes context_;
       cl_command_queue queue_ = nullptr;
       clfftPlanHandle plan_   = 0;
+
       /// input buffer
       cl_mem data_            = nullptr;
       /// intermediate output buffer (transformed input values)
@@ -209,7 +222,7 @@ namespace gearshifft
 
       ClFFTImpl(const Extent& cextents) {
         cl_int err;
-        context_ = Application<Context>::getContext();
+        context_ = ClFFTContext::context();
         if(context_.ctx==0)
           throw std::runtime_error("Context has not been created.");
 
@@ -308,7 +321,7 @@ namespace gearshifft
         size_t size1 = 0;
         size_t size2 = 0;
 
-        if(context_.usesHostMemory()) {
+        if(context_.use_host_memory) {
           wanted += 2*data_size_; // also consider already located data of benchmark in RAM
         }
 

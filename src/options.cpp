@@ -8,8 +8,33 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 using namespace gearshifft;
+namespace po = boost::program_options;
 
-void Options::parseFile(const std::string& file) {
+
+OptionsDefault::OptionsDefault() {
+  add_options()
+    ("help,h", "Print help messages")
+    ("extent,e", po::value<std::vector<std::string>>()->multitoken()->
+     composing(), "specific extent (eg. 1024x1024) [>=1 nr. of args possible]")
+    ("file,f", po::value<std::vector<std::string>>()->multitoken()->
+     composing(), "file with extents (row-wise csv) [>=1 nr. of args possible]")
+    ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file, will be overwritten!")
+    ("verbose,v", "for console output")
+    ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
+    ("ndevices,n", po::value<size_t>(&ndevices_)->default_value(0), "Number of devices (0=all), if supported by FFT lib (e.g. clfft and fftw with n CPU threads).")
+    ("list-devices,l", "List of available compute devices with IDs, if supported.")
+    ("list-benchmarks,b", "Show registered benchmarks")
+    ("run-benchmarks,r", po::value<std::string>(), "Run specific benchmarks (wildcards possible, e.g. ClFFT/float/*/Inplace_Real)")
+    ;
+}
+
+OptionsDefault::~OptionsDefault() {
+  delete[] tmp_;
+  tmp_ = nullptr;
+}
+
+
+void OptionsDefault::parseFile(const std::string& file) {
   std::ifstream f(file);
   std::string line;
   while(std::getline(f, line)) {
@@ -21,7 +46,7 @@ void Options::parseFile(const std::string& file) {
   }
 }
 
-void Options::parseExtent( const std::string& extent ) {
+void OptionsDefault::parseExtent( const std::string& extent ) {
   std::vector<std::string> token;
   boost::split(token, extent, boost::is_any_of("x,"));
   if(token.size()==1) {
@@ -40,35 +65,18 @@ void Options::parseExtent( const std::string& extent ) {
 }
 
 /// processes command line arguments and apply the values to the variables
-int Options::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) {
-  namespace po = boost::program_options;
-
-  po::options_description desc("gearshifft options and flags");
-  desc.add_options()
-    ("help,h", "Print help messages")
-    ("extent,e", po::value<std::vector<std::string>>()->multitoken()->
-     composing(), "specific extent (eg. 1024x1024) [>=1 nr. of args possible]")
-    ("file,f", po::value<std::vector<std::string>>()->multitoken()->
-     composing(), "file with extents (row-wise csv) [>=1 nr. of args possible]")
-    ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file, will be overwritten!")
-    ("verbose,v", "for console output")
-    ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
-    ("ndevices,n", po::value<size_t>(&ndevices_)->default_value(0), "Number of devices (0=all), if supported by FFT lib (e.g. clfft and fftw with n CPU threads).")
-    ("list-devices,l", "List of available compute devices with IDs, if supported.")
-    ("list-benchmarks,b", "Show registered benchmarks")
-    ("run-benchmarks,r", po::value<std::string>(), "Run specific benchmarks (wildcards possible, e.g. ClFFT/float/*/Inplace_Real)")
-    ;
+int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) {
 
   po::variables_map vm;
   try {
     po::parsed_options parsed
       = po::command_line_parser( _argv.size(),
                                  _argv.data()
-                               ).options(desc).allow_unregistered().run();
+                               ).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
 
     if( vm.count("help")  ) {
-      std::cout << desc << std::endl;
+      std::cout << desc_ << std::endl;
       return 1;
     }
     if( vm.count("file")  ) {
@@ -126,14 +134,9 @@ int Options::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) 
   catch(po::error& e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl;
-    std::cerr << desc << std::endl;
+    std::cerr << desc_ << std::endl;
     return 2;
   }
 
   return 0;
-}
-
-Options::~Options() {
-  delete[] tmp_;
-  tmp_ = nullptr;
 }

@@ -2,6 +2,8 @@
 #define OPTIONS_HPP_
 
 #include "types.hpp"
+#include <boost/program_options.hpp>
+#include <boost/core/noncopyable.hpp>
 #include <string>
 #include <vector>
 
@@ -9,16 +11,17 @@ namespace gearshifft {
 
   /**
    * Extract and provide options given by command line arguments like extents,
-   * input files and verbosity. Is a singleton.
+   * input files and verbosity.
+   *
+   * By derivation further program options can be added.
+   * See FftwOptions in libraries/fftw/fftw.hpp how to do this.
    */
-  class Options {
+  class OptionsDefault : private boost::noncopyable {
 
   public:
 
-    static Options& getInstance() {
-      static Options options;
-      return options;
-    }
+    OptionsDefault();
+    ~OptionsDefault();
 
     bool getVerbose() const {
       return verbose_;
@@ -40,6 +43,10 @@ namespace gearshifft {
       return ndevices_;
     }
 
+    auto add_options() {
+      return desc_.add_options();
+    }
+
     void parseFile(const std::string& file);
 
     void parseExtent( const std::string& extent );
@@ -57,21 +64,28 @@ namespace gearshifft {
       return vector3D_;
     }
 
-  private:
-    Options() = default;
-    ~Options();
+  protected:
+
+    template<typename T>
+    auto value(T* var) {
+      return boost::program_options::value<T>(var);
+    }
 
   private:
-    bool verbose_ = false;
+
     std::string outputFile_;
     std::string device_;
-    bool listDevices_ = false;
     size_t ndevices_ = 0;
+    bool listDevices_ = false;
+    bool verbose_ = false;
+    char* tmp_ = nullptr;
 
     Extents1DVec vector1D_;
     Extents2DVec vector2D_;
     Extents3DVec vector3D_;
-    char* tmp_ = nullptr;
+
+    boost::program_options::options_description desc_ =
+      boost::program_options::options_description("gearshifft options and flags");
   };
 }
 

@@ -79,7 +79,7 @@ find_package(FFTW COMPONENTS float double)
 if(FFTW_FOUND AND GEARSHIFFT_FFTW)
   include_directories(${FFTW_INCLUDE_DIR})
   link_directories(${FFTW_LIBRARY_DIR})
-  list(APPEND FFTLIBS fftw fftw_wisdom fftw_estimate)
+  list(APPEND FFTLIBS fftw)
   find_package(OpenMP)
 
   foreach(_LIBSTEM IN LISTS FFTW_SERIAL_LIBS)
@@ -126,18 +126,9 @@ function(add_exec Tlib)
   endif()
 
   if (Tlib MATCHES "fftw")
-    if(Tlib MATCHES "estimate")
-     list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_USE_ESTIMATE")
-    elseif(Tlib MATCHES "wisdom")
-      list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_USE_WISDOM")
-    else()
-      list(APPEND PROJECT_EXEC_FLAGS "-DGEARSHIFFT_FFTW_USE_MEASURE -DGEARSHIFFT_FFTW_TIMELIMIT=${GEARSHIFFT_FFTW_TIMELIMIT}") # time limit for plan creation in seconds
-      message(">> FFTW Plan Time Limit = ${GEARSHIFFT_FFTW_TIMELIMIT} s")
-    endif()
-
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
     set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED ${PROJECT_EXEC_FLAGS}")
+      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED")
   endif()
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
