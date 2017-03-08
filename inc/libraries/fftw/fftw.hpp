@@ -2,6 +2,8 @@
 #define FFTW_HPP_
 
 #include "core/types.hpp"
+#include "core/options.hpp"
+#include "core/context.hpp"
 #include "core/application.hpp"
 #include "core/timer.hpp"
 #include "core/fft.hpp"
@@ -18,7 +20,58 @@
 
 namespace gearshifft {
 namespace fftw {
-    
+
+  class FftwOptions : public OptionsDefault {
+
+  public:
+
+    FftwOptions() : OptionsDefault() {
+      add_options()
+        ("rigor", value(&rigor_)->default_value("measure"), "FFTW rigor (measure, estimate, wisdom, patient or exhaustive)")
+        ("wisdom_sp", value(&wisdom_sp_), "Wisdom file for single-precision.")
+        ("wisdom_dp", value(&wisdom_dp_), "Wisdom file for double-precision.")
+        ("plan_timelimit", value(&plan_timelimit_)->default_value(-1.0), "Timelimit in seconds for planning in FFTW.");
+    }
+
+    double plan_timelimit() const {
+      return plan_timelimit_;
+    }
+
+    unsigned plan_rigor() const {
+      if(rigor_ == "measure")
+        return FFTW_MEASURE;
+      if(rigor_ == "estimate")
+        return FFTW_ESTIMATE;
+      if(rigor_ == "patient")
+        return FFTW_PATIENT;
+      if(rigor_ == "wisdom")
+        return FFTW_WISDOM_ONLY;
+      if(rigor_ == "exhaustive")
+        return FFTW_EXHAUSTIVE;
+      throw std::runtime_error("Invalid FFTW rigor.");
+    }
+
+    std::string plan_rigor_str() const {
+      return rigor_;
+    }
+
+    template<typename T_Precision>
+    std::string wisdom_file() {
+      if(std::is_same<T_Precision, float>::value)
+        return wisdom_sp_;
+      if(std::is_same<T_Precision, double>::value)
+        return wisdom_dp_;
+      throw std::runtime_error("Precision type not supported by FFTW.");
+    }
+
+  private:
+
+    double plan_timelimit_ = -1;
+    std::string rigor_;
+    std::string wisdom_sp_;
+    std::string wisdom_dp_;
+  };
+
   namespace traits{
 
     template <typename T>
@@ -270,63 +323,10 @@ namespace fftw {
   }  // namespace traits
 
 
-  template<typename T_Precision>
-  struct FftwWisdomLoader {
-    std::string source;
-    FftwWisdomLoader(const char* filename) {
-      std::cout << "Loading wisdom: " << filename << std::endl;
-      std::ifstream ifs;
-      std::stringstream ss;
-      std::string line;
-      ifs.open(filename, std::ifstream::in);
-
-      if(ifs.is_open()) {
-        while ( getline (ifs,line) )
-        {
-          ss << line;
-        }
-        ifs.close();
-        source = ss.str();
-      }
-    }
-
-    int import() {
-      if(std::is_same<T_Precision,float>::value)
-        return fftwf_import_wisdom_from_string(source.c_str());
-      else
-        return fftw_import_wisdom_from_string(source.c_str());
-    }
-
-  }; // FftwWisdomLoader
-
-
-  template<bool IfTrue = false>
-  struct ImportWisdomIf {
-    template <typename T_Precision, typename T_FftwConfig>
-    void import() { }
-  };
-
-  template<>
-  struct ImportWisdomIf<true> {
-
-    template <typename T_Precision, typename T_FftwConfig>
-    void import() {
-      static
-        FftwWisdomLoader<T_Precision> wisdom(
-          std::is_same<T_Precision,float>::value
-          ? T_FftwConfig::WisdomFileSinglePrecision
-          : T_FftwConfig::WisdomFileDoublePrecision );
-      if( !wisdom.import() )
-        throw std::runtime_error("Wisdom file could not be loaded.");
-    }
-  };
-
-
   /**
-   * FFTW implicit context init and reset wrapper. Time is benchmarked.
+   * FFTW context.
    */
-  template<typename T_FftwConfig>
-  struct FftwContext {
+  struct FftwContext : public ContextDefault<FftwOptions> {
 
     static const std::string title() {
       return "Fftw";
@@ -340,11 +340,9 @@ namespace fftw {
     }
 
     std::string get_used_device_properties() {
-      static constexpr unsigned PlanFlags = T_FftwConfig::PlanFlags;
-      static constexpr double PlanTimeLimit = T_FftwConfig::PlanTimeLimit;
       // Returns the number of supported concurrent threads
       size_t maxndevs = std::thread::hardware_concurrency();
-      size_t ndevs = Options::getInstance().getNumberDevices();
+      size_t ndevs = options().getNumberDevices();
       if( ndevs==0 || ndevs>maxndevs )
         ndevs = maxndevs;
 
@@ -352,23 +350,49 @@ namespace fftw {
       msg << "\"SupportedThreads\"," << maxndevs
           << ",\"UsedThreads\"," << ndevs
           << ",\"TotalMemory\"," << getMemorySize()
-          << ",\"PlanFlags\",\"" <<
-        (PlanFlags==FFTW_MEASURE ? "FFTW_MEASURE" : PlanFlags==FFTW_ESTIMATE ? "FFTW_ESTIMATE":"FFTW_WISDOM_ONLY");
-      if(PlanTimeLimit > 0.0)
-        msg << "\",\"FftwTimeLimit [s]\"," << PlanTimeLimit;
+          << ",\"PlanRigor\",\"" << options().plan_rigor_str();
+      double plan_timelimit = options().plan_timelimit();
+      if(plan_timelimit > 0.0)
+        msg << "\",\"PlanTimeLimit [s]\"," << plan_timelimit;
       else
-        msg << "\",\"FftwTimeLimit [s]\"," << "\"None\"";
+        msg << "\",\"PlanTimeLimit [s]\"," << "\"None\"";
       return msg.str();
-    }
-
-    void create() {
-    }
-
-    void destroy() {
     }
 
   };
 
+  template<typename T_Precision>
+  struct ImportWisdom {
+
+    void operator()() {
+      std::string filename = FftwContext::options().wisdom_file<T_Precision>();
+      std::string source;
+      std::ifstream ifs;
+      std::stringstream ss;
+      std::string line;
+      ifs.open(filename.c_str(), std::ifstream::in);
+      if(ifs.good()==false)
+        throw std::runtime_error("Wisdom file not accessable.");
+
+      if(ifs.is_open()) {
+        while ( getline (ifs,line) )
+        {
+          ss << line;
+        }
+        ifs.close();
+        source = ss.str();
+      }
+
+      int imported = 0;
+      if(std::is_same<T_Precision,float>::value)
+        imported = fftwf_import_wisdom_from_string(source.c_str());
+      if(std::is_same<T_Precision,double>::value)
+        imported = fftw_import_wisdom_from_string(source.c_str());
+      if(!imported)
+        throw std::runtime_error("Wisdom file could not be loaded.");
+    }
+
+  }; // FftwWisdomLoader
 
   /**
    * Fftw plan and execution class.
@@ -378,8 +402,7 @@ namespace fftw {
    */
   template<typename TFFT, // see fft_abstract.hpp (FFT_Inplace_Real, ...)
            typename TPrecision, // double, float
-           size_t   NDim, // 1..3
-           typename TFftwConfig
+           size_t   NDim // 1..3
            >
   struct FftwImpl
   {
@@ -424,6 +447,8 @@ namespace fftw {
     /// size in bytes of FFT(input) for out-of-place transforms
     size_t        data_complex_size_ = 0;
 
+    unsigned plan_rigor_ = FftwContext::options().plan_rigor();
+
     FftwImpl(const Extent& cextents) {
         extents_ = interpret_as::column_major(cextents);
         extents_complex_ = extents_;
@@ -455,10 +480,11 @@ namespace fftw {
         }
 
         traits::thread_api<TPrecision>::init_threads();
-        traits::thread_api<TPrecision>::plan_with_threads(Options::getInstance().getNumberDevices());
+        traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
 
-        ImportWisdomIf<TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY>()
-          .template import<TPrecision, TFftwConfig>();
+        if(plan_rigor_ == FFTW_WISDOM_ONLY) {
+          ImportWisdom<TPrecision>()();
+        }
       }
 
     ~FftwImpl(){
@@ -483,9 +509,9 @@ namespace fftw {
                                                    data_,
                                                    data_complex_,
                                                    traits::fftw_direction::forward,
-                                                   TFftwConfig::PlanFlags);
+                                                   plan_rigor_);
       if(!fwd_plan_)
-        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
+        if(plan_rigor_ == FFTW_WISDOM_ONLY)
           throw std::runtime_error("fftw forward plan could not be created as wisdom is not available for this problem.");
         else
           throw std::runtime_error("fftw forward plan could not be created.");
@@ -497,9 +523,9 @@ namespace fftw {
                                                    data_complex_,
                                                    data_,
                                                    traits::fftw_direction::inverse,
-                                                   TFftwConfig::PlanFlags);//leave this here for now
+                                                   plan_rigor_);
       if(!bwd_plan_)
-        if(TFftwConfig::PlanFlags == FFTW_WISDOM_ONLY)
+        if(plan_rigor_ == FFTW_WISDOM_ONLY)
           throw std::runtime_error("fftw inverse plan could not be created as wisdom is not available for this problem.");
         else
           throw std::runtime_error("fftw inverse plan could not be created.");
@@ -629,33 +655,25 @@ namespace fftw {
     }
   };
 
-  template<typename T_FftwConfig>
   using Inplace_Real = gearshifft::FFT<FFT_Inplace_Real,
                                        FFT_Plan_Not_Reusable,
                                        FftwImpl,
-                                       TimerCPU,
-                                       T_FftwConfig>;
+                                       TimerCPU>;
 
-  template<typename T_FftwConfig>
   using Outplace_Real = gearshifft::FFT<FFT_Outplace_Real,
                                         FFT_Plan_Not_Reusable,
                                         FftwImpl,
-                                        TimerCPU,
-                                        T_FftwConfig>;
+                                        TimerCPU>;
 
-  template<typename T_FftwConfig>
   using Inplace_Complex = gearshifft::FFT<FFT_Inplace_Complex,
                                           FFT_Plan_Not_Reusable,
                                           FftwImpl,
-                                          TimerCPU,
-                                          T_FftwConfig>;
+                                          TimerCPU>;
 
-  template<typename T_FftwConfig>
   using Outplace_Complex = gearshifft::FFT<FFT_Outplace_Complex,
                                            FFT_Plan_Not_Reusable,
                                            FftwImpl,
-                                           TimerCPU,
-                                           T_FftwConfig>;
+                                           TimerCPU>;
 } // namespace fftw
 } // namespace gearshifft
 

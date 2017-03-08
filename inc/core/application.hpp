@@ -26,9 +26,6 @@ namespace gearshifft {
       static Application app;
       return app;
     }
-    static T_Context& getContext() {
-      return getInstance().context_;
-    }
 
     bool isContextCreated() const {
       return context_created_;
@@ -55,7 +52,7 @@ namespace gearshifft {
     }
 
     void dumpResults() {
-      if(gearshifft::Options::getInstance().getVerbose()) {
+      if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
                          T_Context::title(),
                          context_.get_used_device_properties(),
@@ -63,7 +60,7 @@ namespace gearshifft {
                          timeContextDestroy_);
       }
 
-      std::string fname = Options::getInstance().getOutputFile();
+      std::string fname = T_Context::options().getOutputFile();
       resultAll_.sort();
       resultAll_.saveCSV(fname,
                          T_Context::title(),
