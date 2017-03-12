@@ -4,7 +4,6 @@
 #define BOOST_TEST_ALTERNATIVE_INIT_API
 
 #include "application.hpp"
-#include "options.hpp"
 #include "benchmark_suite.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -39,8 +38,8 @@ namespace gearshifft {
       boost_vargv_.clear();
       boost_vargv_.emplace_back(argv[0]); // [0] = name of application
 
-      if( Options::getInstance().parse(vargv, boost_vargv_) ) {
-        if( gearshifft::Options::getInstance().getListDevices() ) {
+      if( Context::options().parse(vargv, boost_vargv_) ) {
+        if( Context::options().getListDevices() ) {
           std::cout << Context::get_device_list() << std::endl;
         }
       }

@@ -6,7 +6,9 @@ using List = gearshifft::List<Types...>;
 
 #ifdef CUDA_ENABLED
 #include "libraries/cufft/cufft.hpp"
+
 using namespace gearshifft::CuFFT;
+using Context           = CuFFTContext;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
@@ -16,7 +18,9 @@ using FFT_Is_Normalized = std::false_type;
 
 #elif defined(OPENCL_ENABLED)
 #include "libraries/clfft/clfft.hpp"
+
 using namespace gearshifft::ClFFT;
+using Context           = ClFFTContext;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
@@ -26,28 +30,13 @@ using FFT_Is_Normalized = std::true_type;
 
 #elif defined(FFTW_ENABLED)
 #include "libraries/fftw/fftw.hpp"
+
 using namespace gearshifft::fftw;
-struct FftwConfig {
-#if defined(GEARSHIFFT_FFTW_USE_ESTIMATE)
-  static constexpr unsigned PlanFlags = FFTW_ESTIMATE;
-#elif defined(GEARSHIFFT_FFTW_USE_WISDOM)
-  static constexpr unsigned PlanFlags = FFTW_WISDOM_ONLY;
-  static constexpr auto WisdomFileSinglePrecision = "../config/fftwf_wisdom.txt";
-  static constexpr auto WisdomFileDoublePrecision = "../config/fftw_wisdom.txt";
-#else
-  static constexpr unsigned PlanFlags = FFTW_MEASURE;
-#endif
-#if defined(GEARSHIFFT_FFTW_USE_MEASURE) && defined(GEARSHIFFT_FFTW_TIMELIMIT)
-  static constexpr double PlanTimeLimit = GEARSHIFFT_FFTW_TIMELIMIT;
-#else
-  static constexpr double PlanTimeLimit = FFTW_NO_TIMELIMIT;
-#endif
-};
-using Context           = FftwContext<FftwConfig>;
-using FFTs              = List<Inplace_Real<FftwConfig>,
-                               Inplace_Complex<FftwConfig>,
-                               Outplace_Real<FftwConfig>,
-                               Outplace_Complex<FftwConfig> >;
+using Context           = FftwContext;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex >;
 using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::false_type;
 #endif

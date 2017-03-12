@@ -1,7 +1,6 @@
 #ifndef RESULT_ALL_HPP_
 #define RESULT_ALL_HPP_
 
-#include "options.hpp"
 #include "result_benchmark.hpp"
 #include "traits.hpp"
 #include "types.hpp"
@@ -119,6 +118,7 @@ namespace gearshifft {
       const char sep=',';
 
       fs.open(fname, std::ofstream::out);
+      fs.precision(11);
       fs << "; " << dev_infos << "\n"
          << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
          << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";

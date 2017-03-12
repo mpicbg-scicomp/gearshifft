@@ -2,7 +2,6 @@
 #define BENCHMARK_SUITE_HPP_
 
 #include "application.hpp"
-#include "options.hpp"
 #include "benchmark_executor.hpp"
 #include "traits.hpp"
 #include "types.hpp"
@@ -84,16 +83,16 @@ namespace gearshifft {
         using App = Application<T_Context>;
         Factory factory;
         test_suite* sub_suite = BOOST_TEST_SUITE( ToString<T_Precision>::value() );
-        Options& options = Options::getInstance();
-        auto extents1D = options.getExtents1D();
+
+        auto extents1D = T_Context::options().getExtents1D();
         for(auto e : extents1D) {
           sub_suite->add( factory.createSuite(e) );
         }
-        auto extents2D = options.getExtents2D();
+        auto extents2D = T_Context::options().getExtents2D();
         for(auto e : extents2D) {
           sub_suite->add( factory.createSuite(e) );
         }
-        auto extents3D = options.getExtents3D();
+        auto extents3D = T_Context::options().getExtents3D();
         for(auto e : extents3D) {
           sub_suite->add( factory.createSuite(e) );
         }

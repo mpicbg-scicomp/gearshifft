@@ -15,7 +15,7 @@ namespace gearshifft {
   class Application {
   public:
     /// Number of benchmark runs after warmup
-    static constexpr int NR_RUNS = 5;
+    static constexpr int NR_RUNS = 10;
     static constexpr int NR_WARMUP_RUNS = 1;
     static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
     using ResultAllT = ResultAll<NR_RUNS, NR_RECORDS>;
@@ -26,9 +26,6 @@ namespace gearshifft {
     static Application& getInstance() {
       static Application app;
       return app;
-    }
-    static T_Context& getContext() {
-      return getInstance().context_;
     }
 
     bool isContextCreated() const {
@@ -56,7 +53,7 @@ namespace gearshifft {
     }
 
     void dumpResults() {
-      if(gearshifft::Options::getInstance().getVerbose()) {
+      if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
                          T_Context::title(),
                          context_.get_used_device_properties(),
@@ -64,7 +61,7 @@ namespace gearshifft {
                          timeContextDestroy_);
       }
 
-      std::string fname = Options::getInstance().getOutputFile();
+      std::string fname = T_Context::options().getOutputFile();
       resultAll_.sort();
       resultAll_.saveCSV(fname,
                          T_Context::title(),
