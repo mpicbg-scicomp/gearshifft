@@ -60,33 +60,33 @@ namespace gearshifft {
                double timerContextCreate,
                double timerContextDestroy) {
       std::stringstream ss;
-      ss << "; " << dev_infos << std::endl
-         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
-         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
+      ss << "; " << dev_infos << "\n"
+         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
+         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";
       ss << apptitle
          << ", RunsPerBenchmark="<<T_NumberRuns
-         << std::endl;
+         << "\n";
 
       for(auto& result : results_) {
         int nruns = T_NumberRuns;
         std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
         std::string complex = result.isComplex() ? "Complex" : "Real";
 
-        ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
+        ss << std::setfill('-') << std::setw(70) <<"-"<< "\n";
         ss << inplace
            << ", "<<complex
            << ", "<<result.getPrecision()
            << ", Dim="<<result.getDim()
            << ", Kind="<<result.getDimKindStr()<<" ("<<result.getDimKind()<<")"
            << ", Ext="<<result.getExtents()
-           << std::endl;
+           << "\n";
         if(result.hasError()) {
           ss << " Error at run="<<result.getErrorRun()
              << ": "<<result.getError()
-             << std::endl;
+             << "\n";
           nruns = result.getErrorRun()+1;
         }
-        ss << std::setfill('-') << std::setw(70) <<"-"<< std::endl;
+        ss << std::setfill('-') << std::setw(70) <<"-"<< "\n";
         ss << std::setfill(' ');
         double sum;
         for(int ival=0; ival<T_NumberValues; ++ival) {
@@ -99,10 +99,10 @@ namespace gearshifft {
             << static_cast<RecordType>(ival)
              << ": " << std::setw(16) << sum/nruns
              << " [avg]"
-             << std::endl;
+             << "\n";
         }
       }
-      stream << ss.str() << std::endl;
+      stream << ss.str() << std::endl; // "\n" with flush
     }
 
     /**
@@ -119,17 +119,16 @@ namespace gearshifft {
 
       fs.open(fname, std::ofstream::out);
       fs.precision(11);
-      fs << "; " << dev_infos << std::endl
-         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << std::endl
-         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << std::endl;
+      fs << "; " << dev_infos << "\n"
+         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
+         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";
       // header
       fs << "\"library\",\"inplace\",\"complex\",\"precision\",\"dim\",\"kind\""
-         << ",\"nx\",\"ny\",\"nz\",\"run\",\"success\"";
+         << ",\"nx\",\"ny\",\"nz\",\"run\",\"id\",\"success\"";
       for(auto ival=0; ival<T_NumberValues; ++ival) {
         fs << sep << '"' << static_cast<RecordType>(ival) << '"';
       }
-      fs << sep << "\"ID\"";
-      fs << std::endl;
+      fs << "\n";
 
       // data
       for(auto& result : results_) {
@@ -146,7 +145,8 @@ namespace gearshifft {
              << result.getExtents()[0] << sep
              << result.getExtents()[1] << sep
              << result.getExtents()[2] << sep
-             << run;
+             << run << sep
+             << result.getID();
           // was run successfull?
           if(result.hasError() && result.getErrorRun()<=run) {
             if(result.getErrorRun()==run)
@@ -160,8 +160,7 @@ namespace gearshifft {
           for(auto ival=0; ival<T_NumberValues; ++ival) {
             fs << sep << result.getValue(ival);
           }
-          fs << sep << result.getID();
-          fs << std::endl;
+          fs << "\n";
         } // run
       } // result
       fs.close();

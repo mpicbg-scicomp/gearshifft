@@ -26,6 +26,7 @@ namespace gearshifft {
     using ApplicationT = Application<T_Context>;
     using ResultT = typename ApplicationT::ResultT;
     static constexpr int NR_RUNS = ApplicationT::NR_RUNS;
+    static constexpr int NR_WARMUP_RUNS = ApplicationT::NR_WARMUP_RUNS;
     static constexpr double ERROR_BOUND = ApplicationT::ERROR_BOUND;
     static constexpr size_t NDim = std::tuple_size<T_Extents>::value;
     using VectorT = typename std::conditional<T_FFT_Wrapper::IsComplex,
@@ -47,7 +48,10 @@ namespace gearshifft {
       int r = 0;
       try {
         // warmup
-        fft(result, data_buffer, extents);
+        for(int w=0; w<NR_WARMUP_RUNS; ++w) {
+          dataset.copyTo(data_buffer);
+          fft(result, data_buffer, extents);
+        }
         for(r=0; r<NR_RUNS; ++r)
         {
           result.setRun(r);
