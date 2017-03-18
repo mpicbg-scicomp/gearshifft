@@ -117,6 +117,11 @@ endif()
 function(add_exec Tlib)
   set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
+  target_compile_definitions(${PROJECT_EXEC} PUBLIC
+    -DGEARSHIFFT_NUMBER_RUNS=${GEARSHIFFT_NUMBER_RUNS}
+    -DGEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
+    -DGEARSHIFFT_ERROR_BOUND=${GEARSHIFFT_ERROR_BOUND}
+    )
   if (Tlib STREQUAL "cufft" OR DEV_TESTS STREQUAL "cufft")
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DCUDA_ENABLED)
     set(LIBS ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
@@ -124,11 +129,9 @@ function(add_exec Tlib)
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DOPENCL_ENABLED)
     set(LIBS ${CLFFT_LIBRARIES} ${OPENCL_LIBRARIES})
   endif()
-
-  if (Tlib MATCHES "fftw")
+  if (Tlib STREQUAL "fftw")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED)
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
-    set_target_properties(${PROJECT_EXEC}
-      PROPERTIES COMPILE_FLAGS "-DFFTW_ENABLED")
   endif()
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})

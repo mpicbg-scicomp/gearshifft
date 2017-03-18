@@ -111,7 +111,7 @@ namespace gearshifft {
      */
     void saveCSV(const std::string& fname,
                  const std::string& apptitle,
-                 const std::string& dev_infos,
+                 const std::string& meta_information,
                  double timerContextCreate,
                  double timerContextDestroy) {
       std::ofstream fs;
@@ -119,7 +119,7 @@ namespace gearshifft {
 
       fs.open(fname, std::ofstream::out);
       fs.precision(11);
-      fs << "; " << dev_infos << "\n"
+      fs << "; " << meta_information <<"\n"
          << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
          << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";
       // header

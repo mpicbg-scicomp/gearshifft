@@ -6,8 +6,23 @@
 #include "timer_cpu.hpp"
 #include "types.hpp"
 
+#include <ctime>
 #include <vector>
 #include <array>
+#include <sstream>
+
+
+#ifndef GEARSHIFFT_NUMBER_RUNS
+#define GEARSHIFFT_NUMBER_RUNS 10
+#endif
+
+#ifndef GEARSHIFFT_NUMBER_WARMUPS
+#define GEARSHIFFT_NUMBER_WARMUPS 1
+#endif
+
+#ifndef GEARSHIFFT_ERROR_BOUND
+#define GEARSHIFFT_ERROR_BOUND 0.00001
+#endif
 
 namespace gearshifft {
 
@@ -15,13 +30,13 @@ namespace gearshifft {
   class Application {
   public:
     /// Number of benchmark runs after warmup
-    static constexpr int NR_RUNS = 10;
-    static constexpr int NR_WARMUP_RUNS = 1;
+    static constexpr int NR_RUNS = GEARSHIFFT_NUMBER_RUNS;
+    static constexpr int NR_WARMUP_RUNS = GEARSHIFFT_NUMBER_WARMUPS;
     static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
     using ResultAllT = ResultAll<NR_RUNS, NR_RECORDS>;
     using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
     /// Boost tests will fail when deviation(iFFT(FFT(data)),data) returns a greater value
-    static constexpr double ERROR_BOUND = 0.00001;
+    static constexpr double ERROR_BOUND = GEARSHIFFT_ERROR_BOUND;
 
     static Application& getInstance() {
       static Application app;
@@ -53,10 +68,19 @@ namespace gearshifft {
     }
 
     void dumpResults() {
+      std::time_t now = std::time(nullptr);
+      std::stringstream meta_information;
+      meta_information << context_.get_used_device_properties()
+                       << ",\"NumberRuns\"," << NR_RUNS
+                       << ",\"NumberWarmups\"," << NR_WARMUP_RUNS
+                       << ",\"ErrorBound\"," << ERROR_BOUND
+                       << ",\"CurrentTime\"," << now
+                       << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
+        ;
       if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
                          T_Context::title(),
-                         context_.get_used_device_properties(),
+                         meta_information.str(),
                          timeContextCreate_,
                          timeContextDestroy_);
       }
@@ -65,10 +89,10 @@ namespace gearshifft {
       resultAll_.sort();
       resultAll_.saveCSV(fname,
                          T_Context::title(),
-                         context_.get_used_device_properties(),
+                         meta_information.str(),
                          timeContextCreate_,
                          timeContextDestroy_);
-      std::cout << "Results dumped to "+fname << std::endl;
+      std::cout << "Results dumped to " << fname << std::endl;
     }
 
   private:
