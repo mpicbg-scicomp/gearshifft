@@ -467,7 +467,7 @@ namespace fftw {
                                      1,
                                      std::multiplies<size_t>());
 
-        data_size_ = (IsInplace ? 2*n_complex_ : n_) * sizeof(value_type);
+        data_size_ = (IsInplaceReal ? 2*n_complex_ : n_) * sizeof(value_type);
         if(IsInplace==false)
           data_complex_size_ = n_complex_ * sizeof(ComplexType);
 

@@ -227,13 +227,13 @@ namespace gearshifft
           throw std::runtime_error("Context has not been created.");
 
         extents_ = interpret_as::row_major(cextents);
-        extents_complex_ = extents_;
         n_ = std::accumulate(extents_.begin(),
                              extents_.end(),
                              1,
                              std::multiplies<size_t>());
         std::copy(extents_.begin(), extents_.end(), extents_cl_.begin());
 
+        extents_complex_ = extents_;
         if(IsComplex==false){
           extents_complex_.front() = (extents_.front()/2 + 1);
         }
@@ -243,7 +243,7 @@ namespace gearshifft
                                      1,
                                      std::multiplies<size_t>());
 
-        data_size_ = (IsInplace ? 2*n_complex_ : n_) * sizeof(value_type);
+        data_size_ = (IsInplaceReal ? 2*n_complex_ : n_) * sizeof(value_type);
         if(IsInplace==false)
           data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
@@ -271,15 +271,10 @@ namespace gearshifft
           dist_       = n_;
         }
 
-        if(IsComplex==false){
-          strides_complex_[1] = extents_[0]/2+1;
-          strides_complex_[2] = n_complex_ / extents_[NDim-1];
-          dist_complex_       = n_complex_;
-        }else{ // Complex, inplace, outplace
-          strides_complex_[1] = extents_[0];
-          strides_complex_[2] = n_ / extents_[NDim-1];
-          dist_complex_       = n_;
-        }
+        strides_complex_[1] = extents_complex_[0];
+        strides_complex_[2] = n_complex_ / extents_complex_[NDim-1];
+        dist_complex_       = n_complex_;
+
         // if memory transfer must pad reals
         if(IsInplaceReal && NDim>1) {
           size_t width  = extents_[0] * sizeof(RealType);
