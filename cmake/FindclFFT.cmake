@@ -39,13 +39,18 @@ find_path(CLFFT_INCLUDE_DIRS
     PATHS ${CLFFT_ROOT}
     PATH_SUFFIXES "include"
     NO_DEFAULT_PATH
-    )    
+    )
+
 find_library(CLFFT_LIBRARIES
     NAMES "clFFT"
     PATHS ${CLFFT_ROOT}
-    PATH_SUFFIXES "lib" "lib64"
+    PATH_SUFFIXES "lib" "lib64" "lib64/import"
     NO_DEFAULT_PATH
     )
+
+if(CLFFT_LIBRARIES MATCHES ".*.a")
+  set(CLFFT_LIBRARIES ${CLFFT_LIBRARIES};dl)
+endif()
 # handle the QUIETLY and REQUIRED arguments and set CLFFT_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE (FindPackageHandleStandardArgs)
