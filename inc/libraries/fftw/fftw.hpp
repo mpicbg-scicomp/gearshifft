@@ -467,7 +467,7 @@ namespace fftw {
                                      1,
                                      std::multiplies<size_t>());
 
-        data_size_ = (IsInplace ? 2*n_complex_ : n_) * sizeof(value_type);
+        data_size_ = (IsInplaceReal ? 2*n_complex_ : n_) * sizeof(value_type);
         if(IsInplace==false)
           data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
@@ -587,7 +587,7 @@ namespace fftw {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
-        const std::size_t allocated_x = extents_complex_[NDim-1];
+        const std::size_t allocated_x = 2*(extents_[NDim-1]/2+1);
 
         std::size_t input_index = 0;
         std::size_t data_index = 0;
@@ -616,7 +616,7 @@ namespace fftw {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
-        const std::size_t allocated_x = extents_complex_[NDim-1];
+        const std::size_t allocated_x = 2*(extents_[NDim-1]/2+1);
 
         std::size_t output_index = 0;
         std::size_t data_index = 0;
