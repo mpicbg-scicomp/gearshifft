@@ -16,4 +16,4 @@ module load numactl/2.0.7
 export CUDA_VISIBLE_DEVICES=0 #P100
 
 
-numactl -m0 -N0 /home/steinb95/development/gearshifft/build/gearshifft_cufft -f /home/steinb95/development/gearshifft/config/extents_all_publication.conf -o /home/steinb95/development/gearshifft/results/P100-PCIE-16GB/cuda-8.0.44/cufft_gcc5.3.0_ubuntu14.04.5.csv -d 0
+numactl -N0 /home/steinb95/development/gearshifft/build/gearshifft_cufft -f /home/steinb95/development/gearshifft/config/extents_all_publication.conf -o /home/steinb95/development/gearshifft/results/P100-PCIE-16GB/cuda-8.0.44/cufft_gcc5.3.0_ubuntu14.04.5.csv -d 0
