@@ -1,6 +1,6 @@
 # ![gearshifft](images/gearshifft_logo_img_100.png)
 
-Benchmark Suite for Heterogeneous Implementations of FFTs
+## Benchmark Suite for Heterogeneous Implementations of FFTs [![DOI](https://zenodo.org/badge/60610005.svg)](https://zenodo.org/badge/latestdoi/60610005)
 
 This is a simple and easy extensible benchmark system to answer the question, which FFT library performs best under which conditions.
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
