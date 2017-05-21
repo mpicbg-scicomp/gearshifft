@@ -16,7 +16,8 @@
 
 namespace gearshifft {
 
-  template<int T_NumberRuns,  // runs per benchmark
+  template<int T_NumberRuns,  // runs per benchmark including warmup
+           int T_NumberWarmups,
            int T_NumberValues // recorded values per run
            >
   class ResultAll {
@@ -91,7 +92,7 @@ namespace gearshifft {
         double sum;
         for(int ival=0; ival<T_NumberValues; ++ival) {
           sum = 0.0;
-          for(int run=0; run<nruns; ++run) {
+          for(int run=T_NumberWarmups; run<nruns; ++run) {
             result.setRun(run);
             sum += result.getValue(ival);
           }
@@ -154,7 +155,10 @@ namespace gearshifft {
             else
               fs << sep << "\"Skipped\""; // subsequent runs did not run
           } else {
-            fs << sep << "\"" << "Success" << "\"";
+            if(run<T_NumberWarmups)
+              fs << sep << "\"" << "Warmup" << "\"";
+            else
+              fs << sep << "\"" << "Success" << "\"";
           }
           // measured time and size values
           for(auto ival=0; ival<T_NumberValues; ++ival) {

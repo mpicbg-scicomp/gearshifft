@@ -35,8 +35,8 @@ option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
 option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
 
-set(GEARSHIFFT_NUMBER_RUNS "10" CACHE STRING "Number of repetitions within a FFT benchmark.")
-set(GEARSHIFFT_NUMBER_WARMUPS "1" CACHE STRING "Number of warmups before FFT benchmark becomes measured.")
+set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
+set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
 set(GEARSHIFFT_ERROR_BOUND "0.00001" CACHE STRING "Error-bound for FFT benchmarks.")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
