@@ -11,7 +11,7 @@
 
 namespace gearshifft {
   /**
-   * Benchmark body with 1 warmup and NR_RUNS repetitions of iFFT(FFT()) implementation.
+   * Benchmark body with NR_RUNS repetitions of iFFT(FFT()) implementation.
    * Implementation is given with TFunctor.
    * Depending on TFunctor::InputIsReal it uses RealType or ComplexType test data.
    * FFT output will be [normalized and] compared to original input.
@@ -25,8 +25,7 @@ namespace gearshifft {
   struct BenchmarkExecutor {
     using ApplicationT = Application<T_Context>;
     using ResultT = typename ApplicationT::ResultT;
-    static constexpr int NR_RUNS = ApplicationT::NR_RUNS;
-    static constexpr int NR_WARMUP_RUNS = ApplicationT::NR_WARMUP_RUNS;
+    static constexpr int NR_RUNS = ApplicationT::NR_RUNS; // includes warmups
     static constexpr double ERROR_BOUND = ApplicationT::ERROR_BOUND;
     static constexpr size_t NDim = std::tuple_size<T_Extents>::value;
     using VectorT = typename std::conditional<T_FFT_Wrapper::IsComplex,
@@ -45,13 +44,17 @@ namespace gearshifft {
       ResultT result;
       result.template init<T_FFT_Wrapper::IsComplex, T_FFT_Wrapper::IsInplace >
                        (extents, ToString<T_Precision>::value() );
-      int r = 0;
-      try {
-        // warmup
-        for(int w=0; w<NR_WARMUP_RUNS; ++w) {
+
+      int r;
+      if(result.getID()==0) {
+        // hidden initial warmup, which is not recorded (i.e. run=0 will be overwritten)
+        for(r=0; r<2*NR_RUNS; ++r) {
           dataset.copyTo(data_buffer);
           fft(result, data_buffer, extents);
         }
+      }
+
+      try {
         for(r=0; r<NR_RUNS; ++r)
         {
           result.setRun(r);

@@ -86,9 +86,11 @@ namespace gearshifft
       assert(idx<T_NumberValues);
       return values_[run_][idx];
     }
+
     size_t getID() const {
       return id_;
     }
+
     std::string getPrecision() const { return precision_; }
     size_t getDim() const { return dim_; }
     size_t getDimKind() const { return dimkind_; }
@@ -99,6 +101,7 @@ namespace gearshifft
       case 3: return "radix357";
       }
     }
+
     std::array<size_t,3> getExtents() const { return extents_; }
     size_t getExtentsTotal() const { return total_; }
     bool isInplace() const { return isInplace_; }

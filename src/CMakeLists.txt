@@ -17,7 +17,7 @@ endif()
 # Boost
 #------------------------------------------------------------------------------
 
-find_package(Boost 1.56 QUIET COMPONENTS unit_test_framework program_options REQUIRED)
+find_package(Boost 1.56 QUIET COMPONENTS system unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
@@ -119,7 +119,7 @@ function(add_exec Tlib)
   set(PROJECT_EXEC gearshifft_${Tlib})
   add_executable(${PROJECT_EXEC} ${SOURCES})
   target_compile_definitions(${PROJECT_EXEC} PUBLIC
-    -DGEARSHIFFT_NUMBER_RUNS=${GEARSHIFFT_NUMBER_RUNS}
+    -DGEARSHIFFT_NUMBER_WARM_RUNS=${GEARSHIFFT_NUMBER_WARM_RUNS}
     -DGEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
     -DGEARSHIFFT_ERROR_BOUND=${GEARSHIFFT_ERROR_BOUND}
     )

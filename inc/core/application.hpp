@@ -6,18 +6,24 @@
 #include "timer_cpu.hpp"
 #include "types.hpp"
 
+#include <boost/asio.hpp>
+
 #include <ctime>
 #include <vector>
 #include <array>
 #include <sstream>
 
 
-#ifndef GEARSHIFFT_NUMBER_RUNS
-#define GEARSHIFFT_NUMBER_RUNS 10
+#ifndef GEARSHIFFT_NUMBER_WARM_RUNS
+#define GEARSHIFFT_NUMBER_WARM_RUNS 10
 #endif
 
 #ifndef GEARSHIFFT_NUMBER_WARMUPS
-#define GEARSHIFFT_NUMBER_WARMUPS 1
+#define GEARSHIFFT_NUMBER_WARMUPS 2
+#endif
+
+#ifndef GEARSHIFFT_NUMBER_RUNS
+#define GEARSHIFFT_NUMBER_RUNS GEARSHIFFT_NUMBER_WARM_RUNS + GEARSHIFFT_NUMBER_WARMUPS
 #endif
 
 #ifndef GEARSHIFFT_ERROR_BOUND
@@ -31,9 +37,10 @@ namespace gearshifft {
   public:
     /// Number of benchmark runs after warmup
     static constexpr int NR_RUNS = GEARSHIFFT_NUMBER_RUNS;
+    static constexpr int NR_WARM_RUNS = GEARSHIFFT_NUMBER_WARM_RUNS;
     static constexpr int NR_WARMUP_RUNS = GEARSHIFFT_NUMBER_WARMUPS;
     static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
-    using ResultAllT = ResultAll<NR_RUNS, NR_RECORDS>;
+    using ResultAllT = ResultAll<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
     using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
     /// Boost tests will fail when deviation(iFFT(FFT(data)),data) returns a greater value
     static constexpr double ERROR_BOUND = GEARSHIFFT_ERROR_BOUND;
@@ -71,11 +78,13 @@ namespace gearshifft {
       std::time_t now = std::time(nullptr);
       std::stringstream meta_information;
       meta_information << context_.get_used_device_properties()
-                       << ",\"NumberRuns\"," << NR_RUNS
                        << ",\"NumberWarmups\"," << NR_WARMUP_RUNS
+                       << ",\"NumberWarmRuns\"," << NR_WARM_RUNS
+                       << ",\"NumberTotalRuns\"," << NR_RUNS
                        << ",\"ErrorBound\"," << ERROR_BOUND
                        << ",\"CurrentTime\"," << now
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
+                       << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
         ;
       if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
