@@ -98,7 +98,7 @@ namespace gearshifft {
           }
           ss << std::setw(28)
             << static_cast<RecordType>(ival)
-             << ": " << std::setw(16) << sum/nruns
+             << ": " << std::setw(16) << sum/(T_NumberRuns-T_NumberWarmups)
              << " [avg]"
              << "\n";
         }
