@@ -117,9 +117,12 @@ namespace CuFFT {
     CHECK_CUDA( cudaMemGetInfo(&f, &t) );
     info << '"' << prop.name << '"'
          << ", \"CC\", " << prop.major << '.' << prop.minor
+         << ", \"PCI Bus ID\", " << prop.pciBusID
+         << ", \"PCI Device ID\", " << prop.pciDeviceID
          << ", \"Multiprocessors\", "<< prop.multiProcessorCount
          << ", \"Memory [MiB]\", "<< t/1048576
          << ", \"MemoryFree [MiB]\", " << f/1048576
+         << ", \"ECC enabled\", " << prop.ECCEnabled
          << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
          << ", \"GPUClock [MHz]\", " << prop.clockRate/1000
          << ", \"CUDA Runtime\", " << runtimeVersion
