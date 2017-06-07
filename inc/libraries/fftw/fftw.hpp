@@ -23,10 +23,11 @@ namespace fftw {
 
   static inline bool native_fftw() {
 
-    std::string version = fftw_version;
+    static std::string version = fftw_version;
     std::transform(version.begin(), version.end(), version.begin(), ::tolower);
+//    std::cout << "fftw version found " << version << " vs " << fftw_version  << "\n";
 
-    bool value  = version.find("mkl") != std::string::npos;
+    static bool value  = version.find("mkl") == std::string::npos;
 
     return value;
   }
@@ -55,8 +56,11 @@ namespace fftw {
         return FFTW_ESTIMATE;
       if(rigor_ == "patient")
         return FFTW_PATIENT;
-      if(rigor_ == "wisdom")
+      if(rigor_ == "wisdom"){
+        if(!native_fftw())
+          throw std::runtime_error("wisdom rigor not supported with mkl wrappers.");
         return FFTW_WISDOM_ONLY;
+      }
       if(rigor_ == "exhaustive")
         return FFTW_EXHAUSTIVE;
       throw std::runtime_error("Invalid FFTW rigor.");
