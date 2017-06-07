@@ -30,6 +30,14 @@ function(add_exec Tlib)
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED -DGEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_THREADS})
     set(LIBS ${FFTW_LIBRARIES})
   endif()
+  if (Tlib STREQUAL "fftwwrappers")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED)
+
+    target_include_directories(${PROJECT_EXEC} PUBLIC ${FFTWWrappers_MKL_INCLUDE_DIRS})
+    link_directories(${FFTWWrappers_MKL_LIBRARY_DIRS})
+
+    set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
+  endif()
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC} -e 64)
