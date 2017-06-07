@@ -21,6 +21,17 @@
 namespace gearshifft {
 namespace fftw {
 
+  static inline bool native_fftw() {
+
+    std::string version = fftw_version;
+    std::transform(version.begin(), version.end(), version.begin(), ::tolower);
+
+    bool value  = version.find("mkl") != std::string::npos;
+
+    return value;
+  }
+
+
   class FftwOptions : public OptionsDefault {
 
   public:
@@ -345,7 +356,10 @@ namespace fftw {
   struct FftwContext : public ContextDefault<FftwOptions> {
 
     static const std::string title() {
-      return "Fftw";
+      if(native_fftw())
+        return "Fftw";
+      else
+        return "Fftw_mklwrapper";
     }
 
     static std::string get_device_list() {
@@ -395,6 +409,10 @@ namespace fftw {
   struct ImportWisdom {
 
     void operator()() {
+
+      if(!native_fftw())
+        throw std::runtime_error("Wisdom files are only supported by native fftw, unable to proceed");
+
       std::string filename = FftwContext::options().wisdom_file<T_Precision>();
       std::string source;
       std::ifstream ifs;
@@ -516,7 +534,7 @@ namespace fftw {
         traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
 #endif
 
-        if(plan_rigor_ == FFTW_WISDOM_ONLY) {
+        if(plan_rigor_ == FFTW_WISDOM_ONLY && native_fftw()) {
           ImportWisdom<TPrecision>()();
         }
       }
