@@ -25,7 +25,6 @@ namespace fftw {
 
     static std::string version = fftw_version;
     std::transform(version.begin(), version.end(), version.begin(), ::tolower);
-//    std::cout << "fftw version found " << version << " vs " << fftw_version  << "\n";
 
     static bool value  = version.find("mkl") == std::string::npos;
 
