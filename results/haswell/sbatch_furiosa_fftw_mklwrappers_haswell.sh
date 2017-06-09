@@ -3,9 +3,9 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
-#SBATCH --time=8:00:00
-#SBATCH --mem=61991M
-#SBATCH --partition=batch
+#SBATCH --time=48:00:00
+#SBATCH --mem=100991M
+#SBATCH --partition=long
 #SBATCH --exclusive
 #SBATCH --array 0-5
 #SBATCH -o gearshifftcpu_array-%A_%a.out
