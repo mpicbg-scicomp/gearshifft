@@ -24,6 +24,7 @@ FEXTENTS2D=$CURDIR/config/extents_2d_publication.conf
 FEXTENTS3D=$CURDIR/config/extents_3d_publication.conf
 FEXTENTS=$CURDIR/config/extents_all_publication.conf
 
+module purge
 module load fftw/3.3.6-pl1-brdw cuda/8.0.61 boost/1.63.0
 module unload gcc
 module load gcc/5.3.0
@@ -39,13 +40,13 @@ elif [ $k -eq 2 ]; then
     srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS3D -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.3d.csv --rigor estimate
 
 elif [ $k -eq 3 ]; then
-    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS1DFFTW -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.1d.csv --rigor wisdom --wisdom_sp ./config/fftwf_wisdom_3.3.6-pl1.txt --wisdom_dp ./config/fftw_wisdom_3.3.6-pl1.txt
+    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS1DFFTW -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.1d.csv --rigor wisdom --wisdom_sp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt --wisdom_dp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt
 
 elif [ $k -eq 4 ]; then
-    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS2D -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.2d.csv --rigor wisdom --wisdom_sp ./config/fftwf_wisdom_3.3.6-pl1.txt --wisdom_dp ./config/fftw_wisdom_3.3.6-pl1.txt
+    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS2D -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.2d.csv --rigor wisdom --wisdom_sp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt --wisdom_dp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt
 
 elif [ $k -eq 5 ]; then
-    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS3D -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.3d.csv --rigor wisdom --wisdom_sp ./config/fftwf_wisdom_3.3.6-pl1.txt --wisdom_dp ./config/fftw_wisdom_3.3.6-pl1.txt
+    srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS3D -o $RESULTS/fftw_wisdom_gcc5.3.0_RHEL7.2.3d.csv --rigor wisdom --wisdom_sp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt --wisdom_dp $CURDIR/results/broadwell/fftwf_wisdom_3.3.6-pl1_bdw.txt
 
 #elif [ $k -eq 6 ]; then
 #     srun --cpu-freq=medium $REL/gearshifft_fftw -f $FEXTENTS1D -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.1d.csv # takes too long, >7d
