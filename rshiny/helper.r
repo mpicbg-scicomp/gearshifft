@@ -17,11 +17,11 @@ open_gearshifft_csv <- function (i,fnames){
     line_1 <- gsub('"','',line_1)
     line_1 <- gsub(';','',line_1)
 
-    
+
     line_1_splited <- strsplit(line_1,",")
     gpu_model <- ""
     nrw <- nrow(local_frame)
-    
+
     if(grepl("clfft", line_1_splited[[1]][1], ignore.case = TRUE)){
         if(grepl("CPU", line_1_splited[[1]][3], ignore.case = TRUE)){
             gpu_model <- paste("E5-2680v3 ",line_1_splited[[1]][11],"x (clFFT)",sep="") # make it equal to fftw hardware when cpu E5 is used
@@ -36,22 +36,22 @@ open_gearshifft_csv <- function (i,fnames){
             gpu_model <- line_1_splited[[1]][1]
             flags = "None"
             cat("THIS IS",local_frame$library[1],gpu_model,"\twith ",nrw,"\n")
-            
+
         }
 
         if(grepl("SupportedThreads", line_1, ignore.case = TRUE)) {
             gpu_model <- paste("E5-2680v3 ",line_1_splited[[1]][4],"x (fftw)",sep="")
             flags = paste("fftw-",gsub("_","-",line_1_splited[[1]][8]),sep="")
             cat("THIS IS",local_frame$library[1],gpu_model,"\twith ",nrw,"(",flags,")\n")
-            
+
         }
 
     }
 
-    
+
     local_frame = local_frame %>%
         mutate( n_elements = ifelse(dim==1,nx, ifelse(dim==2,nx*ny, nx*ny*nz)) )
-    local_frame = local_frame %>% mutate( 
+    local_frame = local_frame %>% mutate(
         nbytes = ifelse("Complex" %in% complex,2,1)*ifelse("float" %in% precision,4,8)*n_elements,
         hardware = gpu_model,
         flags = flags,
@@ -110,6 +110,12 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     filter_type <- ""
     filter_dim  <- 0
 
+    if(nchar(args$run)>0 && args$run == "-")
+        filter_run <- c("Warmup", "Success")
+    else
+        filter_run <- args$run
+
+
     filtered_by <- c("success")
 
     if(nchar(args$placeness)>1){
@@ -140,8 +146,8 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     if(grepl("Time", args$xmetric))
         xlabel <- paste0(args$xmetric,"_[ms]")
     ylabel <- paste0(args$ymetric,"_[ms]")
-    
-    succeeded <- gearshifft_data %>% filter(success == "Success")
+
+    succeeded <- gearshifft_data %>% filter(success == filter_run)
 
     if ( nchar(filter_mode) > 0){
         succeeded <- succeeded %>% filter(inplace == filter_mode)
@@ -178,11 +184,11 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
 
     ymetric_keywords = trimws(unlist(strsplit(args$ymetric,"[-|+|/|*|)|(]")))
     ymetric_expression = args$ymetric
-    
+
                                         # creating expression
     for(i in 1:length(ymetric_keywords)) {
 
-        indices = grep(ymetric_keywords[i],data_colnames) 
+        indices = grep(ymetric_keywords[i],data_colnames)
         if( length(indices) > 0 && !is.null(ymetric_keywords[i]) && nchar(ymetric_keywords[i]) > 1){
             to_replace = paste("succeeded[,",indices[1],"]",sep="")
             cat(i,ymetric_keywords[i],"->",to_replace,"in",ymetric_expression,"\n")
@@ -199,11 +205,11 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     name_of_ymetric = args$ymetric
 
     if( length(ymetric_keywords) == 1  ){
-        name_of_ymetric = data_colnames[grep(ymetric_keywords[1], data_colnames)[1]] 
+        name_of_ymetric = data_colnames[grep(ymetric_keywords[1], data_colnames)[1]]
     }
 
     if(!is.null(ylabel)) {
-        
+
         if( nchar(ylabel) > 1){
             name_of_ymetric = gsub("_"," ",ylabel)
         }
@@ -216,7 +222,7 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
 ##############################################################################
                                         # extracting xmetric expression
     if(grep(args$xmetric,data_colnames) == 0){
-        
+
         stop(paste(args$xmetric, "for x not found in available columns \n",data_colnames,"\n"))
     }
 
@@ -224,7 +230,7 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     succeeded_xmetric_of_interest  <- succeeded %>% select(contains(args$xmetric))
     name_of_xmetric <- colnames(succeeded_xmetric_of_interest)[1]
     if(!is.null(xlabel)) {
-         
+
         if( nchar(xlabel) > 1){
             name_of_xmetric = xlabel
         }
@@ -235,7 +241,7 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     succeeded_reduced <- bind_cols(succeeded_factors,
                                    succeeded_xmetric_of_interest,
                                    succeeded_ymetric_of_interest)
-    
+
     if( grepl("bytes",name_of_xmetric)  ) {
         succeeded_reduced$xmoi <- succeeded_reduced$xmoi / (1024.*1024.)
         name_of_xmetric <- gsub("bytes","MiB",name_of_xmetric)
@@ -249,7 +255,7 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
 
     cols_to_consider <- Filter(function(i){ !(i %in% filtered_by || i == "id" || i == "run") },c(colnames(succeeded_factors),"xmoi"))
     cols_to_grp_by <- lapply(c(cols_to_consider,"id"), as.symbol)
-    
+
     data_for_plotting <- succeeded_reduced %>%
         group_by_(.dots = cols_to_grp_by) %>%
         ##group_by(library, hardware, id, nx, ny, nz, xmoi) %>%
@@ -257,18 +263,18 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
                   moi_median = median(ymoi),
                   moi_stddev = sd(ymoi)
                   )
-    
+
     tables <- list()
     tables$raw <- succeeded_reduced
     tables$reduced <- data_for_plotting
     tables$name_of_xmetric <- name_of_xmetric
     tables$name_of_ymetric <- name_of_ymetric
-    if( args$notitle == F ) {    
+    if( args$notitle == F ) {
         tables$title <- paste("filtered by:",paste(filtered_by,collapse=" "))
     } else {
         tables$title <- ""
     }
-    
+
 #    tables <- data_for_plotting[c('id','xmoi','moi_mean','moi_median','moi_stddev')]
     return(tables)
 }
@@ -296,7 +302,7 @@ plot_gearshifft <- function(tables,
                                     axis.text.y = element_text(size=14)#,
                                         #axis.text.x  = element_text()
                                    ,plot.margin = unit(c(8,10,1,1), "pt") # required otherwise labels are clipped in pdf output
-                                    ) 
+                                    )
     my_theme <- my_theme + theme(legend.title = element_blank(),#legend.title = element_text(size=16, face="bold"),
                                  legend.text = element_text( size = 16),
                                  legend.position="bottom",
@@ -307,7 +313,7 @@ plot_gearshifft <- function(tables,
                                  legend.key = element_rect(colour = 'white', fill = 'white', size = 0., linetype='dashed'),
                                  legend.key.width = unit(1.1, "cm")
                                  )
-        
+
     aesthetics_from_cli <- strsplit(aesthetics,",")[[1]]
 
     aesthetics_keys   <- c("colour","linetype","shape")
@@ -315,9 +321,9 @@ plot_gearshifft <- function(tables,
     aesthetics_length <- length(aesthetics_from_cli)
     n_items_per_aesthetics = c()
     counter = 1
-    
+
     for(i in 1:length(aesthetics_keys)) {
-        
+
         if( i <= aesthetics_length ){
             ## current_levels = eval(parse(text=paste("levels(as.factor(data_for_plotting$",
             ##                                 aesthetics_from_cli[i],"))",
@@ -326,7 +332,7 @@ plot_gearshifft <- function(tables,
             succeeded_reduced[[ aesthetics_from_cli[i] ]] <- as.factor(succeeded_reduced[[ aesthetics_from_cli[i] ]])
 
             current_levels <- levels(data_for_plotting[[ aesthetics_from_cli[i] ]])
-            
+
             n_items_per_aesthetics[counter] = length(current_levels)
             counter = counter + 1
             aesthetics_to_use[[aesthetics_keys[i]]] <- as.symbol(aesthetics_from_cli[i])
@@ -378,13 +384,13 @@ plot_gearshifft <- function(tables,
     ##
 
     moi_plot <- moi_plot + ylab(gsub("_"," ",name_of_ymetric)) + xlab(gsub("_"," ",name_of_xmetric))
-    moi_plot <- moi_plot + my_theme 
+    moi_plot <- moi_plot + my_theme
 
     if(nchar(tables$title)>1)
         moi_plot <- moi_plot + ggtitle(tables$title)
 
     str_to_numeric = function( string, sep ) {
-        
+
         splitted = unlist(strsplit(string,sep))
         vec = sapply(splitted, function(x) as.numeric(x))
         return(vec)
