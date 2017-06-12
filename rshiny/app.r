@@ -5,26 +5,44 @@ library(shiny)
 
 source("helper.r")
 
-retrieve_file_list <- function() {
-    list.files(pattern = ".csv$", recursive = TRUE)
+tmp1 <- ""
+tmp2 <- ""
+
+gearshifft_flist <- list.files(pattern = ".csv$", recursive = TRUE)
+
+
+filter_by_tags <- function(flist, tags) {
+
+    if( is.null(tags)==FALSE )
+    {
+        flist <- gearshifft_flist
+        matches <- Reduce(intersect, lapply(tags, grep, flist))
+        flist <- flist[ matches ]
+    }
+    return(flist)
 }
 
 get_input_files <- function(input,datapath=T) {
-    
+
     if(input$sData1=='User')
         files <- ifelse(datapath, input$file1$datapath, input$file1$name)
-    else
+    else {
         files <- input$file1
+        tmp1 <<- input$file1
+    }
     if(input$sData2=='User')
         files <- append(files, ifelse(datapath, input$file2$datapath, input$file2$name))
-    else if(input$sData2=='gearshifft')
+    else if(input$sData2=='gearshifft') {
         files <- append(files, input$file2)
+        tmp2 <<- input$file2
+    }
+
 
     return(unique(unlist(files)))
 }
 
 get_args <- function(input) {
-    
+
     args <- get_args_default()
     args$placeness <- input$sInplace
     args$precision <- input$sPrec
@@ -34,54 +52,72 @@ get_args <- function(input) {
     args$xmetric <- input$sXmetric
     args$ymetric <- input$sYmetric
     args$notitle <- input$sNotitle
+    args$run <- input$sRun
     return(args)
-    
+
 }
 
 ## Server
 
 server <- function(input, output) {
-    
+
     output$fInput1 <- renderUI({
         if (is.null(input$sData1))
             return()
+        flist <- gearshifft_flist
+        flist <- filter_by_tags(flist, input$tags1)
+        if(grepl(tmp1, flist)==F)
+            tmp1<<-""
         switch(input$sData1,
-               "gearshifft" = selectInput("file1", "File", choices=retrieve_file_list()),
+               "gearshifft" = selectInput("file1", "File", choices=flist, selected=tmp1),
                "User" = fileInput("file1", "File")
                )
     })
 
     output$fInput2 <- renderUI({
-        if (is.null(input$sData2))
+        if (is.null(input$sData2) || input$sData2=="none")
             return()
+        flist <- gearshifft_flist
+        flist <- filter_by_tags(flist, input$tags2)
+        if(grepl(tmp2, flist)==F)
+            tmp2<<-""
         switch(input$sData2,
-               "gearshifft" = selectInput("file2", "File", choices=retrieve_file_list()),
+               "gearshifft" = selectInput("file2", "File", choices=flist, selected=tmp2),
                "User" = fileInput("file2", "File")
                )
     })
 
-##    output$log <- renderPrint({get_input_files(input,datapath=F)})
-
     output$sTable <- DT::renderDataTable(DT::datatable({
-        
+
         if(is.null(input$file1))
             return()
         input_files <- get_input_files(input)
         args <- get_args(input)
-        
+
         df_data <- get_gearshifft_data(input_files)
         result <- get_gearshifft_tables(df_data, args)
-        
+
         return(result$reduced)
     }, style="bootstrap"))
-    
-    output$sPlot <- renderPlot({
-        
+
+    output$sTableRaw <- DT::renderDataTable(DT::datatable({
+
         if(is.null(input$file1))
             return()
         input_files <- get_input_files(input)
-        args <- get_args(input)        
-        
+
+        df_data <- get_gearshifft_data(input_files)
+
+        return(df_data)
+    }, style="bootstrap"))
+
+    output$sPlot <- renderPlot({
+
+        if(is.null(input$file1))
+            return()
+        input_files <- get_input_files(input)
+        args <- get_args(input)
+
         df_data <- get_gearshifft_data(input_files)
         tables <- get_gearshifft_tables(df_data, args)
 
@@ -105,14 +141,14 @@ server <- function(input, output) {
         ## plot type
         if(input$sPlotType=="Histogram") {
             freqpoly <- T
-            noerrorbar <- T            
+            noerrorbar <- T
         } else if(input$sPlotType=="Points") {
             usepointsraw <- T
         } else {
             usepoints <- input$sUsepoints || length(aes)>2
             noerrorbar <- input$sNoerrorbar
         }
-        
+
         plot_gearshifft(tables,
                         aesthetics = aes_str,
                         logx = input$sLogx,
@@ -121,7 +157,7 @@ server <- function(input, output) {
                         bins = input$sHistBins,
                         usepoints = usepoints,
                         usepointsraw = usepointsraw,
-                        noerrorbar = noerrorbar 
+                        noerrorbar = noerrorbar
                         )
     })
 
@@ -135,7 +171,7 @@ server <- function(input, output) {
     })
 
     output$sInfo <- renderUI({
-        input_files <- get_input_files(input)        
+        input_files <- get_input_files(input)
         header <- get_gearshifft_header( input_files[1] )
         output$table1 <- renderTable({
             header$table1
@@ -166,7 +202,7 @@ server <- function(input, output) {
                 )
             )
         } else {
-            
+
             wellPanel(
                 br(),
                 h4(input_files[1]),
@@ -178,7 +214,7 @@ server <- function(input, output) {
         }
     })
 
-    # 
+    #
     output$sHint <- renderUI({
         if(input$sPlotType == "Histogram")
             p("Histograms help to analyze data of the validation code.", HTML("<ul><li>Use Time_* as xmetric for the x axis.</li><li>Probably better to disable log-scaling</li><li>If you do not see any curves then disable some filters.</li></ul>"))
@@ -186,7 +222,7 @@ server <- function(input, output) {
             p("Lines are drawn by the averages including error bars.", HTML("<ul><li>If you see jumps then you should enable more filters or use the 'Inspect' option.</li><li>Points are always drawn when the degree of freedom in the diagram is greater than 2.</li></ul>"))
         else if(input$sPlotType == "Points")
             p("This plot type allows to analyze the raw data by plotting each measure point. It helps analyzing the results of the validation code.")
-        
+
     })
 }
 
@@ -200,7 +236,7 @@ server <- function(input, output) {
 time_columns <- c("Time_Total","Time_FFT","Time_iFFT", "Time_Download", "Time_Upload", "Time_Allocation", "Time_PlanInitFwd", "Time_PlanInitInv", "Time_PlanDestroy")
 
 ui <- fluidPage(
-    
+
     theme="simplex.min.css",
     tags$style(type="text/css",
                "label {font-size: 12px;}",
@@ -208,7 +244,7 @@ ui <- fluidPage(
                "h3 {margin-top: 0px;}",
                ".checkbox {vertical-align: top; margin-top: 0px; padding-top: 0px;}"
                ),
-    
+
     h1("gearshifft | Benchmark Analysis Tool"),
     p("gearshifft is an FFT benchmark suite to evaluate the performance of various FFT libraries on different architectures. Get ",
       a(href="https://github.com/mpicbg-scicomp/gearshifft/", "gearshifft on github.")),
@@ -221,13 +257,37 @@ ui <- fluidPage(
             column(6, wellPanel( fluidRow(
                           column(3, selectInput("sData1", "Data 1", c("gearshifft", "User"))),
                           column(9, uiOutput("fInput1"))
-                      ))),
+                      ),
+                      fluidRow(
+                          checkboxGroupInput("tags1", "Tags",
+                                             c("cuda"="cuda",
+                                               "clfft"="clfft",
+                                               "fftw"="fftw",
+                                               "k80"="K80",
+                                               "gtx1080"="GTX1080",
+                                               "p100"="P100",
+                                               "haswell"="haswell",
+                                               "broadwell"="broadwell"),
+                                             inline=T
+                                             )))),
             column(6, wellPanel( fluidRow(
                           column(3, selectInput("sData2", "Data 2", c("gearshifft", "User", "none"), selected="none")),
                           column(9, uiOutput("fInput2"))
-                      )))
+                      ),
+                      fluidRow(
+                          checkboxGroupInput("tags2", "Tags",
+                                             c("cuda"="cuda",
+                                               "clfft"="clfft",
+                                               "fftw"="fftw",
+                                               "k80"="K80",
+                                               "gtx1080"="GTX1080",
+                                               "p100"="P100",
+                                               "haswell"="haswell",
+                                               "broadwell"="broadwell"),
+                                             inline=T
+                                             ))))
         ),
-    
+
         h3("Filtered by"),
         fluidRow(
             column(2, selectInput("sInplace", "Placeness", c("-","Inplace","Outplace"),selected="Inplace")),
@@ -239,14 +299,15 @@ ui <- fluidPage(
             column(2, selectInput("sYmetric", "ymetric", time_columns))
         ),
         fluidRow(
-            column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim"), selected="precision"))
+            column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim"), selected="precision")),
+            column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success"))
         )
     ),
-    
+
     tabsetPanel(
         ## Plot panel
         tabPanel("Plot",
-                 
+
                  br(),
                  plotOutput("sPlot"),
                  br(),
@@ -255,7 +316,7 @@ ui <- fluidPage(
                      fluidRow(
                          column(3, selectInput("sPlotType", "Plot type", c("Lines","Histogram","Points"), selected="Lines")),
                          column(1, selectInput("sLogx", "Log-X", c("-","2","10"), selected="2")),
-                         column(1, selectInput("sLogy", "Log-Y", c("-","2","10"), selected="2")),
+                         column(1, selectInput("sLogy", "Log-Y", c("-","2","10"), selected="10")),
                          column(1, checkboxInput("sNotitle", "Disable Title")),
                          uiOutput("sPlotOptions")
                      ),
@@ -267,7 +328,13 @@ ui <- fluidPage(
                  DT::dataTableOutput("sTable"),
                  p("A table aggregates the data and shows the average of the runs for each benchmark."),
                  div(HTML("<ul><li>xmoi: xmetric of interest (xmetric='nbytes' -> signal size in MiB)</li><li>ymoi: ymetric of interest</li></ul>"))
-                 ),        
+                 ),
+        ## Table panel
+        tabPanel("Raw Data",
+                 
+                 br(),
+                 DT::dataTableOutput("sTableRaw")
+                 ),
         tabPanel("Info",
                  
                  br(),
