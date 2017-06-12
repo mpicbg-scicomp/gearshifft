@@ -28,20 +28,20 @@ FEXTENTS=$CURDIR/config/extents_all_publication.conf
 
 
 if [ $k -eq 0 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.1d.csv --rigor estimate
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftwmklwrappers_estimate_gcc5.3.0_RHEL7.2.1d.csv --rigor estimate
 
 elif [ $k -eq 1 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.2d.csv --rigor estimate
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftwmklwrappers_estimate_gcc5.3.0_RHEL7.2.2d.csv --rigor estimate
 
 elif [ $k -eq 2 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.3d.csv --rigor estimate
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftwmklwrappers_estimate_gcc5.3.0_RHEL7.2.3d.csv --rigor estimate
 
 elif [ $k -eq 3 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.2d.csv
+     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftwmklwrappers_gcc5.3.0_RHEL7.2.2d.csv
 elif [ $k -eq 4 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.3d.csv
+     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftwmklwrappers_gcc5.3.0_RHEL7.2.3d.csv
 elif [ $k -eq 5 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.1d.csv
+     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftwmklwrappers_gcc5.3.0_RHEL7.2.1d.csv
 fi
 
 module list
