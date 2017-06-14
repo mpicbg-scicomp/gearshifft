@@ -6,6 +6,8 @@ This is a simple and easy extensible benchmark system to answer the question, wh
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
 This project is still in development. 
 
+If you want to just browser our results, see the [raw benchmark data](results/) or our [online visualisation and comparison tool](http://v22017054645049618.nicesrv.de/gearshifft/).
+
 ## Requirements
 
 - cmake 2.8+
@@ -29,24 +31,29 @@ After make have finished you can run e.g. `./gearshifft_cufft`.
 
 See help message (pass `--help|-h`) for the command line options.
 ```
--h [ --help ]                     Print help messages
--e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of
-                                  args possible]
--f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.
-                                  of args possible]
--o [ --output ] arg (=result.csv) output csv file, will be overwritten!
--v [ --verbose ]                  for console output
--d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If
-                                  device is not supported by FFT lib, then it
-                                  is ignored and default is used.
--n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by
-                                  FFT lib (e.g. clfft and fftw with n CPU
-                                  threads).
--l [ --list-devices ]             List of available compute devices with IDs,
-                                  if supported.
--b [ --list-benchmarks ]          Show registered benchmarks
--r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards
-                                  possible, e.g. ClFFT/float/*/Inplace_Real)
+  -h [ --help ]                     Print help messages                                                                                      
+  -e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of                                                              
+                                    args possible]                                                                                           
+  -f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.                                                                
+                                    of args possible]                                                                                        
+  -o [ --output ] arg (=result.csv) output csv file, will be overwritten!                                                                    
+  -v [ --verbose ]                  for console output                                                                                       
+  -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If                                                                  
+                                    device is not supported by FFT lib, then it                                                              
+                                    is ignored and default is used.                                                                          
+  -n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by                                                               
+                                    FFT lib (e.g. clfft and fftw with n CPU                                                                  
+                                    threads).                                                                                                
+  -l [ --list-devices ]             List of available compute devices with IDs,                                                              
+                                    if supported.                                                                                            
+  -b [ --list-benchmarks ]          Show registered benchmarks
+  -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards 
+                                    possible, e.g. ClFFT/float/*/Inplace_Real)
+  --rigor arg (=measure)            FFTW rigor (measure, estimate, wisdom, 
+                                    patient or exhaustive)
+  --wisdom_sp arg                   Wisdom file for single-precision.
+  --wisdom_dp arg                   Wisdom file for double-precision.
+  --plan_timelimit arg (=-1)        Timelimit in seconds for planning in FFTW.
 ```
 **Examples**
 
