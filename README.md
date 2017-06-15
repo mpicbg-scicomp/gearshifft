@@ -12,7 +12,7 @@ If you want to just browser our results, see the [raw benchmark data](results/) 
 
 - cmake 2.8+
 - C++14 capable compiler
-- CUDA FFT library cuFFT 7.5+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
+- CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.56+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
@@ -105,11 +105,12 @@ The library dependent FFT steps are abstracted, where following steps are wrappe
 - cleanup
 - total time (allocation, planning, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
-Furthermore, the required buffer sizes to run the FFT are recorded.
+
+Furthermore, the required buffer sizes to run the FFT are recorded. 
 
 ## CSV Output
 
-The results of the benchmark runs are stored to CSV, after the last run has been completed.
+The results of the benchmark runs are stored into a comma-separated values file (.csv), after the last run has been completed.
 To ease evaluation, the entries are sorted by columns 
 - FFT transform kind and precision
 - dimkind (oddshape, powerof2, radix357)
@@ -117,25 +118,29 @@ To ease evaluation, the entries are sorted by columns
  - powerof2: all extents are powers of 2
  - radix357: extents are combination of powers of 2,3,5,7 and not all are powers of 2
 - extents and runs
-See CSV header for column titles.
+
+See CSV header for column titles and meta-information (memory, number of runs, error-bound, hostname, timestamp, ...).
 
 ## Tested on ...
 
+- linux (CentOS, RHEL, ArchLinux, Ubuntu)
 - gcc 5.3.0, gcc 6.2.0
-- cuFFT from CUDA 7.5.18 and CUDA 8.0.44
+- cuFFT from CUDA 7.5.18 and CUDA 8.0.61
 - clFFT 2.12.0, 2.12.1, 2.12.2
-- FFTW 3.3.4 and 3.3.5
+- FFTW 3.3.4, 3.3.5, 3.3.6pl1
 - OpenCL 1.2-4.4.0.117 (Nvidia, Intel)
-- Nvidia Kepler K80 GPU, K20Xm GPU, GTX1080, Haswell CPUs E5-2680
+- Nvidia Pascal P100, Kepler K80, K20Xm, GTX1080, Haswell and Sandybridge Xeon CPUs
 
 ## Issues
 
 - cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
- - fixed as of CUDA 8.0.44
+  + fixed as of CUDA 8.0.44
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - At the moment this is for single-GPUs, batches are not considered
 - if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the boost version (e.g. 1.62.0) you have is more recent than your cmake (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
+- Windows or MacOS is not supported yet, feel free to add a pull-request
+- 
 
 ## Results (FFTW)
 fftw/haswell contains results for FFTW_MEASURE, FFTW_ESTIMATE and FFTW_WISDOM_ONLY. The planning time limit is set to FFTW_NO_TIMELIMIT (can be set with cmake option GEARSHIFFT_FFTW_TIMELIMIT).
@@ -152,3 +157,4 @@ The wisdom files were generated with:
 ../fftw-3.3.5TF/fftw-3.3.5/tools/fftwf-wisdom -v -c -n -T 24 -o wisdomf  # single precision
 ../fftw-3.3.5T/fftw-3.3.5/tools/fftw-wisdom -v -c -n -T 24 -o wisdom     # double precision
 ```
+It is recommended to compile double-precision (fftw-...) and single-precision (fftwf-...) to separate directories to avoid linker issues.
