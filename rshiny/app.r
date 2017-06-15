@@ -53,6 +53,10 @@ get_args <- function(input) {
     args$ymetric <- input$sYmetric
     args$notitle <- input$sNotitle
     args$run <- input$sRun
+
+    if(input$sYRatio) {
+        args$ymetric <- paste0(args$ymetric,"/Time_Total")
+    }
     return(args)
 
 }
@@ -266,8 +270,8 @@ ui <- fluidPage(
                                                "k80"="K80",
                                                "gtx1080"="GTX1080",
                                                "p100"="P100",
-                                               "haswell"="haswell",
-                                               "broadwell"="broadwell"),
+                                               "haswell"="haswell"
+                                               ),
                                              inline=T
                                              )))),
             column(6, wellPanel( fluidRow(
@@ -282,8 +286,8 @@ ui <- fluidPage(
                                                "k80"="K80",
                                                "gtx1080"="GTX1080",
                                                "p100"="P100",
-                                               "haswell"="haswell",
-                                               "broadwell"="broadwell"),
+                                               "haswell"="haswell"
+                                               ),
                                              inline=T
                                              ))))
         ),
@@ -300,7 +304,8 @@ ui <- fluidPage(
         ),
         fluidRow(
             column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim"), selected="precision")),
-            column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success"))
+            column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success")),
+            column(2, checkboxInput("sYRatio","Ratio Total Time"))
         )
     ),
 
