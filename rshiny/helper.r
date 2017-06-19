@@ -108,6 +108,7 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     filter_mode <- ""
     filter_prec <- ""
     filter_type <- ""
+    filter_kind <- ""
     filter_dim  <- 0
 
     if(nchar(args$run)>0 && args$run == "-")
@@ -130,7 +131,9 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
         filter_type <- args$type
     }
 
-    filter_kind <- args$kind
+    if(nchar(args$kind)>1){
+        filter_kind <- args$kind
+    }
 
     if(nchar(args$dim)>0 && args$dim!='-') {
         filter_dim <- as.integer(args$dim)
@@ -145,7 +148,10 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
 
     if(grepl("Time", args$xmetric))
         xlabel <- paste0(args$xmetric,"_[ms]")
-    ylabel <- paste0(args$ymetric,"_[ms]")
+    if(grepl("Time", args$ymetric))
+        ylabel <- paste0(args$ymetric,"_[ms]")
+    if(grepl("Size", args$ymetric))
+        ylabel <- paste0(args$ymetric,"_[bytes]")
 
     succeeded <- gearshifft_data %>% filter(success == filter_run)
 
