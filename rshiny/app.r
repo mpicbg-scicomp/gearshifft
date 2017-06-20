@@ -53,7 +53,6 @@ get_args <- function(input) {
     args$ymetric <- input$sYmetric
     args$notitle <- input$sNotitle
     args$run <- input$sRun
-
     if(input$sYRatio) {
         args$ymetric <- paste0(args$ymetric,"/Time_Total")
     }
@@ -129,8 +128,6 @@ server <- function(input, output) {
         aes <- c()
         if(nlevels(as.factor(tables$reduced$hardware))>1)
             aes <- append(aes,"hardware")
-        if(input$sKind=="-")
-            aes <- append(aes,"kind")
         if(input$sAes!="-")
             aes <- append(aes,input$sAes)
         if(length(aes)<3)
@@ -270,8 +267,7 @@ ui <- fluidPage(
                                                "k80"="K80",
                                                "gtx1080"="GTX1080",
                                                "p100"="P100",
-                                               "haswell"="haswell"
-                                               ),
+                                               "haswell"="haswell"),
                                              inline=T
                                              )))),
             column(6, wellPanel( fluidRow(
@@ -286,8 +282,7 @@ ui <- fluidPage(
                                                "k80"="K80",
                                                "gtx1080"="GTX1080",
                                                "p100"="P100",
-                                               "haswell"="haswell"
-                                               ),
+                                               "haswell"="haswell"),
                                              inline=T
                                              ))))
         ),
@@ -300,10 +295,10 @@ ui <- fluidPage(
             column(2, selectInput("sKind", "Kind", c("-","powerof2","radix357","oddshape"), selected="powerof2")),
             column(1, selectInput("sDim", "Dim", c("-","1","2","3"), selected="1")),
             column(2, selectInput("sXmetric", "xmetric", append(c("nbytes","id"),time_columns))),
-            column(2, selectInput("sYmetric", "ymetric", time_columns))
+            column(2, selectInput("sYmetric", "ymetric", append(time_columns,c("Size_DeviceBuffer","Size_DevicePlan","Size_DeviceTransfer")), selected="Time_Total"))
         ),
         fluidRow(
-            column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim"), selected="precision")),
+            column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim","kind"), selected="precision")),
             column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success")),
             column(2, checkboxInput("sYRatio","Ratio Total Time"))
         )
