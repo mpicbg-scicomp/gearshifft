@@ -137,6 +137,7 @@ function(add_exec Tlib)
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
+  install(TARGETS ${PROJECT_EXEC} DESTINATION bin)
 endfunction()
 
 #------------------------------------------------------------------------------
