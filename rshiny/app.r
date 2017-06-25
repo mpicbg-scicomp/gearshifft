@@ -1,15 +1,85 @@
 ## requires packages DT, shiny, ...
 
 library(ggplot2)
+library(dplyr)
 library(shiny)
 
 source("helper.r")
 
-tmp1 <- ""
-tmp2 <- ""
+flist1_selected <- ""
+flist2_selected <- ""
+tmpid <- 0
 
 gearshifft_flist <- list.files(pattern = ".csv$", recursive = TRUE)
 
+create_filter <- function(filter_presets, inplace, complex, precision, kind, dim, xmetric, ymetric, inspect, run, ratio, plot="Lines", logx="2", logy="10") {
+
+    tmpid <<- tmpid + 1
+
+    preset <- list()
+    preset$.id <- paste0(tmpid,":")
+    preset$inplace <- inplace
+    preset$complex <- complex
+    preset$precision <- precision
+    preset$kind <- kind
+    preset$dim <- dim
+    preset$run <- run
+    preset$.sep0 <- "|"
+    preset$inspect <- inspect
+    preset$xmetric <- xmetric
+    preset$ymetric <- ymetric
+    preset$ratio <- ratio
+    preset$.sep1 <- "|"
+    preset$plot <- plot
+    preset$logx <- logx
+    preset$logy <- logy
+
+    return(bind_rows(filter_presets, preset))
+}
+
+filter_to_string <- function(filter) {
+    filter$dim <- paste0(filter$dim,"D")
+    filter$run[ filter$run == "-" ] <- "| (incl. warmups)"
+    filter$inspect <- ifelse( filter$inspect=="-", "-", paste0("$",filter$inspect) )
+    filter$ratio <- ifelse( filter$ratio=="1", "(rel. to total time)", "" )
+    filter$logx <- ifelse( filter$logx=="-", "-", paste0("logx=",filter$logx) )
+    filter$logy <- ifelse( filter$logy=="-", "-", paste0("logy=",filter$logy) )
+    str <- do.call(paste, filter)
+    str <- gsub(" -", "", str)
+    str <- gsub(" Success", "", str)
+    return(str)
+}
+
+string_to_filter <- function(str) {
+    id <- strtoi(unlist(strsplit(str, split=": "))[1])
+    if(is.na(id))
+        return(NULL)
+    return(filter_presets[id,])
+}
+
+filter_presets_lines <- list()
+filter_presets_lines <- create_filter(filter_presets_lines, "Inplace", "Real", precision="-", kind="powerof2", dim="1", xmetric="nbytes", ymetric="Time_Total", inspect="precision", run="Success", ratio="0")
+filter_presets_lines <- create_filter(filter_presets_lines, "Inplace", "Real", "-", "powerof2", "1", "nbytes", "Time_Total", "precision", run="-", ratio="0")
+filter_presets_lines <- create_filter(filter_presets_lines, "Inplace", "Real", "-", "powerof2", "1", "nbytes", "Time_FFT", "precision", "Success", ratio="0")
+filter_presets_lines <- create_filter(filter_presets_lines, "Inplace", "Real", "-", "powerof2", "1", "nbytes", "Time_PlanInitFwd", "precision", "Success", ratio="1", "Lines", logx="2", logy="-")
+filter_presets_lines <- create_filter(filter_presets_lines, "Inplace", "Real", "-", "powerof2", "1", "nbytes", "Size_DeviceBuffer+Size_DevicePlan", "precision", "Success", ratio="0")
+
+filter_presets_hist <- list()
+filter_presets_hist <- create_filter(filter_presets_hist, "Inplace", "Real", "-", "powerof2", "1", "Time_Total", "Time_Total", "precision", "Success", "0", "Histogram")
+filter_presets_hist <- create_filter(filter_presets_hist, "Inplace", "Real", "-", "powerof2", "3", "Time_FFT", "Time_FFT", "precision", "Success", "0", "Histogram")
+
+filter_presets_points <- list()
+filter_presets_points <- create_filter(filter_presets_points, "Inplace", "Real", "-", "powerof2", "1", "id", "Time_Total", "precision", "Success", "0", "Points")
+filter_presets_points <- create_filter(filter_presets_points, "Inplace", "Real", "-", "powerof2", "3", "id", "Time_FFT", "precision", "Success", "0", "Points")
+
+filter_presets <- bind_rows(filter_presets_lines, filter_presets_hist, filter_presets_points)
+
+## strings for the selectInput widget
+filter_presets_gui <- list()
+## to string
+filter_presets_gui[['Lines']] <- filter_to_string(filter_presets_lines)
+filter_presets_gui[['Histogram']] <- filter_to_string(filter_presets_hist)
+filter_presets_gui[['Points']] <- filter_to_string(filter_presets_points)
 
 filter_by_tags <- function(flist, tags) {
 
@@ -28,13 +98,13 @@ get_input_files <- function(input,datapath=T) {
         files <- ifelse(datapath, input$file1$datapath, input$file1$name)
     else {
         files <- input$file1
-        tmp1 <<- input$file1
+        flist1_selected <<- input$file1
     }
     if(input$sData2=='User')
         files <- append(files, ifelse(datapath, input$file2$datapath, input$file2$name))
     else if(input$sData2=='gearshifft') {
         files <- append(files, input$file2)
-        tmp2 <<- input$file2
+        flist2_selected <<- input$file2
     }
 
 
@@ -44,9 +114,9 @@ get_input_files <- function(input,datapath=T) {
 get_args <- function(input) {
 
     args <- get_args_default()
-    args$placeness <- input$sInplace
+    args$inplace <- input$sInplace
+    args$complex <- input$sComplex
     args$precision <- input$sPrec
-    args$type <- input$sComplex
     args$kind <- input$sKind
     args$dim <- input$sDim
     args$xmetric <- input$sXmetric
@@ -62,17 +132,34 @@ get_args <- function(input) {
 
 ## Server
 
-server <- function(input, output) {
-
+server <- function(input, output, session) {
+    observe({
+        filter <- string_to_filter(input$sFilter)
+        if(is.null(filter)==FALSE) {
+            updateSelectInput(session, "sInplace", selected = filter$inplace)
+            updateSelectInput(session, "sComplex", selected = filter$complex)
+            updateSelectInput(session, "sPrec", selected = filter$precision)
+            updateSelectInput(session, "sKind", selected = filter$kind)
+            updateSelectInput(session, "sDim", selected = filter$dim)
+            updateSelectInput(session, "sXmetric", selected = filter$xmetric)
+            updateSelectInput(session, "sYmetric", selected = filter$ymetric)
+            updateSelectInput(session, "sRun", selected = filter$run)
+            updateCheckboxInput(session, "sYRatio", value = strtoi(filter$ratio))
+            updateSelectInput(session, "sPlotType", selected = filter$plot)
+            updateSelectInput(session, "sLogx", selected = filter$logx)
+            updateSelectInput(session, "sLogy", selected = filter$logy)
+        }
+    })
+    
     output$fInput1 <- renderUI({
         if (is.null(input$sData1))
             return()
         flist <- gearshifft_flist
-        flist <- filter_by_tags(flist, input$tags1)
-        if(grepl(tmp1, flist)==F)
-            tmp1<<-""
+        flist <- filter_by_tags(flist, input$tags1) ## files matching tags like cuda p100 ...
+        if(flist1_selected %in% flist == FALSE) ## if flist1_selected is not in (filtered) flist, disable it
+            flist1_selected<<-""
         switch(input$sData1,
-               "gearshifft" = selectInput("file1", "File", choices=flist, selected=tmp1),
+               "gearshifft" = selectInput("file1", "File", choices=flist, selected=flist1_selected),
                "User" = fileInput("file1", "File")
                )
     })
@@ -82,10 +169,10 @@ server <- function(input, output) {
             return()
         flist <- gearshifft_flist
         flist <- filter_by_tags(flist, input$tags2)
-        if(grepl(tmp2, flist)==F)
-            tmp2<<-""
+        if(flist2_selected %in% flist == FALSE)
+            flist2_selected<<-""
         switch(input$sData2,
-               "gearshifft" = selectInput("file2", "File", choices=flist, selected=tmp2),
+               "gearshifft" = selectInput("file2", "File", choices=flist, selected=flist2_selected),
                "User" = fileInput("file2", "File")
                )
     })
@@ -116,8 +203,9 @@ server <- function(input, output) {
 
     output$sPlot <- renderPlot({
 
-        if(is.null(input$file1))
+        if(is.null(input$file1)) {
             return()
+        }
         input_files <- get_input_files(input)
         args <- get_args(input)
 
@@ -288,6 +376,13 @@ ui <- fluidPage(
         ),
 
         h3("Filtered by"),
+        tabsetPanel(id="sFilterMask",
+            tabPanel("Presets", br(),
+                     fluidRow(column(6,
+                       selectInput("sFilter", "Preset",
+                                   filter_presets_gui
+                                   )))),
+            tabPanel("Custom", br(),
         fluidRow(
             column(2, selectInput("sInplace", "Placeness", c("-","Inplace","Outplace"),selected="Inplace")),
             column(2, selectInput("sComplex", "Complex", c("-","Complex","Real"), selected="Real")),
@@ -295,13 +390,13 @@ ui <- fluidPage(
             column(2, selectInput("sKind", "Kind", c("-","powerof2","radix357","oddshape"), selected="powerof2")),
             column(1, selectInput("sDim", "Dim", c("-","1","2","3"), selected="1")),
             column(2, selectInput("sXmetric", "xmetric", append(c("nbytes","id"),time_columns))),
-            column(2, selectInput("sYmetric", "ymetric", append(time_columns,c("Size_DeviceBuffer","Size_DevicePlan","Size_DeviceTransfer")), selected="Time_Total"))
+            column(2, selectInput("sYmetric", "ymetric", append(time_columns,c("Size_DeviceBuffer","Size_DevicePlan","Size_DeviceBuffer+Size_DevicePlan","Size_DeviceTransfer")), selected="Time_Total"))
         ),
         fluidRow(
             column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim","kind"), selected="precision")),
             column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success")),
             column(2, checkboxInput("sYRatio","Ratio Total Time"))
-        )
+        )))
     ),
 
     tabsetPanel(

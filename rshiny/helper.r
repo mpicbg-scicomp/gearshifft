@@ -91,9 +91,9 @@ get_gearshifft_header <- function(fname) {
 
 get_args_default <- function() {
     args <- list()
-    args$placeness <- "Inplace"
+    args$inplace <- "Inplace"
     args$precision <- "float"
-    args$type <- "Real"
+    args$complex <- "Real"
     args$kind <- "powerof2"
     args$dim <- "1"
     args$xmetric <- "nbytes"
@@ -119,16 +119,16 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
 
     filtered_by <- c("success")
 
-    if(nchar(args$placeness)>1){
-        filter_mode <- args$placeness
+    if(nchar(args$inplace)>1){
+        filter_mode <- args$inplace
     }
 
     if(nchar(args$precision)>1){
         filter_prec <- args$precision
     }
 
-    if(nchar(args$type)>1){
-        filter_type <- args$type
+    if(nchar(args$complex)>1){
+        filter_type <- args$complex
     }
 
     if(nchar(args$kind)>1){
@@ -145,12 +145,15 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
         xlabel <- "Signal_Size_[bytes]"
     else
         xlabel <- args$xmetric
-
+    
     if(grepl("Time", args$xmetric))
         xlabel <- paste0(args$xmetric,"_[ms]")
-    if(grepl("Time", args$ymetric))
+
+    if(grepl("/", args$ymetric))
+        ylabel <- paste0(args$ymetric,"_[%]")
+    else if(grepl("Time", args$ymetric))
         ylabel <- paste0(args$ymetric,"_[ms]")
-    if(grepl("Size", args$ymetric))
+    else if(grepl("Size", args$ymetric))
         ylabel <- paste0(args$ymetric,"_[bytes]")
 
     succeeded <- gearshifft_data %>% filter(success == filter_run)
@@ -186,8 +189,8 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
     }
 ##############################################################################
     data_colnames = colnames(succeeded)
-                                        # extracting ymetric expression
 
+                                        # extracting ymetric expression
     ymetric_keywords = trimws(unlist(strsplit(args$ymetric,"[-|+|/|*|)|(]")))
     ymetric_expression = args$ymetric
 
