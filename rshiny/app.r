@@ -1,7 +1,6 @@
 ## requires packages DT, shiny, ...
 
 library(ggplot2)
-library(dplyr)
 library(shiny)
 
 source("helper.r")
