@@ -142,6 +142,7 @@ server <- function(input, output, session) {
             updateSelectInput(session, "sDim", selected = filter$dim)
             updateSelectInput(session, "sXmetric", selected = filter$xmetric)
             updateSelectInput(session, "sYmetric", selected = filter$ymetric)
+            updateSelectInput(session, "sAes", selected = filter$inspect)
             updateSelectInput(session, "sRun", selected = filter$run)
             updateCheckboxInput(session, "sYRatio", value = strtoi(filter$ratio))
             updateSelectInput(session, "sPlotType", selected = filter$plot)
@@ -183,7 +184,7 @@ server <- function(input, output, session) {
         input_files <- get_input_files(input)
         args <- get_args(input)
 
-        df_data <- get_gearshifft_data(input_files)
+        df_data <- get_gearshifft_data(input_files,c(input$sCustomName1,input$sCustomName2))
         result <- get_gearshifft_tables(df_data, args)
 
         return(result$reduced)
@@ -195,7 +196,7 @@ server <- function(input, output, session) {
             return()
         input_files <- get_input_files(input)
 
-        df_data <- get_gearshifft_data(input_files)
+        df_data <- get_gearshifft_data(input_files,c(input$sCustomName1,input$sCustomName2))
 
         return(df_data)
     }, style="bootstrap"))
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
         input_files <- get_input_files(input)
         args <- get_args(input)
 
-        df_data <- get_gearshifft_data(input_files)
+        df_data <- get_gearshifft_data(input_files,c(input$sCustomName1,input$sCustomName2))
         tables <- get_gearshifft_tables(df_data, args)
 
         ## aesthetics
@@ -356,7 +357,11 @@ ui <- fluidPage(
                                                "p100"="P100",
                                                "haswell"="haswell"),
                                              inline=T
-                                             )))),
+                                             )),
+                      fluidRow(
+                          column(8,textInput("sCustomName1","Custom Library Name (leave it empty for default label)",""))
+                      )
+                      )),
             column(6, wellPanel( fluidRow(
                           column(3, selectInput("sData2", "Data 2", c("gearshifft", "User", "none"), selected="none")),
                           column(9, uiOutput("fInput2"))
@@ -371,7 +376,11 @@ ui <- fluidPage(
                                                "p100"="P100",
                                                "haswell"="haswell"),
                                              inline=T
-                                             ))))
+                                             )),
+                      fluidRow(
+                          column(8,textInput("sCustomName2","Custom Library Name (leave it empty for default label)",""))
+                      )
+                      ))
         ),
 
         h3("Filtered by"),
