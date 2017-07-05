@@ -5,7 +5,7 @@ library(dplyr)
 library(scales)
 
 
-open_gearshifft_csv <- function (i,fnames){
+open_gearshifft_csv <- function (i,fnames,flabels){
     fname<-fnames[i]
     #extracting measurements
     local_frame <- read_csv(fname,skip=3,col_names=TRUE)
@@ -59,13 +59,16 @@ open_gearshifft_csv <- function (i,fnames){
 
     local_frame = local_frame %>% mutate( library = tolower(library))
 
-    local_frame$library <- paste0(local_frame$library," (Data ",i,")")
+    if(nchar(flabels[i])>0)
+        local_frame$library <- flabels[i]
+    else
+        local_frame$library <- paste0(local_frame$library," (Data ",i,")")
     return(local_frame)
 }
 
 ## this binds the data frames together
-get_gearshifft_data <- function(fnames) {
-    result <- ldply(seq_along(fnames), .fun=open_gearshifft_csv, fnames=fnames)
+get_gearshifft_data <- function(fnames,flabels) {
+    result <- ldply(seq_along(fnames), .fun=open_gearshifft_csv, fnames=fnames, flabels=flabels)
     return(result)
 }
 
