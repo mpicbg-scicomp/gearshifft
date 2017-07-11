@@ -10,7 +10,7 @@ If you want to just browser our results, see the [raw benchmark data](results/) 
 
 ## Requirements
 
-- cmake 2.8+
+- cmake 3.1+
 - C++14 capable compiler
 - CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.56+
