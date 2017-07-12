@@ -29,32 +29,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #=============================================================================
-# 
-if( (NOT DEFINED CLFFT_ROOT) AND DEFINED ENV{CLFFT_ROOT} )
-  set( CLFFT_ROOT $ENV{CLFFT_ROOT} )
-endif()
 
-find_path(CLFFT_INCLUDE_DIRS
-    NAMES "clFFT.h"
-    PATHS ${CLFFT_ROOT}
-    PATH_SUFFIXES "include"
-    NO_DEFAULT_PATH
-    )
+IF(CLFFT_INCLUDE_DIRS)
+  # Already in cache, be silent
+  set (CLFFT_FIND_QUIETLY TRUE)
+ENDIF (CLFFT_INCLUDE_DIRS)
 
-find_library(CLFFT_LIBRARIES
-    NAMES "clFFT"
-    PATHS ${CLFFT_ROOT}
-    PATH_SUFFIXES "lib" "lib64" "lib64/import"
-    NO_DEFAULT_PATH
-    )
+FIND_PATH(CLFFT_ROOT_DIR
+  NAMES include/clFFT.h
+  HINTS /usr/local/ ${CLFFT_ROOT}
+  DOC "clFFT root directory.")
 
-if(CLFFT_LIBRARIES MATCHES ".*.a")
-  set(CLFFT_LIBRARIES ${CLFFT_LIBRARIES};dl)
-endif()
+FIND_PATH(_CLFFT_INCLUDE_DIRS
+  NAMES clFFT.h
+  HINTS ${CLFFT_ROOT_DIR}/include
+  DOC "clFFT Include directory")
+
+FIND_LIBRARY(_CLFFT_LIBRARY
+  NAMES clFFT
+  HINTS ${CLFFT_ROOT_DIR}/lib)
+
+SET(CLFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
+SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})
+
 # handle the QUIETLY and REQUIRED arguments and set CLFFT_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE (FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(CLFFT DEFAULT_MSG CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
 MARK_AS_ADVANCED(CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
-
-
