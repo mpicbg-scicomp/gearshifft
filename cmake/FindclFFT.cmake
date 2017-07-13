@@ -13,7 +13,6 @@
 # If you desire to use the 64-bit version instead, set
 #   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 # prior to calling this script.
-#
 #=============================================================================
 # Copyright 2014 Brian Kloppenborg
 #
@@ -29,6 +28,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #=============================================================================
+# - changed path finding functions to be more generic (tdd11235813)
+#=============================================================================
 
 IF(CLFFT_INCLUDE_DIRS)
   # Already in cache, be silent
@@ -37,17 +38,22 @@ ENDIF (CLFFT_INCLUDE_DIRS)
 
 FIND_PATH(CLFFT_ROOT_DIR
   NAMES include/clFFT.h
-  HINTS /usr/local/ ${CLFFT_ROOT}
+  PATHS CLFFT_ROOT
+  PATHS ENV CLFFT_ROOT
   DOC "clFFT root directory.")
 
 FIND_PATH(_CLFFT_INCLUDE_DIRS
   NAMES clFFT.h
-  HINTS ${CLFFT_ROOT_DIR}/include
-  DOC "clFFT Include directory")
+  PATHS ${CLFFT_ROOT_DIR}
+  PATH_SUFFIXES "include"
+  DOC "clFFT include directory")
 
 FIND_LIBRARY(_CLFFT_LIBRARY
   NAMES clFFT
-  HINTS ${CLFFT_ROOT_DIR}/lib)
+  PATHS ${CLFFT_ROOT_DIR}
+  PATH_SUFFIXES "lib" "lib64"
+  DOC "clFFT library directory")
+
 
 SET(CLFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
 SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})
