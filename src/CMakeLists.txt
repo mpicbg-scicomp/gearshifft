@@ -122,6 +122,7 @@ function(add_exec Tlib)
     -DGEARSHIFFT_NUMBER_WARM_RUNS=${GEARSHIFFT_NUMBER_WARM_RUNS}
     -DGEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
     -DGEARSHIFFT_ERROR_BOUND=${GEARSHIFFT_ERROR_BOUND}
+    -DGEARSHIFFT_INSTALL_CONFIG_FILE=${GEARSHIFFT_INSTALL_CONFIG_PATH}/extents.conf
     )
   if (Tlib STREQUAL "cufft" OR DEV_TESTS STREQUAL "cufft")
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DCUDA_ENABLED)
@@ -137,7 +138,9 @@ function(add_exec Tlib)
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC})
-  install(TARGETS ${PROJECT_EXEC} DESTINATION bin)
+  if(NOT Tlib STREQUAL "test")
+    install(TARGETS ${PROJECT_EXEC} DESTINATION bin)
+  endif()
 endfunction()
 
 #------------------------------------------------------------------------------
@@ -157,4 +160,7 @@ else()
   foreach(FFTLIB ${FFTLIBS})
     add_exec(${FFTLIB})
   endforeach()
+  # installs config extents files
+  file(GLOB cfg_files "${CMAKE_CURRENT_SOURCE_DIR}/../share/gearshifft/*.conf")
+  install(FILES ${cfg_files}  DESTINATION ${GEARSHIFFT_INSTALL_CONFIG_PATH})
 endif()

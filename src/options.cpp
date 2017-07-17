@@ -104,10 +104,12 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
     }
     // no file and no extent given, use default config
     if( !vm.count("file") && !vm.count("extent") ) {
-      if( std::ifstream("../config/extents.csv").good() ) {
-        parseFile("../config/extents.csv");
+      if( std::ifstream(BOOST_STRINGIZE(GEARSHIFFT_INSTALL_CONFIG_FILE)).good() ) {
+        parseFile(BOOST_STRINGIZE(GEARSHIFFT_INSTALL_CONFIG_FILE));
+      }else if(std::ifstream("../share/gearshifft/extents.conf").good()){ // if not configs installed yet, use local path
+        parseFile("../share/gearshifft/extents.conf");
       }else{ // if default config file is missing, then use these extents
-        std::cerr << "Could not find '../config/extents.txt' so using default." << std::endl;
+        std::cerr << "Could not find 'extents.conf' so internal fallback is used." << std::endl;
         parseExtent("32");
         parseExtent("32x32");
         parseExtent("32x32x32");
