@@ -479,7 +479,9 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-        traits::thread_api<TPrecision>::init_threads();
+        if( traits::thread_api<TPrecision>::init_threads()==0 )
+          throw std::runtime_error("fftw thread initialization failed.");
+
         traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
 
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {

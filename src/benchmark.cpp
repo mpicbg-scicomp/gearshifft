@@ -45,15 +45,16 @@ using FFT_Is_Normalized = std::false_type;
 
 int main( int argc, char* argv[] )
 {
+  int ret = 0;
   try {
     gearshifft::Benchmark<Context> benchmark;
 
     benchmark.configure(argc, argv);
-    benchmark.run<FFT_Is_Normalized, FFTs, Precisions>();
+    ret = benchmark.run<FFT_Is_Normalized, FFTs, Precisions>();
 
   }catch(const std::runtime_error& e){
     std::cerr << e.what() << std::endl;
     return 1;
   }
-  return 0;
+  return ret;
 }

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <utility> // pair
+#include <assert.h>
 
 #define CHECK_CL( err ) gearshifft::ClFFT::check_error( err, #err,  __FILE__, __LINE__ )
 

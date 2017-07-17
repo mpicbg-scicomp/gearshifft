@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+project(gearshifft)
 
 # cmake general setup
 
@@ -42,6 +43,7 @@ set(GEARSHIFFT_INSTALL_CONFIG_PATH "/usr/share/gearshifft/" CACHE STRING "Defaul
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if(${GEARSHIFFT_CXX11_ABI})
     add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
@@ -61,12 +63,107 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
+set(CMAKE_CXX_STANDARD 14)
 
-set(DEV_TESTS "" CACHE STRING "Tests for developing (No Benchmarks)")
-if(DEV_TESTS)
-  message(">> Test mode")
-  add_definitions(-DDEV_TESTS)
-  set(TESTS tests.cpp)
+#------------------------------------------------------------------------------
+# Boost
+#------------------------------------------------------------------------------
+
+find_package(Boost 1.56 QUIET COMPONENTS system unit_test_framework program_options REQUIRED)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
+#------------------------------------------------------------------------------
+# CUDA+CUFFT
+#------------------------------------------------------------------------------
+
+find_package(CUDA)
+if(CUDA_FOUND AND GEARSHIFFT_CUFFT)
+  include(FindCUDA)
+  include_directories(${CUDA_INCLUDE_DIRS})
+  list(APPEND FFTLIBS "cufft") # register fft lib client for compilation
+  message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
+else()
+  message("<< cuFFT benchmark disabled.")
+endif()
+
+#------------------------------------------------------------------------------
+# OPENCL+CLFFT
+#------------------------------------------------------------------------------
+
+find_package(OpenCL)
+if(OpenCL_FOUND AND GEARSHIFFT_CLFFT)
+  find_package(clFFT)
+  if(CLFFT_FOUND)
+    include_directories(${OpenCL_INCLUDE_DIRS} ${CLFFT_INCLUDE_DIRS} )
+    list(APPEND FFTLIBS "clfft") # register fft lib client for compilation
+    string(REPLACE ";" " " local_clfft_libraries "${CLFFT_LIBRARIES}")
+    message(">> clFFT -> " ${local_clfft_libraries})
+  endif()
+endif()
+
+if(NOT CLFFT_FOUND)
+  message("<< clFFT benchmark disabled.")
+endif()
+
+#------------------------------------------------------------------------------
+# ROCM+HCFFT
+#------------------------------------------------------------------------------
+
+find_package(hcFFT)
+if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
+  include_directories(${HCFFT_INCLUDE_DIRS})
+  list(APPEND FFTLIBS "hcfft") # register fft lib client for compilation
+  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
+  message(">> Warning: no runner for hcfft implemented yet")
+endif()
+
+if(NOT HCFFT_FOUND)
+  message("<< hcFFT benchmark disabled.")
+endif()
+
+#------------------------------------------------------------------------------
+# FFTW
+#------------------------------------------------------------------------------
+
+find_package(FFTW COMPONENTS float double)
+if(FFTW_FOUND AND GEARSHIFFT_FFTW)
+  include_directories(${FFTW_INCLUDE_DIR})
+  link_directories(${FFTW_LIBRARY_DIR})
+  list(APPEND FFTLIBS fftw) # register fft lib client for compilation
+  find_package(OpenMP)
+
+  foreach(_LIBSTEM IN LISTS FFTW_SERIAL_LIBS)
+    list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+  endforeach()
+
+  if(GEARSHIFFT_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
+    foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+  endif()
+
+  if(GEARSHIFFT_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
+    foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
+      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
+    endforeach()
+
+  endif()
+
+  set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
+  message(">> FFTW -> ${FFTW_LIBRARIES} ${FFTW_INCLUDES}")
+else()
+  message("<< FFTW benchmark disabled.")
+endif()
+
+
+if(NOT FFTLIBS)
+  message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
+endif()
+
+enable_testing()
+
 add_subdirectory(src)
+add_subdirectory(test)

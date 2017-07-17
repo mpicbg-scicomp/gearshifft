@@ -18,6 +18,7 @@ If you want to just browse our results, see the [raw benchmark data](results/) o
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
 
 ## Build
+
 Go to the gearshifft directory (created by git clone ...):
 ```
 mkdir release && cd release
@@ -26,6 +27,12 @@ make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
 After `make` have finished you can run e.g. `./gearshifft_cufft`.
+
+If the FFT library paths cannot be found, `CMAKE_PREFIX_PATH` has to be used, e.g.:
+```
+export CMAKE_PREFIX_PATH=~/software/clFFT-cuda8.0-gcc5.4/:/opt/cuda:$CMAKE_PREFIX_PATH
+cmake ..
+```
 
 ## Install
 
@@ -36,7 +43,12 @@ cmake -DCMAKE_INSTALL_PREFIX=/home/user/gearshifft
       -DGEARSHIFFT_INSTALL_CONFIG_PATH=/home/user/gearshifft/configs
       ..
 make -j 4 install
+
 ```
+
+## Testing
+
+The tests can be executed by `make test` after you have compiled the binaries.
 
 ## Usage
 
