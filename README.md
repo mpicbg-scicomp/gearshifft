@@ -6,7 +6,7 @@ This is a simple and easy extensible benchmark system to answer the question, wh
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
 This project is still in development. 
 
-If you want to just browser our results, see the [raw benchmark data](results/) or our [online visualisation and comparison tool](http://v22017054645049618.nicesrv.de/gearshifft/).
+If you want to just browse our results, see the [raw benchmark data](results/) or our [online visualisation and comparison tool](http://v22017054645049618.nicesrv.de/gearshifft/).
 
 ## Requirements
 
@@ -25,7 +25,18 @@ cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After make have finished you can run e.g. `./gearshifft_cufft`.
+After `make` have finished you can run e.g. `./gearshifft_cufft`.
+
+## Install
+
+Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
+```
+mkdir release && cd release
+cmake -DCMAKE_INSTALL_PREFIX=/home/user/gearshifft 
+      -DGEARSHIFFT_INSTALL_CONFIG_PATH=/home/user/gearshifft/configs
+      ..
+make -j 4 install
+```
 
 ## Usage
 
@@ -61,7 +72,7 @@ Runs complete benchmark for clFFT (also applies for cuFFT, fftw, ..)
 ```
 ./gearshifft_clfft
 // equals
-./gearshifft_clfft -f ../config/extents.csv -o result.csv -d gpu -n 0
+./gearshifft_clfft -f myextents.conf -o result.csv -d gpu -n 0
 ```
 List compute devices
 ```
@@ -136,11 +147,12 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
   + fixed as of CUDA 8.0.44
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
+- clFFT on CPU cannot transform the 4096-FFT and 4096x4096-FFTs (see [this issue](https://github.com/clMathLibraries/clFFT/issues/171))
 - At the moment this is for single-GPUs, batches are not considered
 - if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the boost version (e.g. 1.62.0) you have is more recent than your cmake (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 - Windows or MacOS is not supported yet, feel free to add a pull-request
-- 
+
 
 ## Results (FFTW)
 fftw/haswell contains results for FFTW_MEASURE, FFTW_ESTIMATE and FFTW_WISDOM_ONLY. The planning time limit is set to FFTW_NO_TIMELIMIT (can be set with cmake option GEARSHIFFT_FFTW_TIMELIMIT).
