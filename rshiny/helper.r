@@ -159,6 +159,8 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
         ylabel <- paste0(args$ymetric,"_[ms]")
     else if(grepl("Size", args$ymetric))
         ylabel <- paste0(args$ymetric,"_[bytes]")
+    if(args$speedup)
+        ylabel <- paste("Speedup of", args$ymetric)
 
     succeeded <- gearshifft_data %>% filter(success == filter_run)
 

@@ -317,7 +317,7 @@ server <- function(input, output, session) {
         if(input$sPlotType == "Histogram")
             p("Histograms help to analyze data of the validation code.", HTML("<ul><li>Use Time_* as xmetric for the x axis.</li><li>Probably better to disable log-scaling</li><li>If you do not see any curves then disable some filters.</li></ul>"))
         else if(input$sPlotType == "Lines")
-            p("Lines are drawn by the averages including error bars.", HTML("<ul><li>If you see jumps then you should enable more filters or use the 'Inspect' option.</li><li>Points are always drawn when the degree of freedom in the diagram is greater than 2.</li></ul>"))
+            p("Lines are drawn by the averages including error bars.", HTML("<ul><li>If you see jumps then you should enable more filters or use the 'Inspect' option.</li><li>Points are always drawn when the degree of freedom in the diagram is greater than 2.</li><li>no error bars are shown when speedup option is enabled (speedup is computed on the averages)</ul>"))
         else if(input$sPlotType == "Points")
             p("This plot type allows to analyze the raw data by plotting each measure point. It helps analyzing the results of the validation code.")
 
