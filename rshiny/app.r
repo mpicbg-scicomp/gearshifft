@@ -125,6 +125,7 @@ get_args <- function(input) {
     if(input$sYRatio) {
         args$ymetric <- paste0(args$ymetric,"/Time_Total")
     }
+    args$speedup <- input$sSpeedup
     return(args)
 
 }
@@ -149,6 +150,11 @@ server <- function(input, output, session) {
             updateSelectInput(session, "sLogx", selected = filter$logx)
             updateSelectInput(session, "sLogy", selected = filter$logy)
         }
+    })
+    
+    observe({
+        if (input$sSpeedup==TRUE && (is.null(input$sData2) || input$sData2=="none"))
+            updateCheckboxInput(session, "sSpeedup", value=FALSE)
     })
     
     output$fInput1 <- renderUI({
@@ -236,6 +242,9 @@ server <- function(input, output, session) {
         } else {
             usepoints <- input$sUsepoints || length(aes)>2
             noerrorbar <- input$sNoerrorbar
+        }
+        if(input$sSpeedup==T) {
+            noerrorbar <- T
         }
 
         plot_gearshifft(tables,
@@ -403,7 +412,8 @@ ui <- fluidPage(
         fluidRow(
             column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim","kind"), selected="precision")),
             column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success")),
-            column(2, checkboxInput("sYRatio","Ratio Total Time"))
+            column(2, checkboxInput("sYRatio","Ratio Total Time")),
+            column(2, checkboxInput("sSpeedup","Speedup"))
         )))
     ),
 
