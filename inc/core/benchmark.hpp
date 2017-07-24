@@ -50,9 +50,9 @@ namespace gearshifft {
     template<typename T_FFT_Is_Normalized,
              typename T_FFTs,
              typename T_Precisions>
-    void run() {
+    int run() {
       if(configured_==false)
-        return;
+        return 1;
 
       AppT::getInstance().createContext();
 
@@ -62,12 +62,13 @@ namespace gearshifft {
         return true;
       };
 
-      ::boost::unit_test::unit_test_main( init_function,
-                                          boost_vargv_.size(),
-                                          boost_vargv_.data() );
+      int r = ::boost::unit_test::unit_test_main( init_function,
+                                                  boost_vargv_.size(),
+                                                  boost_vargv_.data() );
 
       AppT::getInstance().destroyContext();
       AppT::getInstance().dumpResults();
+      return r;
     }
 
   private:
