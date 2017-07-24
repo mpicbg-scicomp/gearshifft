@@ -10,13 +10,13 @@ open_gearshifft_csv <- function (i,fnames,flabels){
     #extracting measurements
     local_frame <- read_csv(fname,skip=3,col_names=TRUE)
     colnames(local_frame) <- gsub(' ','_',colnames(local_frame))
+    local_frame$.file_id <- i
     #extracting card info
     lines <- readLines(fname)
     line_1 = lines[[1]]
     line_1 <- gsub(' "','',line_1)
     line_1 <- gsub('"','',line_1)
     line_1 <- gsub(';','',line_1)
-
 
     line_1_splited <- strsplit(line_1,",")
     gpu_model <- ""
@@ -104,6 +104,7 @@ get_args_default <- function() {
     args$xlabel <- "Signal_Size_[bytes]"
     args$ylabel <- ""
     args$notitle <- F
+    args$speedup <- F
     return(args)
 }
 
@@ -158,6 +159,8 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
         ylabel <- paste0(args$ymetric,"_[ms]")
     else if(grepl("Size", args$ymetric))
         ylabel <- paste0(args$ymetric,"_[bytes]")
+    if(args$speedup)
+        ylabel <- paste("Speedup of", args$ymetric)
 
     succeeded <- gearshifft_data %>% filter(success == filter_run)
 
@@ -276,6 +279,25 @@ get_gearshifft_tables <- function(gearshifft_data, args) {
                   moi_stddev = sd(ymoi)
                   )
 
+#### data2$y(x)/data1$y(x)
+    if(args$speedup==TRUE) {
+        d1 <- filter(data_for_plotting, .file_id==1)
+        d2 <- filter(data_for_plotting, .file_id==2)
+        if(nrow(d2)>0) {
+            x <- as.vector(intersect( d1$xmoi, d2$xmoi ))
+            d1 <- d1[ d1$xmoi %in% x, ]
+            d2 <- d2[ d2$xmoi %in% x, ]
+            dfp <- d1
+            dfp$moi_mean <- d2$moi_mean / dfp$moi_mean
+            dfp$moi_median <- d2$moi_median / dfp$moi_median
+            dfp$moi_stddev <- 0
+            d2$moi_mean <- 1
+            d2$moi_median <- 1
+            d2$moi_stddev <- 0
+            data_for_plotting <- bind_rows(dfp,d2) %>% na.omit()
+        }
+    }
+    
     tables <- list()
     tables$raw <- succeeded_reduced
     tables$reduced <- data_for_plotting

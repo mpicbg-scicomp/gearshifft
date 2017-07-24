@@ -125,6 +125,7 @@ get_args <- function(input) {
     if(input$sYRatio) {
         args$ymetric <- paste0(args$ymetric,"/Time_Total")
     }
+    args$speedup <- input$sSpeedup
     return(args)
 
 }
@@ -149,6 +150,11 @@ server <- function(input, output, session) {
             updateSelectInput(session, "sLogx", selected = filter$logx)
             updateSelectInput(session, "sLogy", selected = filter$logy)
         }
+    })
+    
+    observe({
+        if (input$sSpeedup==TRUE && (is.null(input$sData2) || input$sData2=="none"))
+            updateCheckboxInput(session, "sSpeedup", value=FALSE)
     })
     
     output$fInput1 <- renderUI({
@@ -237,6 +243,9 @@ server <- function(input, output, session) {
             usepoints <- input$sUsepoints || length(aes)>2
             noerrorbar <- input$sNoerrorbar
         }
+        if(input$sSpeedup==T) {
+            noerrorbar <- T
+        }
 
         plot_gearshifft(tables,
                         aesthetics = aes_str,
@@ -308,7 +317,7 @@ server <- function(input, output, session) {
         if(input$sPlotType == "Histogram")
             p("Histograms help to analyze data of the validation code.", HTML("<ul><li>Use Time_* as xmetric for the x axis.</li><li>Probably better to disable log-scaling</li><li>If you do not see any curves then disable some filters.</li></ul>"))
         else if(input$sPlotType == "Lines")
-            p("Lines are drawn by the averages including error bars.", HTML("<ul><li>If you see jumps then you should enable more filters or use the 'Inspect' option.</li><li>Points are always drawn when the degree of freedom in the diagram is greater than 2.</li></ul>"))
+            p("Lines are drawn by the averages including error bars.", HTML("<ul><li>If you see jumps then you should enable more filters or use the 'Inspect' option.</li><li>Points are always drawn when the degree of freedom in the diagram is greater than 2.</li><li>no error bars are shown when speedup option is enabled (speedup is computed on the averages)</ul>"))
         else if(input$sPlotType == "Points")
             p("This plot type allows to analyze the raw data by plotting each measure point. It helps analyzing the results of the validation code.")
 
@@ -403,7 +412,8 @@ ui <- fluidPage(
         fluidRow(
             column(2, selectInput("sAes", "Inspect", c("-","inplace","flags","precision","dim","kind"), selected="precision")),
             column(2, selectInput("sRun", "Run", c("-","Success", "Warmup"), selected="Success")),
-            column(2, checkboxInput("sYRatio","Ratio Total Time"))
+            column(2, checkboxInput("sYRatio","Ratio Total Time")),
+            column(2, checkboxInput("sSpeedup","Speedup"))
         )))
     ),
 
