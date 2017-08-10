@@ -16,6 +16,8 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 - Boost version 1.56+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
+- [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
+  - if your Nvidia GPU does not support float16, you will see a `CUFFT_INVALID_DEVICE` message in the results
 
 ## Build
 
@@ -147,8 +149,8 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 ## Tested on ...
 
 - linux (CentOS, RHEL, ArchLinux, Ubuntu)
-- gcc 5.3.0, gcc 6.2.0
-- cuFFT from CUDA 7.5.18 and CUDA 8.0.61
+- gcc 5.3.0, gcc 6.2.0, gcc 7.1.1
+- cuFFT from CUDA 7.5.18, CUDA 8.0.*, CUDA 9.0.69-RC
 - clFFT 2.12.0, 2.12.1, 2.12.2
 - FFTW 3.3.4, 3.3.5, 3.3.6pl1
 - OpenCL 1.2-4.4.0.117 (Nvidia, Intel)
@@ -164,10 +166,12 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - if gearshifft is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the boost version (e.g. 1.62.0) you have is more recent than your cmake (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 - Windows or MacOS is not supported yet, feel free to add a pull-request
+- cufft float16 transforms overflow at >=1048576 elements
 
 
 ## Results (FFTW)
-fftw/haswell contains results for FFTW_MEASURE, FFTW_ESTIMATE and FFTW_WISDOM_ONLY. The planning time limit is set to FFTW_NO_TIMELIMIT (can be set with cmake option GEARSHIFFT_FFTW_TIMELIMIT).
+
+fftw/haswell contains results for `FFTW_MEASURE`, `FFTW_ESTIMATE` and `FFTW_WISDOM_ONLY`. The planning time limit is set to `FFTW_NO_TIMELIMIT` (can be set with cmake option `GEARSHIFFT_FFTW_TIMELIMIT`).
 fftw was compiled with:
 ```
 --enable-static=yes --enable-shared=yes --with-gnu-ld  --enable-silent-rules --with-pic --enable-openmp --enable-sse2

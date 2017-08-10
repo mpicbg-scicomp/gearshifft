@@ -8,7 +8,7 @@
 #include "core/timer.hpp"
 #include "core/fft.hpp"
 #include "core/benchmark_suite.hpp"
-#include "get_memory_size.h"
+#include "core/get_memory_size.h"
 
 #include <string.h>
 #include <vector>

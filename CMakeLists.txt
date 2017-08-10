@@ -38,7 +38,7 @@ option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
-set(GEARSHIFFT_ERROR_BOUND "0.00001" CACHE STRING "Error-bound for FFT benchmarks.")
+set(GEARSHIFFT_ERROR_BOUND "0.00001" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
 set(GEARSHIFFT_INSTALL_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/share/gearshifft/" CACHE STRING "Default install path of config files.")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -64,6 +64,25 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 set(CMAKE_CXX_STANDARD 14)
+
+
+
+#------------------------------------------------------------------------------
+# half-code
+#------------------------------------------------------------------------------
+include(ExternalProject)
+ExternalProject_Add(half-code
+  PREFIX ${CMAKE_BINARY_DIR}/third-party
+  URL https://downloads.sourceforge.net/project/half/half/1.12.0/half-1.12.0.zip
+  URL_MD5 86d023c0729abf3465bcd55665a39013
+  INSTALL_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  LOG_DOWNLOAD ON
+  LOG_CONFIGURE OFF
+  LOG_BUILD OFF
+  )
+include_directories(${CMAKE_BINARY_DIR}/third-party/src)
 
 #------------------------------------------------------------------------------
 # Boost

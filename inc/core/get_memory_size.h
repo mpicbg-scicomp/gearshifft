@@ -4,6 +4,8 @@
  * License: Creative Commons Attribution 3.0 Unported License
  *          http://creativecommons.org/licenses/by/3.0/deed.en_US
  */
+#ifndef GET_MEMORY_SIZE_H
+#define GET_MEMORY_SIZE_H
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -23,7 +25,7 @@
 /**
  * Returns the size of physical memory (RAM) in bytes.
  */
-size_t getMemorySize( )
+inline size_t getMemorySize( )
 {
 #if defined(_WIN32) && (defined(__CYGWIN__) || defined(__CYGWIN32__))
   /* Cygwin under Windows. ------------------------------------ */
@@ -93,3 +95,5 @@ size_t getMemorySize( )
   return size_t(-1);/* Unknown OS. */
   #endif
 }
+
+#endif /* GET_MEMORY_SIZE_H */
