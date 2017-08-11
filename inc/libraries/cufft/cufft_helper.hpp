@@ -1,6 +1,8 @@
 #ifndef CUFFT_HELPER_HPP_
 #define CUFFT_HELPER_HPP_
 
+#include "core/get_memory_size.h"
+
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +87,9 @@ namespace CuFFT {
 
     case CUFFT_INCOMPLETE_PARAMETER_LIST:
       return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+
+    case CUFFT_NOT_SUPPORTED:
+      return "CUFFT_NOT_SUPPORTED";
     }
     return "<unknown>";
   }
@@ -122,6 +127,7 @@ namespace CuFFT {
          << ", \"Multiprocessors\", "<< prop.multiProcessorCount
          << ", \"Memory [MiB]\", "<< t/1048576
          << ", \"MemoryFree [MiB]\", " << f/1048576
+         << ", \"HostMemory [MiB]\", "<< getMemorySize()/1048576
          << ", \"ECC enabled\", " << prop.ECCEnabled
          << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
          << ", \"GPUClock [MHz]\", " << prop.clockRate/1000

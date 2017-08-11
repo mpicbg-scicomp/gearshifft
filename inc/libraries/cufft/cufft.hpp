@@ -4,19 +4,24 @@
 #include "core/application.hpp"
 #include "core/timer_cuda.hpp"
 #include "core/fft.hpp"
+#include "core/types.hpp"
 #include "core/traits.hpp"
 #include "core/context.hpp"
 
 #include "cufft_helper.hpp"
 
-#include <array>
+
+#include <cuda_fp16.h>
 #include <cufft.h>
+#include <cufftXt.h>
 #include <vector_types.h>
+#include <array>
 #include <regex>
 
 namespace gearshifft {
 namespace CuFFT {
   namespace traits{
+
     template<typename T_Precision=float>
     struct Types
     {
@@ -67,6 +72,30 @@ namespace CuFFT {
         }
         void operator()(cufftHandle plan, ComplexType* in, ComplexType* out){
           CHECK_CUDA(cufftExecZ2Z(plan, in, out, CUFFT_INVERSE));
+        }
+      };
+    };
+
+    template<>
+    struct Types<float16>
+    {
+      using ComplexType = half2;
+      using RealType = half;
+      // not used
+      static constexpr cufftType FFTForward = CUFFT_D2Z;
+      static constexpr cufftType FFTComplex = CUFFT_Z2Z;
+      static constexpr cufftType FFTInverse = CUFFT_Z2D;
+
+      struct FFTExecuteForward{
+        template<typename T_Input, typename T_Output>
+        void operator()(cufftHandle plan, T_Input* in, T_Output* out){
+          CHECK_CUDA( cufftXtExec(plan, in, out, CUFFT_FORWARD) );
+        }
+      };
+      struct FFTExecuteInverse{
+        template<typename T_Input, typename T_Output>
+        void operator()(cufftHandle plan, T_Input* in, T_Output* out){
+          CHECK_CUDA( cufftXtExec(plan, in, out, CUFFT_INVERSE) );
         }
       };
     };
@@ -144,6 +173,8 @@ namespace CuFFT {
     return worksize;
   }
 
+
+
   /**
    * Plan Creator depending on FFT transform type (CUFFT_R2C, ...).
    */
@@ -167,14 +198,60 @@ namespace CuFFT {
     std::copy(e.begin(), e.end(), lengths.begin());
     CHECK_CUDA( cufftCreate(&plan) );
     CHECK_CUDA( cufftMakePlanMany64(plan,
-                                     NDim,
-                                     lengths.data(),
-                                     NULL, 0, 0, NULL, 0, 0, //ignored
-                                     FFTType,
-                                     1, //batches
-                                     &worksize));
+                                    NDim,
+                                    lengths.data(),
+                                    NULL, 0, 0, NULL, 0, 0, //ignored
+                                    FFTType,
+                                    1, //batches
+                                    &worksize));
   }
 
+
+  template<typename T=half>
+  struct DataTypeHalf {
+    constexpr static cudaDataType value = CUDA_R_16F;
+  };
+  template<>
+  struct DataTypeHalf<half2> {
+    constexpr static cudaDataType value = CUDA_C_16F;
+  };
+
+
+  template<typename T_Input, typename T_Output, size_t NDim>
+  void makePlanHalf(cufftHandle& plan, const std::array<size_t,NDim>& e) {
+    size_t worksize=0;
+    std::array<long long int, 3> lengths = {{0}};
+    std::copy(e.begin(), e.end(), lengths.begin());
+    CHECK_CUDA( cufftCreate(&plan) );
+    CHECK_CUDA( cufftXtMakePlanMany(plan,
+                                    NDim,
+                                    lengths.data(),
+                                    NULL, 1, 1, // ignored
+                                    DataTypeHalf<T_Input>::value, // input type
+                                    NULL, 1, 1, // ignored
+                                    DataTypeHalf<T_Output>::value, // output type
+                                    1,          // batch size
+                                    &worksize,
+                                    CUDA_C_16F) ); // type used for execution
+  }
+
+  template<typename T_Input, typename T_Output, size_t NDim>
+  size_t estimateAllocSizeHalf(cufftHandle& plan, const std::array<size_t,NDim>& e) {
+    size_t worksize=0;
+    std::array<long long int, 3> lengths = {{0}};
+    std::copy(e.begin(), e.end(), lengths.begin());
+    CHECK_CUDA( cufftCreate(&plan) );
+    CHECK_CUDA(
+      cufftXtGetSizeMany(plan, NDim, lengths.data(),
+                         NULL, 1, 1,
+                         DataTypeHalf<T_Input>::value, // input type
+                         NULL, 1, 1, // ignored
+                         DataTypeHalf<T_Output>::value, // output type
+                         1,          // batch size
+                         &worksize,
+                         CUDA_C_16F) );
+    return worksize;
+  }
 
   /**
    * CuFFT plan and execution class.
@@ -198,6 +275,8 @@ namespace CuFFT {
      bool IsInplace = TFFT::IsInplace;
     static constexpr
      bool IsComplex = TFFT::IsComplex;
+    static constexpr
+     bool IsHalf = std::is_same<TPrecision, float16>::value;
     static constexpr
      bool IsInplaceReal = IsInplace && IsComplex==false;
     static constexpr
@@ -279,16 +358,21 @@ namespace CuFFT {
      * Returns estimated allocated memory on device for FFT plan
      */
     size_t get_plan_size() {
-      size_t size1 = 0;
-      size_t size2 = 0;
-      if(use64bit_)
+      size_t size1 = 0; // size forward trafo
+      size_t size2 = 0; // size inverse trafo
+      if(IsHalf)
+        size1 = estimateAllocSizeHalf<value_type, ComplexType>(plan_, extents_);
+      else if(use64bit_) {
         size1 = estimateAllocSize64<FFTForward>(plan_,extents_);
-      else{
+      } else {
         size1 = estimateAllocSize<FFTForward>(plan_,extents_);
       }
       CHECK_CUDA(cufftDestroy(plan_));
       plan_=0;
-      if(use64bit_)
+
+      if(IsHalf)
+        size2 = estimateAllocSizeHalf<ComplexType, value_type>(plan_, extents_);
+      else if(use64bit_)
         size2 = estimateAllocSize64<FFTInverse>(plan_,extents_);
       else{
         size2 = estimateAllocSize<FFTInverse>(plan_,extents_);
@@ -304,6 +388,12 @@ namespace CuFFT {
         std::stringstream ss;
         ss << mem_free << "<" << wanted << " (bytes)";
         throw std::runtime_error("Not enough GPU memory available. "+ss.str());
+      }
+      size_t total_mem = 95*getMemorySize()/100; // keep some memory available, otherwise an out-of-memory killer becomes more likely
+      if(total_mem < 2*data_size_) { // includes host input buffers
+        std::stringstream ss;
+        ss << total_mem << "<" << 2*data_size_ << " (bytes)";
+        throw std::runtime_error("Host data exceeds physical memory. "+ss.str());
       }
       return std::max(size1,size2);
     }
@@ -325,10 +415,13 @@ namespace CuFFT {
 
     // create FFT plan handle
     void init_forward() {
-      if(use64bit_)
+      if(IsHalf) {
+        makePlanHalf<value_type, ComplexType>(plan_, extents_);
+      } else if(use64bit_) {
         makePlan64<FFTForward>(plan_, extents_);
-      else
+      } else {
         makePlan<FFTForward>(plan_, extents_);
+      }
     }
 
     // recreates plan if needed
@@ -336,10 +429,13 @@ namespace CuFFT {
       if(IsComplex==false){
         CHECK_CUDA(cufftDestroy(plan_));
         plan_=0;
-        if(use64bit_)
+        if(IsHalf) {
+          makePlanHalf<ComplexType, value_type>(plan_, extents_);
+        } else if(use64bit_) {
           makePlan64<FFTInverse>(plan_, extents_);
-        else
+        } else {
           makePlan<FFTInverse>(plan_, extents_);
+        }
       }
     }
 

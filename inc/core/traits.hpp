@@ -1,10 +1,19 @@
 #ifndef TRAITS_HPP_
 #define TRAITS_HPP_
 
+#include "types.hpp"
+
 namespace gearshifft {
 
   template <typename T_Precision>
   struct ToString;
+
+  template <>
+  struct ToString<float16>  {
+    static const char* value() {
+      return "float16";
+    }
+  };
 
   template <>
   struct ToString<float>  {

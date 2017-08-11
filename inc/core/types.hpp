@@ -1,11 +1,14 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
+#include "complex-half.hpp"
+
 #include <array>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 #include <complex>
+#include <type_traits>
 
 namespace gearshifft {
   using Extents1D = std::array<size_t,1>;
@@ -27,6 +30,17 @@ namespace gearshifft {
     }
   }
 
+  template<typename T>
+  struct ErrorBound {
+    static constexpr int PrecisionDigits =
+      std::conditional<std::is_same<float16, T>::value, std::integral_constant<int, 3>, std::integral_constant<int, std::numeric_limits<T>::digits10>>::type::value;
+
+    double operator()() {
+      return pow(10.0,-PrecisionDigits);
+    }
+  };
+
+
   template<size_t NDim>
   inline
   std::ostream& operator<<(std::ostream& os, const std::array<size_t,NDim>& e) {
@@ -43,14 +57,9 @@ namespace gearshifft {
    * Basic 2D vector with template type.
    * Used for test data for complex FFTs
    */
-  // template<typename REAL>
-  // struct Real2D {
-  //   using type = REAL;
-  //   REAL x, y;
-  // };
 
   template<typename REAL>
-  using Real2D = std::complex<REAL>;
+  using Real2D = typename std::conditional<std::is_same<REAL,float16>::value, gearshifft::complex<float16>, std::complex<REAL> >::type;
 
   enum struct RecordType {
     Allocation = 0,
@@ -65,6 +74,8 @@ namespace gearshifft {
     DevBufferSize,
     DevPlanSize,
     DevTransferSize,
+    Deviation,
+    Mismatches,
     _NrRecords
   };
 
@@ -83,7 +94,9 @@ namespace gearshifft {
     case RecordType::DevBufferSize: return os << "Size_DeviceBuffer [bytes]";
     case RecordType::DevPlanSize: return os << "Size_DevicePlan [bytes]";
     case RecordType::DevTransferSize: return os << "Size_DeviceTransfer [bytes]";
-    };
+    case RecordType::Deviation: return os << "Error_StandardDeviation";
+    case RecordType::Mismatches: return os << "Error_Mismatches";
+    }
     return os << static_cast<int>(r);
   }
 }

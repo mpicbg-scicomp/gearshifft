@@ -13,7 +13,7 @@ using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
                                Outplace_Complex>;
-using Precisions        = List<float, double>;
+using Precisions        = List<float16, float, double>;
 using FFT_Is_Normalized = std::false_type;
 
 #elif defined(OPENCL_ENABLED)

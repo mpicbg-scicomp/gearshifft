@@ -3,11 +3,14 @@
 
 #include "application.hpp"
 #include "benchmark_data.hpp"
+#include "types.hpp"
 #include "traits.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 #include <type_traits>
 
-#include <boost/test/unit_test.hpp>
+#include <cmath>
 
 namespace gearshifft {
   /**
@@ -34,7 +37,7 @@ namespace gearshifft {
     static_assert(NDim<=3,"NDim<=3");
 
     void operator()(const T_Extents& extents) {
-      auto& dataset = BenchmarkData<T_Precision,NDim>::data(extents);
+      const auto& dataset = BenchmarkData<T_Precision,NDim>::data(extents);
 
       VectorT data_buffer;
       dataset.copyTo(data_buffer);
@@ -55,17 +58,27 @@ namespace gearshifft {
       }
 
       try {
+        const double error_bound = ERROR_BOUND<0.0 ? ErrorBound<T_Precision>()() : ERROR_BOUND;
         for(r=0; r<NR_RUNS; ++r)
         {
           result.setRun(r);
           dataset.copyTo(data_buffer);
           fft(result, data_buffer, extents);
 
-          auto deviation = dataset.template check_deviation
-            <!T_FFT_Normalized::value> (data_buffer);
-          if(deviation > ERROR_BOUND) {
+          double deviation = 0.0; // sample standard deviation
+          size_t mismatches = 0; // nr of mismatches
+          // compute deviation and mismatches
+          dataset.template check_deviation<!T_FFT_Normalized::value>
+            (deviation, mismatches, data_buffer, error_bound);
+
+          result.setValue(RecordType::Deviation, deviation);
+          result.setValue(RecordType::Mismatches, static_cast<double>(mismatches));
+
+          if(std::isnan(deviation) || deviation>error_bound) {
             std::stringstream msg;
-            msg << "Results mismatch: deviation=" << deviation << " [" << ERROR_BOUND << "]";
+            msg << "mismatches=" << mismatches
+                << " deviation=" << deviation
+                << " errorbound=" << error_bound;
             result.setError(r, msg.str());
             throw std::runtime_error(msg.str());
           }
