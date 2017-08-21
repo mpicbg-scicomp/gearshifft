@@ -1,7 +1,13 @@
 #ifndef COMPLEX_HALF_H
 #define COMPLEX_HALF_H
 
-#include <half-code/include/half.hpp>
+#if GEARSHIFFT_FLOAT16_SUPPORT == 0
+
+struct float16 {};
+
+#else
+
+#include "half-code/include/half.hpp"
 
 #include <complex>
 
@@ -51,4 +57,5 @@ private:
   };
 }
 
+#endif /* GEARSHIFFT_FLOAT16_SUPPORT */
 #endif /* COMPLEX-HALF_H */

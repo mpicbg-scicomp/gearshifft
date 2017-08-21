@@ -57,9 +57,13 @@ namespace gearshifft {
    * Basic 2D vector with template type.
    * Used for test data for complex FFTs
    */
-
+#if GEARSHIFFT_FLOAT16_SUPPORT == 0
+  template<typename REAL>
+  using Real2D = std::complex<REAL>;
+#else
   template<typename REAL>
   using Real2D = typename std::conditional<std::is_same<REAL,float16>::value, gearshifft::complex<float16>, std::complex<REAL> >::type;
+#endif
 
   enum struct RecordType {
     Allocation = 0,
@@ -96,6 +100,9 @@ namespace gearshifft {
     case RecordType::DevTransferSize: return os << "Size_DeviceTransfer [bytes]";
     case RecordType::Deviation: return os << "Error_StandardDeviation";
     case RecordType::Mismatches: return os << "Error_Mismatches";
+    case RecordType::_NrRecords:
+    default:
+      ;
     }
     return os << static_cast<int>(r);
   }

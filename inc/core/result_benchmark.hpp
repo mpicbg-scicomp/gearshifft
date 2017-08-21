@@ -1,6 +1,8 @@
 #ifndef RESULT_BENCHMARK_HPP_
 #define RESULT_BENCHMARK_HPP_
 
+#include "traits.hpp"
+
 #include <math.h>
 #include <iostream>
 #include <array>
@@ -10,6 +12,7 @@
 
 namespace gearshifft
 {
+
 /** Result data generated after a benchmark has completed the runs
  */
   template<int T_NumberRuns, int T_NumberValues>
@@ -17,8 +20,11 @@ namespace gearshifft
   public:
     using ValuesT = std::array<std::array<double, T_NumberValues >, T_NumberRuns >;
 
-    template<bool isComplex, bool isInplace, size_t T_NDim>
-    void init(const std::array<size_t, T_NDim>& ce, const char* precision) {
+    template<bool isComplex,
+             bool isInplace,
+             typename T_Precision,
+             size_t T_NDim>
+    void init(const std::array<size_t, T_NDim>& ce) {
       static size_t sid = 0;
       id_ = sid++;
       total_ = 1;
@@ -31,7 +37,7 @@ namespace gearshifft
       run_ = 0;
       isInplace_ = isInplace;
       isComplex_ = isComplex;
-      precision_.assign(precision);
+      precision_ = ToString<T_Precision>::value();
       error_.clear();
       errorRun_ = -1;
     }
@@ -100,6 +106,7 @@ namespace gearshifft
       case 2: return "powerof2";
       case 3: return "radix357";
       }
+      return "NA";
     }
 
     std::array<size_t,3> getExtents() const { return extents_; }
@@ -129,7 +136,7 @@ namespace gearshifft
     /// FFT Kind Complex
     bool isComplex_ = false;
     /// Precision as string
-    std::string precision_;
+    const char* precision_;
     /// Error message
     std::string error_;
     /// Run where error occurred

@@ -4,7 +4,6 @@
 #include "application.hpp"
 #include "benchmark_data.hpp"
 #include "types.hpp"
-#include "traits.hpp"
 
 #include <boost/test/unit_test.hpp>
 
@@ -45,8 +44,10 @@ namespace gearshifft {
 
       auto fft = T_FFT_Wrapper();
       ResultT result;
-      result.template init<T_FFT_Wrapper::IsComplex, T_FFT_Wrapper::IsInplace >
-                       (extents, ToString<T_Precision>::value() );
+      result.template init<T_FFT_Wrapper::IsComplex,
+                           T_FFT_Wrapper::IsInplace,
+                           T_Precision >
+                       (extents);
 
       int r;
       if(result.getID()==0) {

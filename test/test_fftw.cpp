@@ -65,6 +65,7 @@ BOOST_AUTO_TEST_CASE( FFT1D, * boost::unit_test::tolerance(0.0001) )
   fftw_cleanup();
 }
 
+#if GEARSHIFFT_FFTW_THREADS==1
 BOOST_AUTO_TEST_CASE( FFT1D2Threads, * boost::unit_test::tolerance(0.0001) )
 {
   static const int N = 32;
@@ -104,3 +105,4 @@ BOOST_AUTO_TEST_CASE( FFT1D2Threads, * boost::unit_test::tolerance(0.0001) )
   fftw_cleanup_threads();
   fftw_cleanup();
 }
+#endif

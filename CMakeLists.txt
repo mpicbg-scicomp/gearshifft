@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(gearshifft)
 
+set(GEARSHIFFT_VERSION_MAJOR 0)
+set(GEARSHIFFT_VERSION_MINOR 3)
+set(GEARSHIFFT_VERSION_PATCH 0)
+
 # cmake general setup
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -35,6 +39,7 @@ option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if available?" ON)
 option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
 option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+option(GEARSHIFFT_FLOAT16_SUPPORT "Enable float16 data type (cufft and ComputeCapability 5.3+ only)" OFF)
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
@@ -43,6 +48,16 @@ set(GEARSHIFFT_INSTALL_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/share/gearshifft/" C
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(GEARSHIFFT_FLOAT16_SUPPORT)
+  set(GEARSHIFFT_FLOAT16_SUPPORT_ 1)
+else()
+  set(GEARSHIFFT_FLOAT16_SUPPORT_ 0)
+endif()
+
+add_definitions(-DGEARSHIFFT_VERSION_MAJOR=${GEARSHIFFT_VERSION_MAJOR}
+  -DGEARSHIFFT_VERSION_MINOR=${GEARSHIFFT_VERSION_MINOR}
+  -DGEARSHIFFT_VERSION_PATCH=${GEARSHIFFT_VERSION_PATCH}
+  -DGEARSHIFFT_FLOAT16_SUPPORT=${GEARSHIFFT_FLOAT16_SUPPORT_})
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if(${GEARSHIFFT_CXX11_ABI})
@@ -65,24 +80,28 @@ endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 set(CMAKE_CXX_STANDARD 14)
 
-
-
 #------------------------------------------------------------------------------
 # half-code
 #------------------------------------------------------------------------------
-include(ExternalProject)
-ExternalProject_Add(half-code
-  PREFIX ${CMAKE_BINARY_DIR}/third-party
-  URL https://downloads.sourceforge.net/project/half/half/1.12.0/half-1.12.0.zip
-  URL_MD5 86d023c0729abf3465bcd55665a39013
-  INSTALL_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  LOG_DOWNLOAD ON
-  LOG_CONFIGURE OFF
-  LOG_BUILD OFF
-  )
-include_directories(${CMAKE_BINARY_DIR}/third-party/src)
+
+if(GEARSHIFFT_FLOAT16_SUPPORT)
+  message(STATUS "half-precision support enabled.")
+  message(STATUS " 'make' will check out half-code library for half-precision data types.")
+  message(STATUS " If 'make' or 'make half-code' fails, then download half-code: 'http://sourceforge.net/projects/half/files/latest/download' to 'third-party/src/'.")
+  include(ExternalProject)
+  ExternalProject_Add(half-code
+    PREFIX ${CMAKE_BINARY_DIR}/third-party
+    SVN_REPOSITORY https://svn.code.sf.net/p/half/code/trunk
+    INSTALL_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    LOG_DOWNLOAD ON
+    LOG_CONFIGURE OFF
+    LOG_BUILD OFF
+    )
+  ExternalProject_Get_Property(half-code DOWNLOAD_DIR)
+  include_directories(${DOWNLOAD_DIR})
+endif()
 
 #------------------------------------------------------------------------------
 # Boost
@@ -158,17 +177,19 @@ if(FFTW_FOUND AND GEARSHIFFT_FFTW)
     list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
   endforeach()
 
+  set(GEARSHIFFT_FFTW_THREADS 0)
   if(GEARSHIFFT_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
     foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
+    set(GEARSHIFFT_FFTW_THREADS 1)
   endif()
 
   if(GEARSHIFFT_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
     foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
-
+    set(GEARSHIFFT_FFTW_THREADS 1)
   endif()
 
   set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})

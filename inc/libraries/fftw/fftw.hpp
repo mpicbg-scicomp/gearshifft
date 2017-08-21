@@ -93,6 +93,22 @@ namespace fftw {
       static void free(void* p) { fftw_free(p); }
     };
 
+    template <typename T>
+    struct no_thread_api {};
+
+    template <>
+    struct no_thread_api<double> {
+      static void cleanup(){
+        fftw_cleanup();
+      }
+    };
+
+    template <>
+    struct no_thread_api<float> {
+      static void cleanup(){
+        fftwf_cleanup();
+      }
+    };
 
     //http://www.fftw.org/fftw3_doc/Usage-of-Multi_002dthreaded-FFTW.html
     template <typename T>
@@ -333,18 +349,32 @@ namespace fftw {
     }
 
     static std::string get_device_list() {
-      int av_procs = std::thread::hardware_concurrency();
       std::ostringstream msg;
+
+#if GEARSHIFFT_FFTW_THREADS==1
+      int av_procs = std::thread::hardware_concurrency();
       msg << av_procs << " CPU Threads supported.\n";
+#else
+      msg << "FFTW thread support disabled.\n";
+#endif
+
       return msg.str();
     }
 
     std::string get_used_device_properties() {
-      // Returns the number of supported concurrent threads
+
+#if GEARSHIFFT_FFTW_THREADS==1
+      // Returns the number of supported concurrent threads of implementation
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = options().getNumberDevices();
+      if(maxndevs==0)
+        maxndevs = 1;
       if( ndevs==0 || ndevs>maxndevs )
         ndevs = maxndevs;
+#else
+      size_t maxndevs = 0;
+      size_t ndevs = 0;
+#endif
 
       std::ostringstream msg;
       msg << "\"SupportedThreads\"," << maxndevs
@@ -479,10 +509,12 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
+#if GEARSHIFFT_FFTW_THREADS==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
         traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
+#endif
 
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
           ImportWisdom<TPrecision>()();
@@ -492,8 +524,11 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-
+#if GEARSHIFFT_FFTW_THREADS==1
       traits::thread_api<TPrecision>::cleanup_threads();
+#else
+      traits::no_thread_api<TPrecision>::cleanup();
+#endif
     }
       
     /**
@@ -512,11 +547,13 @@ namespace fftw {
                                                    data_complex_,
                                                    traits::fftw_direction::forward,
                                                    plan_rigor_);
-      if(!fwd_plan_)
-        if(plan_rigor_ == FFTW_WISDOM_ONLY)
+      if(!fwd_plan_) {
+        if(plan_rigor_ == FFTW_WISDOM_ONLY) {
           throw std::runtime_error("fftw forward plan could not be created as wisdom is not available for this problem.");
-        else
+        } else {
           throw std::runtime_error("fftw forward plan could not be created.");
+        }
+      }
     }
 
     //
@@ -526,12 +563,13 @@ namespace fftw {
                                                    data_,
                                                    traits::fftw_direction::inverse,
                                                    plan_rigor_);
-      if(!bwd_plan_)
-        if(plan_rigor_ == FFTW_WISDOM_ONLY)
+      if(!bwd_plan_) {
+        if(plan_rigor_ == FFTW_WISDOM_ONLY) {
           throw std::runtime_error("fftw inverse plan could not be created as wisdom is not available for this problem.");
-        else
+        } else {
           throw std::runtime_error("fftw inverse plan could not be created.");
-
+        }
+      }
     }
 
     /**
