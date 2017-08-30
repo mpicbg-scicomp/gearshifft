@@ -33,7 +33,7 @@
 namespace gearshifft {
 
   inline
-  std::string gearshifft_version() {
+  std::string version() {
     return std::to_string(GEARSHIFFT_VERSION_MAJOR) + "." + std::to_string(GEARSHIFFT_VERSION_MINOR) + "." + std::to_string(GEARSHIFFT_VERSION_PATCH);
   }
 
@@ -90,7 +90,7 @@ namespace gearshifft {
                        << ",\"CurrentTime\"," << now
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
                        << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
-                       << ",\"gearshifft\",\"" << gearshifft_version() << "\""
+                       << ",\"gearshifft\",\"" << gearshifft::version() << "\""
         ;
       if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
