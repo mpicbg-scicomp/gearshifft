@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(cufft_test CXX)
+project(cufft_test)
 
 set(CMAKE_CXX_STANDARD 14)
 
