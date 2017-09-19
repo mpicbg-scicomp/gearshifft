@@ -13,7 +13,12 @@ using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
                                Outplace_Complex>;
-using Precisions        = List<float16, float, double>;
+
+#if GEARSHIFFT_FLOAT16_SUPPORT == O
+using Precisions        = List<float, double>;
+#else
+using Precisions        = List<float, double, float16>;
+#endif
 using FFT_Is_Normalized = std::false_type;
 
 #elif defined(OPENCL_ENABLED)

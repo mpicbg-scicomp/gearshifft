@@ -13,7 +13,7 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 - cmake 3.1+
 - C++14 capable compiler
 - CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
-- Boost version 1.56+
+- Boost version 1.59+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
@@ -149,17 +149,15 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 ## Tested on ...
 
 - linux (CentOS, RHEL, ArchLinux, Ubuntu)
-- gcc 5.3.0, gcc 6.2.0, gcc 7.1.1
-- cuFFT from CUDA 7.5.18, CUDA 8.0.*, CUDA 9.0.69-RC
+- gcc 5.3.0, gcc 6.2.0, gcc 7.1.1, clang 3.8 & 4.0.1 (fftw threads disabled)
+- CUDA 8.0.*, CUDA 9.0.69-RC
 - clFFT 2.12.0, 2.12.1, 2.12.2
 - FFTW 3.3.4, 3.3.5, 3.3.6pl1
-- OpenCL 1.2-4.4.0.117 (Nvidia, Intel)
+- OpenCL 1.2 (Nvidia, AMD, Intel)
 - Nvidia Pascal P100, Kepler K80, K20Xm, GTX1080, Haswell and Sandybridge Xeon CPUs
 
 ## Issues
 
-- cuFFT 7.5 contexts might become messed up after huge allocations failed (see [link](https://devtalk.nvidia.com/default/topic/956093/gpu-accelerated-libraries/cufft-out-of-memory-yields-quot-irreparable-quot-context/))
-  + fixed as of CUDA 8.0.44
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - clFFT on CPU cannot transform the 4096-FFT and 4096x4096-FFTs (see [this issue](https://github.com/clMathLibraries/clFFT/issues/171))
 - At the moment this is for single-GPUs, batches are not considered

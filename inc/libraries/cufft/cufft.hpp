@@ -360,6 +360,7 @@ namespace CuFFT {
     size_t get_plan_size() {
       size_t size1 = 0; // size forward trafo
       size_t size2 = 0; // size inverse trafo
+
       if(IsHalf)
         size1 = estimateAllocSizeHalf<value_type, ComplexType>(plan_, extents_);
       else if(use64bit_) {

@@ -40,12 +40,12 @@ namespace gearshifft {
             if(lhs.isInplace()==rhs.isInplace())
               if(lhs.isComplex()==rhs.isComplex())
                 return lhs.getDimKind()<rhs.getDimKind() ||
-                                        lhs.getDimKind()==rhs.getDimKind() &&
-                                        (
+                                        (lhs.getDimKind()==rhs.getDimKind() &&
+                                         (
                                           lhs.getDim()<rhs.getDim() ||
-                                          lhs.getDim()==rhs.getDim() &&
-                                          lhs.getExtentsTotal()<rhs.getExtentsTotal()
-                                          );
+                                          (lhs.getDim()==rhs.getDim() &&
+                                           lhs.getExtentsTotal()<rhs.getExtentsTotal())
+                                         ));
               else
                 return lhs.isComplex();
             else

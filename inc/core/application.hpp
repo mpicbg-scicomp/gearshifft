@@ -32,6 +32,11 @@
 
 namespace gearshifft {
 
+  inline
+  std::string version() {
+    return std::to_string(GEARSHIFFT_VERSION_MAJOR) + "." + std::to_string(GEARSHIFFT_VERSION_MINOR) + "." + std::to_string(GEARSHIFFT_VERSION_PATCH);
+  }
+
   template<typename T_Context>
   class Application {
   public:
@@ -85,6 +90,7 @@ namespace gearshifft {
                        << ",\"CurrentTime\"," << now
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
                        << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
+                       << ",\"gearshifft\",\"" << gearshifft::version() << "\""
         ;
       if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,

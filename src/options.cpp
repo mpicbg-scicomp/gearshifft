@@ -1,3 +1,4 @@
+#include "core/application.hpp"
 #include "core/options.hpp"
 
 #include <iostream>
@@ -15,11 +16,12 @@ OptionsDefault::OptionsDefault() {
   add_options()
     ("help,h", "Print help messages")
     ("extent,e", po::value<std::vector<std::string>>()->multitoken()->
-     composing(), "specific extent (eg. 1024x1024) [>=1 nr. of args possible]")
+     composing(), "Specific extent (eg. 1024x1024) [>=1 nr. of args possible]")
     ("file,f", po::value<std::vector<std::string>>()->multitoken()->
-     composing(), "file with extents (row-wise csv) [>=1 nr. of args possible]")
+     composing(), "File with extents (row-wise csv) [>=1 nr. of args possible]")
     ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file, will be overwritten!")
-    ("verbose,v", "for console output")
+    ("verbose,v", "Prints benchmark statistics")
+    ("version,V", "Prints gearshifft version")
     ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
     ("ndevices,n", po::value<size_t>(&ndevices_)->default_value(0), "Number of devices (0=all), if supported by FFT lib (e.g. clfft and fftw with n CPU threads).")
     ("list-devices,l", "List of available compute devices with IDs, if supported.")
@@ -74,9 +76,14 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
                                  _argv.data()
                                ).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
-
+    if( vm.count("version")  ) {
+      std::cout << "gearshifft " << gearshifft::version() << "\n";
+      return 1;
+    }
     if( vm.count("help")  ) {
-      std::cout << desc_ << std::endl;
+      std::cout << "gearshifft " << gearshifft::version()
+                << desc_
+                << std::endl;
       return 1;
     }
     if( vm.count("file")  ) {

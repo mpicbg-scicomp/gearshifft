@@ -51,6 +51,8 @@ namespace gearshifft {
              typename T_FFTs,
              typename T_Precisions>
     int run() {
+      if(Context::options().getListDevices())
+        return 0;
       if(configured_==false)
         return 1;
 
