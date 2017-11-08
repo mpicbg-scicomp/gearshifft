@@ -91,7 +91,8 @@ if(GEARSHIFFT_FLOAT16_SUPPORT)
   include(ExternalProject)
   ExternalProject_Add(half-code
     PREFIX ${CMAKE_BINARY_DIR}/third-party
-    SVN_REPOSITORY https://svn.code.sf.net/p/half/code/trunk
+    URL https://downloads.sourceforge.net/project/half/half/1.12.0/half-1.12.0.zip
+    URL_MD5 86d023c0729abf3465bcd55665a39013
     INSTALL_COMMAND ""
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
