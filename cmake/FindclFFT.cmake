@@ -42,16 +42,28 @@ FIND_PATH(CLFFT_ROOT_DIR
   PATHS ENV CLFFT_ROOT
   DOC "clFFT root directory.")
 
+FIND_PATH(CLFFT_ROOT_DIR
+  NAMES include/clFFT.h
+  DOC "clFFT root directory.")
+
 FIND_PATH(_CLFFT_INCLUDE_DIRS
   NAMES clFFT.h
   PATHS ${CLFFT_ROOT_DIR}
   PATH_SUFFIXES "include"
   DOC "clFFT include directory")
 
+FIND_PATH(_CLFFT_INCLUDE_DIRS
+  NAMES clFFT.h
+  DOC "clFFT include directory")
+
 FIND_LIBRARY(_CLFFT_LIBRARY
   NAMES clFFT
   PATHS ${CLFFT_ROOT_DIR}
   PATH_SUFFIXES "lib" "lib64"
+  DOC "clFFT library directory")
+
+FIND_LIBRARY(_CLFFT_LIBRARY
+  NAMES clFFT
   DOC "clFFT library directory")
 
 
