@@ -251,7 +251,11 @@ namespace gearshifft
         // check supported sizes : http://clmathlibraries.github.io/clFFT/
         if((std::is_same<TPrecision,float>::value && n_>(1<<24) && IsComplex==false)
            ||
-           (std::is_same<TPrecision,double>::value && n_>(1<<22) && IsComplex==false))
+           (std::is_same<TPrecision,double>::value && n_>(1<<22) && IsComplex==false)
+           ||
+           (std::is_same<TPrecision,float>::value && n_>(1<<27) && IsComplex==true)
+           ||
+           (std::is_same<TPrecision,double>::value && n_>(1<<26) && IsComplex==true))
           throw std::runtime_error("Unsupported lengths.");
 
         queue_ = clCreateCommandQueue( context_.ctx, context_.device_used, 0, &err );
