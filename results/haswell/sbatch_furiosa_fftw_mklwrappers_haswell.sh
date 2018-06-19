@@ -2,9 +2,8 @@
 #SBATCH -J gearshifftFFTWMKL
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
 #SBATCH --time=48:00:00
-#SBATCH --mem=100991M
+#SBATCH --mem=128000M
 #SBATCH --partition=long
 #SBATCH --exclusive
 #SBATCH --array 0-5
@@ -15,10 +14,15 @@ k=$SLURM_ARRAY_TASK_ID
 
 CURDIR=/home/steinbac/development/gearshifft/
 REL=$CURDIR/build-mkl
-RESULTS=$CURDIR/results/haswell/mklwrappers-2017u4
-mkdir -p ${RESULTS}
+RESULTS=$CURDIR/results/haswell/fftwwrappers-gnu-2018u3
 
-module load fftw/3.3.6-pl1 mkl-fftw/2017u4 parallel_studio_xe/2017u4 gcc/5.3.0
+if [[ ! -e ${RESULTS} ]];
+then
+mkdir -p ${RESULTS}
+fi
+
+
+module load mkl-fftw/2018u3 parallel_studio_xe/2018u3 gcc/6.2.0
 
 FEXTENTS1D=$CURDIR/config/extents_1d_publication.conf
 FEXTENTS1DFFTW=$CURDIR/config/extents_1d_fftw.conf  # excluded a few very big ones
@@ -28,20 +32,26 @@ FEXTENTS=$CURDIR/config/extents_all_publication.conf
 
 
 if [ $k -eq 0 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.1d.csv --rigor estimate
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_estimate_gcc6.2.0_CENTOS7.5.1d.csv --rigor estimate
 
 elif [ $k -eq 1 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.2d.csv --rigor estimate
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_estimate_gcc6.2.0_CENTOS7.5.2d.csv --rigor estimate
 
 elif [ $k -eq 2 ]; then
-    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_estimate_gcc5.3.0_RHEL7.2.3d.csv --rigor estimate
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_estimate_gcc6.2.0_CENTOS7.5.3d.csv --rigor estimate
 
 elif [ $k -eq 3 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.2d.csv
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS2D -o $RESULTS/fftw_gcc6.2.0_CENTOS7.5.2d.csv
 elif [ $k -eq 4 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.3d.csv
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS3D -o $RESULTS/fftw_gcc6.2.0_CENTOS7.5.3d.csv
 elif [ $k -eq 5 ]; then
-     srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_gcc5.3.0_RHEL7.2.1d.csv
+    hostname
+    srun $REL/gearshifft_fftwwrappers -f $FEXTENTS1DFFTW -o $RESULTS/fftw_gcc6.2.0_CENTOS7.5.1d.csv
 fi
 
 module list
