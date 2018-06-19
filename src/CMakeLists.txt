@@ -31,7 +31,7 @@ function(add_exec Tlib)
     set(LIBS ${FFTW_LIBRARIES})
   endif()
   if (Tlib STREQUAL "fftwwrappers")
-    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED)
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED -DGEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_THREADS})
 
     target_include_directories(${PROJECT_EXEC} PUBLIC ${FFTWWrappers_MKL_INCLUDE_DIR})
     link_directories(${FFTWWrappers_MKL_LIBRARY_DIRS})

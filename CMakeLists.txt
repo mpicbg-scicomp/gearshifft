@@ -210,7 +210,7 @@ endif()
 find_package(FFTWWrappers QUIET)
 if(FFTWWrappers_FOUND)
   list(APPEND FFTLIBS fftwwrappers)
-
+  set(GEARSHIFFT_FFTW_THREADS 1)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # using GCC
     set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
