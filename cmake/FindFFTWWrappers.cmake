@@ -5,6 +5,8 @@
 #
 # It sets the following variables:
 #   FFTWWrappers_FOUND          ... true if fftw is found on the system
+#   FFTWWrappers_GNU_LIBRARIES  ... list of library that were build with the GNU binary layout
+#   FFTWWrappers_INTEL_LIBRARIES  ... list of library that were build with the intel binary layout
 #   FFTWWrappers_LIBRARIES      ... list of library identifiers that were found (will be filled with serial/openmp/pthreads enabled file names if present, only stubs will be filled in not full paths)
 #   FFTWWrappers_MKL_LIBRARIES  ... list of library in the MKL that need to be linked to (intel64)
 #   FFTWWrappers_MKL_INCLUDE_DIR  ... folder containing fftw3.h
@@ -28,16 +30,35 @@ endif()
 
 #initialize library variables
 find_library(
-  FFTWWrappers_LIBRARIES
+  FFTWWrappers_GNU_LIBRARIES
   NAMES libfftw3xc_gnu libfftw3xc_gnu.a
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
   NO_DEFAULT_PATH
   )
+find_library(
+  FFTWWrappers_GNU_LIBRARIES
+  NAMES libfftw3xc_gnu libfftw3xc_gnu.a
+  )
 
+if(EXISTS ${FFTWWrappers_GNU_LIBRARIES})
+  get_filename_component(FFTWWrappers_LIBRARY_DIR ${FFTWWrappers_GNU_LIBRARIES} DIRECTORY)
+endif()
 
-if(EXISTS ${FFTWWrappers_LIBRARIES})
-  get_filename_component(FFTWWrappers_LIBRARY_DIR ${FFTWWrappers_LIBRARIES} DIRECTORY)
+find_library(
+  FFTWWrappers_INTEL_LIBRARIES
+  NAMES libfftw3xc_intel libfftw3xc_intel.a
+  PATHS ${FFTWWrappers_ROOT}
+  PATH_SUFFIXES "lib" "lib64"
+  NO_DEFAULT_PATH
+  )
+find_library(
+  FFTWWrappers_INTEL_LIBRARIES
+  NAMES libfftw3xc_intel libfftw3xc_intel.a
+)
+
+if(EXISTS ${FFTWWrappers_INTEL_LIBRARIES})
+  get_filename_component(FFTWWrappers_LIBRARY_DIR ${FFTWWrappers_INTEL_LIBRARIES} DIRECTORY)
 endif()
 
 ######################################### MKL related #####################################
@@ -124,9 +145,10 @@ endif()
 
 list(APPEND FFTWWrappers_MKL_LIBRARIES "m;pthread;dl")
 
-if(NOT FFTWWrappers_VERBOSE_FIND)
+if(NOT ${FFTW_FIND_QUIETLY})
   message("++ FindFFTWWrappers")
-  message("++ FFTWWrappers_LIBRARIES        : ${FFTWWrappers_LIBRARIES}")
+  message("++ FFTWWrappers_GNU_LIBRARIES    : ${FFTWWrappers_GNU_LIBRARIES}")
+  message("++ FFTWWrappers_INTEL_LIBRARIES  : ${FFTWWrappers_INTEL_LIBRARIES}")
   message("++ FFTWWrappers_LIBRARY_DIR      : ${FFTWWrappers_LIBRARY_DIR}")
   message("++ FFTWWrappers_MKL_LIBRARIES    : ${FFTWWrappers_MKL_LIBRARIES}")
   message("++ FFTWWrappers_MKL_LIBRARY_DIRS : ${FFTWWrappers_MKL_LIBRARY_DIRS}")
@@ -138,12 +160,16 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTWWrappers DEFAULT_MSG
-  FFTWWrappers_LIBRARIES
+  FFTWWrappers_GNU_LIBRARIES
 #  HANDLE_COMPONENTS
   )
 
+set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES};${FFTWWrappers_INTEL_LIBRARIES}")
+
 mark_as_advanced(
   FFTWWrappers_LIBRARIES
+  FFTWWrappers_GNU_LIBRARIES
+  FFTWWrappers_INTEL_LIBRARIES
   FFTWWrappers_LIBRARY_DIR
   FFTWWrappers_MKL_LIBRARIES
   FFTWWrappers_MKL_LIBRARY_DIR
