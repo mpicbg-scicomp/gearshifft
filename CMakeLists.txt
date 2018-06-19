@@ -204,6 +204,28 @@ else()
   message("<< FFTW benchmark disabled.")
 endif()
 
+#------------------------------------------------------------------------------
+# FFTW Wrappers of MKL
+#------------------------------------------------------------------------------
+find_package(FFTWWrappers QUIET)
+if(FFTWWrappers_FOUND)
+  list(APPEND FFTLIBS fftwwrappers)
+
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # using GCC
+    set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
+  elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    # using Intel C++
+    set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
+  endif()
+
+  link_directories(${FFTWWrappers_LIBRARY_DIR})
+
+  message(">> FFTWWrappers -> ${FFTWWrappers_LIBRARIES}")
+
+else(FFTWWrappers_FOUND)
+  message("<< FFTWWrappers benchmark disabled.")
+endif()
 
 if(NOT FFTLIBS)
   message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
