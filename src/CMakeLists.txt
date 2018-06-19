@@ -33,9 +33,10 @@ function(add_exec Tlib)
   if (Tlib STREQUAL "fftwwrappers")
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED)
 
-    target_include_directories(${PROJECT_EXEC} PUBLIC ${FFTWWrappers_MKL_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_EXEC} PUBLIC ${FFTWWrappers_MKL_INCLUDE_DIR})
     link_directories(${FFTWWrappers_MKL_LIBRARY_DIRS})
 
+    #assumes the gnu compiler/linker
     set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
   endif()
 
