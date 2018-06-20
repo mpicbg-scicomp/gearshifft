@@ -359,10 +359,15 @@ namespace fftw {
   struct FftwContext : public ContextDefault<FftwOptions> {
 
     static const std::string title() {
-      if(native_fftw())
-        return "Fftw";
-      else
-        return "Fftw_mklwrapper";
+      if(native_fftw()){
+        return "Fftw";}
+      else{
+#ifndef __INTEL_COMPILER
+        return "Fftw_mkl_gnuwrapper";
+#else
+        return "Fftw_mkl_intelwrapper";
+#endif
+      }
     }
 
     static std::string get_device_list() {
