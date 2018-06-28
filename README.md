@@ -8,6 +8,8 @@ This project is still in development.
 
 If you want to just browse our results, see the [raw benchmark data](https://www.github.com/mpicbg-scicomp/gearshifft_results/) or our [online visualisation and comparison tool](https://www.kcod.de/gearshifft/).
 
+`gearshifft` was published at [ISC2017](https://link.springer.com/chapter/10.1007/978-3-319-58667-0_11). The respective preprint is available on the [arxiv](https://arxiv.org/abs/1702.00629).
+
 ## Requirements
 
 - cmake 3.1+ or 3.6.2+ for allowing cmake to automatically download of half-code (float16 support)
