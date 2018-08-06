@@ -6,7 +6,10 @@ cmake_minimum_required(VERSION 3.1)
 
 function(add_exec Tlib)
   set(PROJECT_EXEC gearshifft_${Tlib})
-  add_executable(${PROJECT_EXEC} ${SOURCES})
+
+  add_executable(${PROJECT_EXEC} benchmark.cpp options.cpp)
+
+  target_include_directories(${PROJECT_EXEC} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../inc")
   target_compile_definitions(${PROJECT_EXEC} PUBLIC
     -DGEARSHIFFT_NUMBER_WARM_RUNS=${GEARSHIFFT_NUMBER_WARM_RUNS}
     -DGEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
@@ -28,7 +31,7 @@ function(add_exec Tlib)
     set(LIBS ${FFTW_LIBRARIES})
   endif()
 
-  target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC} -e 64)
 
   install(TARGETS ${PROJECT_EXEC} DESTINATION bin)
@@ -37,9 +40,6 @@ endfunction()
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../inc)
-set(SOURCES benchmark.cpp options.cpp)
 
 # FFT lib clients
 foreach(FFTLIB ${FFTLIBS})

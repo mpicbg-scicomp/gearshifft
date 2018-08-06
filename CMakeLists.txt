@@ -105,10 +105,15 @@ if(GEARSHIFFT_FLOAT16_SUPPORT)
 endif()
 
 #------------------------------------------------------------------------------
+# Threads
+#------------------------------------------------------------------------------
+find_package( Threads )
+
+#------------------------------------------------------------------------------
 # Boost
 #------------------------------------------------------------------------------
 
-find_package(Boost 1.56 QUIET COMPONENTS system unit_test_framework program_options REQUIRED)
+find_package(Boost 1.59 QUIET COMPONENTS system unit_test_framework program_options REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
