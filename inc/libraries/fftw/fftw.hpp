@@ -362,10 +362,10 @@ namespace fftw {
       if(native_fftw()){
         return "Fftw";}
       else{
-#ifndef __INTEL_COMPILER
-        return "Fftw_mkl_gnuwrapper";
-#else
+#ifdef __INTEL_COMPILER
         return "Fftw_mkl_intelwrapper";
+#else
+        return "Fftw_mkl_gnuwrapper";
 #endif
       }
     }
@@ -535,7 +535,7 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
@@ -550,7 +550,7 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
       traits::thread_api<TPrecision>::cleanup_threads();
 #else
       traits::no_thread_api<TPrecision>::cleanup();

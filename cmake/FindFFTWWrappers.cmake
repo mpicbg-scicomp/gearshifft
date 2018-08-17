@@ -28,12 +28,30 @@ if( NOT FFTWWrappers_ROOT AND DEFINED ENV{FFTWWrappers_ROOT} )
   endif()
 endif()
 
+#If environment variable MKLROOT is defined, it has the same effect as the cmake variable
+if( NOT MKLROOT AND DEFINED ENV{MKLROOT})
+  if( EXISTS "$ENV{MKLROOT}/" )
+    set( MKLROOT $ENV{MKLROOT} )
+  else()
+    message( "MKLROOT set to ${MKLROOT}, but folder does not exist")
+  endif()
+endif()
+
+################################### FFTWWrappers related ##################################
+
 #initialize library variables
 find_library(
   FFTWWrappers_GNU_LIBRARIES
   NAMES libfftw3xc_gnu libfftw3xc_gnu.a
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
+  NO_DEFAULT_PATH
+  )
+find_library(
+  FFTWWrappers_GNU_LIBRARIES
+  NAMES libfftw3xc_gnu libfftw3xc_gnu.a
+  PATHS ${MKLROOT}
+  PATH_SUFFIXES "lib/intel64"
   NO_DEFAULT_PATH
   )
 find_library(
@@ -55,6 +73,13 @@ find_library(
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
   NAMES libfftw3xc_intel libfftw3xc_intel.a
+  PATHS ${MKLROOT}
+  PATH_SUFFIXES "lib/intel64_lin"
+  NO_DEFAULT_PATH
+)
+find_library(
+  FFTWWrappers_INTEL_LIBRARIES
+  NAMES libfftw3xc_intel libfftw3xc_intel.a
 )
 
 if(EXISTS ${FFTWWrappers_INTEL_LIBRARIES})
@@ -62,14 +87,6 @@ if(EXISTS ${FFTWWrappers_INTEL_LIBRARIES})
 endif()
 
 ######################################### MKL related #####################################
-
-if( NOT MKLROOT AND DEFINED ENV{MKLROOT})
-  if( EXISTS "$ENV{MKLROOT}/" )
-    set( MKLROOT $ENV{MKLROOT} )
-  else()
-    message( "MKLROOT set to ${MKLROOT}, but folder does not exist")
-  endif()
-endif()
 
 find_file(
   FFTWWrapper_include_file
@@ -89,7 +106,7 @@ find_library(
   MKL_INTEL_LP64
   NAMES libmkl_intel_lp64 libmkl_intel_lp64.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin"
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
@@ -103,7 +120,7 @@ find_library(
   MKL_INTEL_THREAD
   NAMES libmkl_intel_thread libmkl_intel_thread.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin"
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
@@ -117,7 +134,7 @@ find_library(
   MKL_CORE
   NAMES libmkl_core libmkl_core.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin"
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
@@ -143,9 +160,9 @@ else()
 
 endif()
 
-list(APPEND FFTWWrappers_MKL_LIBRARIES "m;pthread;dl")
+list(APPEND FFTWWrappers_MKL_LIBRARIES "m;dl")
 
-if(NOT ${FFTW_FIND_QUIETLY})
+if(NOT FFTW_FIND_QUIETLY)
   message("++ FindFFTWWrappers")
   message("++ FFTWWrappers_GNU_LIBRARIES    : ${FFTWWrappers_GNU_LIBRARIES}")
   message("++ FFTWWrappers_INTEL_LIBRARIES  : ${FFTWWrappers_INTEL_LIBRARIES}")
@@ -159,12 +176,25 @@ endif()
 ######################################### EXPORTS #####################################
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(FFTWWrappers DEFAULT_MSG
-  FFTWWrappers_GNU_LIBRARIES
-#  HANDLE_COMPONENTS
-  )
 
-set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES};${FFTWWrappers_INTEL_LIBRARIES}")
+if(FFTWWrappers_GNU_LIBRARIES)
+  find_package_handle_standard_args(FFTWWrappers
+    REQUIRED_VARS FFTWWrappers_GNU_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_INCLUDE_DIR
+    )
+  set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
+
+else()
+  find_package_handle_standard_args(FFTWWrappers
+    REQUIRED_VARS FFTWWrappers_INTEL_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_INCLUDE_DIR
+    )
+  set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
+
+endif()
+
 
 mark_as_advanced(
   FFTWWrappers_LIBRARIES
@@ -173,5 +203,5 @@ mark_as_advanced(
   FFTWWrappers_LIBRARY_DIR
   FFTWWrappers_MKL_LIBRARIES
   FFTWWrappers_MKL_LIBRARY_DIR
-  FFTWWrappers_MKL_LIBRARY_DIR
+  FFTWWrappers_MKL_INCLUDE_DIR
 )

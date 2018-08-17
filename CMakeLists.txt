@@ -183,19 +183,19 @@ if(FFTW_FOUND AND GEARSHIFFT_FFTW)
     list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
   endforeach()
 
-  set(GEARSHIFFT_FFTW_THREADS 0)
+  set(GEARSHIFFT_FFTW_USE_THREADS 0)
   if(GEARSHIFFT_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
     foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
-    set(GEARSHIFFT_FFTW_THREADS 1)
+    set(GEARSHIFFT_FFTW_USE_THREADS 1)
   endif()
 
   if(GEARSHIFFT_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
     foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
       list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
     endforeach()
-    set(GEARSHIFFT_FFTW_THREADS 1)
+    set(GEARSHIFFT_FFTW_USE_THREADS 1)
   endif()
 
   set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
@@ -207,23 +207,43 @@ endif()
 #------------------------------------------------------------------------------
 # FFTW Wrappers of MKL
 #------------------------------------------------------------------------------
-find_package(FFTWWrappers QUIET)
-if(FFTWWrappers_FOUND)
-  list(APPEND FFTLIBS fftwwrappers)
-  set(GEARSHIFFT_FFTW_THREADS 1)
+
+find_package(FFTWWrappers)
+if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    # using GCC
-    set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
+    if(FFTWWrappers_GNU_LIBRARIES)
+      # gcc and fftwwrappers gnu libraries found
+
+      set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
+    endif()
+
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    # using Intel C++
-    set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
+    if(FFTWWrappers_INTEL_LIBRARIES)
+      # intel and fftwwrappers intel libraries found
+
+      set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
+    endif()
+
+  else()
+    message(WARNING "Could not detect GNU or Intel compiler.")
   endif()
 
-  link_directories(${FFTWWrappers_LIBRARY_DIR})
+#  link_directories(${FFTWWrappers_LIBRARY_DIR})
+endif(FFTWWrappers_FOUND)
 
+if(FFTWWrappers_LIBRARIES)
+  # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
+  find_package( OpenMP )
+  if(OpenMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+  endif()
+  set(GEARSHIFFT_FFTW_USE_THREADS 1) #
+
+  list(APPEND FFTLIBS fftwwrappers)
   message(">> FFTWWrappers -> ${FFTWWrappers_LIBRARIES}")
-
-else(FFTWWrappers_FOUND)
+else()
   message("<< FFTWWrappers benchmark disabled.")
 endif()
 
