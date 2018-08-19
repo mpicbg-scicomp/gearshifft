@@ -1,6 +1,8 @@
 #include "core/application.hpp"
 #include "core/options.hpp"
 
+#include <gearshifft_version.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -77,11 +79,11 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
                                ).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
     if( vm.count("version")  ) {
-      std::cout << "gearshifft " << gearshifft::version() << "\n";
+      std::cout << "gearshifft " << gearshifft::gearshifft_version() << "\n";
       return 1;
     }
     if( vm.count("help")  ) {
-      std::cout << "gearshifft " << gearshifft::version()
+      std::cout << "gearshifft " << gearshifft::gearshifft_version()
                 << desc_
                 << std::endl;
       return 1;
