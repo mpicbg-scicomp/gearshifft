@@ -45,7 +45,7 @@ cache:
         #- ${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
         - ${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}
         - ${TRAVIS_BUILD_DIR}/sources/
-        - ${AMDAPPSDKROOT}
+        #- ${AMDAPPSDKROOT}
         - ${FFTW_CACHE_PATH}
 
 addons:
@@ -91,19 +91,19 @@ before_install:
       travis_retry sudo apt-get update -qq
       CUDA_APT=${CUDA_VERSION_SHORT/./-}
       travis_retry sudo apt-get install -qy cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT} cuda-cufft-${CUDA_APT} cuda-cufft-dev-${CUDA_APT}
-    - bash .travis/install_amd_sdk.sh ${AMDAPPSDK_VERSION}
-    - |
-      if [[ ${AMDAPPSDK_VERSION} == "300" ]]; then
-        export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${LD_LIBRARY_PATH}
-        export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${CMAKE_LIBRARY_PATH}
-      else # 291
-        export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${LD_LIBRARY_PATH}
-        export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${CMAKE_LIBRARY_PATH}
-      fi
-      export OPENCL_VENDOR_PATH=${AMDAPPSDKROOT}/etc/OpenCL/vendors
-      mkdir -p ${OPENCL_VENDOR_PATH};
-      echo libamdocl64.so > ${OPENCL_VENDOR_PATH}/amdocl64.icd;
-    - ${AMDAPPSDKROOT}/bin/x86_64/clinfo
+    # - bash .travis/install_amd_sdk.sh ${AMDAPPSDK_VERSION}
+    # - |
+    #   if [[ ${AMDAPPSDK_VERSION} == "300" ]]; then
+    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${LD_LIBRARY_PATH}
+    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${CMAKE_LIBRARY_PATH}
+    #   else # 291
+    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${LD_LIBRARY_PATH}
+    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${CMAKE_LIBRARY_PATH}
+    #   fi
+    #   export OPENCL_VENDOR_PATH=${AMDAPPSDKROOT}/etc/OpenCL/vendors
+    #   mkdir -p ${OPENCL_VENDOR_PATH};
+    #   echo libamdocl64.so > ${OPENCL_VENDOR_PATH}/amdocl64.icd;
+    # - ${AMDAPPSDKROOT}/bin/x86_64/clinfo
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-5; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
