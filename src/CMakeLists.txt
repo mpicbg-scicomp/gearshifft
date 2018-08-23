@@ -27,8 +27,15 @@ function(add_exec Tlib)
     set(LIBS ${CLFFT_LIBRARIES} ${OpenCL_LIBRARIES})
   endif()
   if (Tlib STREQUAL "fftw")
-    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED -DGEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_THREADS})
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED -DGEARSHIFFT_FFTW_USE_THREADS=${GEARSHIFFT_FFTW_USE_THREADS})
     set(LIBS ${FFTW_LIBRARIES})
+  endif()
+  if (Tlib STREQUAL "fftwwrappers")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DFFTW_ENABLED -DGEARSHIFFT_FFTW_USE_THREADS=${GEARSHIFFT_FFTW_USE_THREADS})
+
+    target_include_directories(${PROJECT_EXEC} PUBLIC ${FFTWWrappers_MKL_INCLUDE_DIR})
+
+    set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
   endif()
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})

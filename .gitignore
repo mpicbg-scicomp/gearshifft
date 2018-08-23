@@ -1,0 +1,8 @@
+*~
+debug*
+release*
+*.out
+*.err
+*.log
+*.sh
+build*

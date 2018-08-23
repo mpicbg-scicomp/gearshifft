@@ -21,6 +21,17 @@
 namespace gearshifft {
 namespace fftw {
 
+  static inline bool native_fftw() {
+
+    static std::string version = fftw_version;
+    std::transform(version.begin(), version.end(), version.begin(), ::tolower);
+
+    static bool value  = version.find("mkl") == std::string::npos;
+
+    return value;
+  }
+
+
   class FftwOptions : public OptionsDefault {
 
   public:
@@ -44,8 +55,11 @@ namespace fftw {
         return FFTW_ESTIMATE;
       if(rigor_ == "patient")
         return FFTW_PATIENT;
-      if(rigor_ == "wisdom")
+      if(rigor_ == "wisdom"){
+        if(!native_fftw())
+          throw std::runtime_error("wisdom rigor not supported with mkl wrappers.");
         return FFTW_WISDOM_ONLY;
+      }
       if(rigor_ == "exhaustive")
         return FFTW_EXHAUSTIVE;
       throw std::runtime_error("Invalid FFTW rigor.");
@@ -345,7 +359,15 @@ namespace fftw {
   struct FftwContext : public ContextDefault<FftwOptions> {
 
     static const std::string title() {
-      return "Fftw";
+      if(native_fftw()){
+        return "Fftw";}
+      else{
+#ifdef __INTEL_COMPILER
+        return "Fftw_mkl_intelwrapper";
+#else
+        return "Fftw_mkl_gnuwrapper";
+#endif
+      }
     }
 
     static std::string get_device_list() {
@@ -395,6 +417,10 @@ namespace fftw {
   struct ImportWisdom {
 
     void operator()() {
+
+      if(!native_fftw())
+        throw std::runtime_error("Wisdom files are only supported by native fftw, unable to proceed");
+
       std::string filename = FftwContext::options().wisdom_file<T_Precision>();
       std::string source;
       std::ifstream ifs;
@@ -509,14 +535,14 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
         traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
 #endif
 
-        if(plan_rigor_ == FFTW_WISDOM_ONLY) {
+        if(plan_rigor_ == FFTW_WISDOM_ONLY && native_fftw()) {
           ImportWisdom<TPrecision>()();
         }
       }
@@ -524,7 +550,7 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
       traits::thread_api<TPrecision>::cleanup_threads();
 #else
       traits::no_thread_api<TPrecision>::cleanup();
