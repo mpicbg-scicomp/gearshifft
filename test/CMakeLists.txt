@@ -32,7 +32,7 @@ if(FFTW_FOUND)
   set(LIBS ${FFTW_LIBRARIES})
   target_link_libraries(${TEST_EXEC} ${LIBS} ${Boost_LIBRARIES})
   target_compile_definitions(${TEST_EXEC} PUBLIC -DBOOST_TEST_DYN_LINK)
-  target_compile_definitions(${TEST_EXEC} PUBLIC -DGEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_THREADS})
+  target_compile_definitions(${TEST_EXEC} PUBLIC -DGEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_USE_THREADS})
 
   add_test(NAME ${TEST_EXEC} COMMAND ${TEST_EXEC})
 endif()
