@@ -85,6 +85,8 @@ find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   program_options
   )
 
+include(BoostTargets)
+
 #------------------------------------------------------------------------------
 # Threads
 #------------------------------------------------------------------------------
@@ -304,25 +306,12 @@ find_package(FFTWWrappers ${_QUIET})
 if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
 
   if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
-      OR FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+      AND FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     message(WARNING "Compiler does not match found FFTWWrappers")
   else()
 
     add_library(FFTWWrappers INTERFACE)
     add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
-
-    if(FFTWWrappers_GNU_LIBRARIES)
-      target_link_libraries(FFTWWrappers INTERFACE
-        $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
-        $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
-        )
-    endif()
-
-    if(FFTWWrappers_INTEL_LIBRARIES)
-      target_link_libraries(FFTWWrappers INTERFACE
-        $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
-        )
-    endif()
 
     # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
     find_and_add_openmp(FFTWWrappers ${_QUIET})
@@ -337,8 +326,24 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
       GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
     target_link_libraries(FFTWWrappers INTERFACE
       Common
-      ${FFTWWrappers_MKL_LIBRARIES}
 #      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+      )
+
+    if(FFTWWrappers_GNU_LIBRARIES)
+      target_link_libraries(FFTWWrappers INTERFACE
+        $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
+        $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
+        )
+    endif()
+
+    if(FFTWWrappers_INTEL_LIBRARIES)
+      target_link_libraries(FFTWWrappers INTERFACE
+        $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
+        )
+    endif()
+
+    target_link_libraries(FFTWWrappers INTERFACE
+      -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group
       )
 
     message(STATUS " gearshifft::FFTWWrappers enabled.")
