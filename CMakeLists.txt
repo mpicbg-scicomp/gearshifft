@@ -316,7 +316,7 @@ if(NOT TARGET gearshifft::CUFFT
 endif()
 #-------------------------------------------------------------------------------
 
-add_subdirectory(src)
+add_subdirectory(gearshifft)
 
 include(CTest) # defines: BUILD_TESTING, default is ON
 
