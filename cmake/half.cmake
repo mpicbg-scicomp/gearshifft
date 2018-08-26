@@ -8,7 +8,7 @@ find_path(half_INCLUDE_DIR
 
 if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
   # we couldn't find the header files for FOO or they don't exist
-  message("Unable to find dependency 'half'.")
+  message("'half' library could not be found, so [make] will download it.")
 
   include(ExternalProject)
 
