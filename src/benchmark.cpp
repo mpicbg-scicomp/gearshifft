@@ -4,7 +4,7 @@
 template<typename... Types>
 using List = gearshifft::List<Types...>;
 
-#ifdef CUDA_ENABLED
+#ifdef CUFFT_ENABLED
 #include "libraries/cufft/cufft.hpp"
 
 using namespace gearshifft::CuFFT;
@@ -21,7 +21,7 @@ using Precisions        = List<float, double, float16>;
 #endif
 using FFT_Is_Normalized = std::false_type;
 
-#elif defined(OPENCL_ENABLED)
+#elif defined(CLFFT_ENABLED)
 #include "libraries/clfft/clfft.hpp"
 
 using namespace gearshifft::ClFFT;

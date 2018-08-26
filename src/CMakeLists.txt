@@ -1,23 +1,25 @@
-cmake_minimum_required(VERSION 3.7)
 
-find_package(gearshifft REQUIRED  HINTS ${CMAKE_SOURCE_DIR})
+function(gearshifft_add_executable TARGET BACKEND)
 
-if(CUDA_FOUND AND GEARSHIFFT_CUFFT)
-  gearshifft_add_cufft_executable(
-    gearshifft_cufft SOURCES benchmark.cpp options.cpp INSTALL)
-endif()
+  if(TARGET ${BACKEND})
 
-if(CLFFT_FOUND AND GEARSHIFFT_CLFFT)
-  gearshifft_add_clfft_executable(
-    gearshifft_clfft SOURCES benchmark.cpp options.cpp INSTALL)
-endif()
+    add_executable(${TARGET} benchmark.cpp options.cpp)
+    target_link_libraries(${TARGET} PRIVATE ${BACKEND})
 
-if(FFTW_FOUND AND GEARSHIFFT_FFTW)
-  gearshifft_add_fftw_executable(
-    gearshifft_fftw SOURCES benchmark.cpp options.cpp INSTALL)
-endif()
+    #  add_test(NAME ${TARGET} COMMAND ${TARGET} -e 64)
 
-if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
-  gearshifft_add_hcfft_executable(
-    gearshifft_hcfft SOURCES benchmark.cpp options.cpp INSTALL)
-endif()
+    install(
+      TARGETS ${TARGET}
+      EXPORT gearshifft
+      RUNTIME DESTINATION bin
+      LIBRARY DESTINATION lib
+      ARCHIVE DESTINATION lib/static
+      COMPONENT gearshifft
+      )
+  endif()
+endfunction()
+
+gearshifft_add_executable(gearshifft_cufft gearshifft::CUFFT)
+gearshifft_add_executable(gearshifft_clfft gearshifft::CLFFT)
+gearshifft_add_executable(gearshifft_fftw  gearshifft::FFTW)
+#gearshifft_add_executable(gearshifft_hcfft gearshifft::HCFFT)

@@ -201,7 +201,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
         PlanType value = fftwf_plan_dft_r2c(NDims,
@@ -220,7 +220,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
         PlanType value = fftwf_plan_dft_c2r(NDims,
@@ -239,7 +239,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -282,7 +282,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -302,7 +302,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -322,7 +322,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 

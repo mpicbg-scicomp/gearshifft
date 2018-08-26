@@ -28,7 +28,7 @@ namespace gearshifft
       static size_t sid = 0;
       id_ = sid++;
       total_ = 1;
-      for(auto i=0; i<T_NDim; ++i) {
+      for(size_t i=0; i<T_NDim; ++i) {
         extents_[i] = ce[i];
         total_ *= ce[i];
       }

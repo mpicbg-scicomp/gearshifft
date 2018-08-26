@@ -250,7 +250,7 @@ find_package_handle_standard_args(FFTW DEFAULT_MSG
 #  HANDLE_COMPONENTS
   )
 
-if(NOT FFTW_VERBOSE_FIND)
+if(NOT FFTW_FIND_QUIETLY)
   message("++ FindFFTW")
   message("++ FFTW_INCLUDES    : ${FFTW_INCLUDES}")
   message("++ FFTW_LIBRARIES   : ${FFTW_LIBRARIES}")
