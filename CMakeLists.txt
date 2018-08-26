@@ -352,7 +352,9 @@ endif()
 
 if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::CLFFT
-    AND NOT TARGET gearshifft::FFTW)
+    AND NOT TARGET gearshifft::FFTW
+    AND NOT TARGET gearshifft::FFTWWrappers
+    )
   message(WARNING "No FFT backend found.")
 endif()
 
