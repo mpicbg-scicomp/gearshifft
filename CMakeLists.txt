@@ -142,9 +142,7 @@ configure_file(
 add_library(gearshifft_version STATIC
   "${CMAKE_CURRENT_BINARY_DIR}/gearshifft_version.cpp")
 
-#target_link_libraries(gearshifft_version PUBLIC Common)
-target_include_directories(gearshifft_version PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/inc>)
+target_link_libraries(gearshifft_version PUBLIC Common)
 
 # continue with Common interface
 target_compile_definitions(Common INTERFACE
@@ -314,6 +312,7 @@ if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::FFTW)
   message(WARNING "No FFT backend found.")
 endif()
+
 #-------------------------------------------------------------------------------
 
 add_subdirectory(gearshifft)
