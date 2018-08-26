@@ -83,7 +83,7 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
       return 1;
     }
     if( vm.count("help")  ) {
-      std::cout << "gearshifft " << gearshifft::gearshifft_version()
+      std::cout << "gearshifft " << gearshifft::gearshifft_version() << "\n\n"
                 << desc_
                 << std::endl;
       return 1;
