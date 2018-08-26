@@ -61,6 +61,8 @@ if(GEARSHIFFT_FLOAT16_SUPPORT)
   include(half)
 endif()
 
+include(openmp-helper)
+
 if(GEARSHIFFT_VERBOSE)
   set(_QUIET "")
 else()
@@ -228,6 +230,7 @@ endif()
 #------------------------------------------------------------------------------
 # FFTW
 #------------------------------------------------------------------------------
+
 if(GEARSHIFFT_FFTW)
   find_package(FFTW ${_QUIET} COMPONENTS float double) #TODO: only optional float/double in benchmark
 
@@ -242,29 +245,14 @@ if(GEARSHIFFT_FFTW)
 
       if(FFTW_OPENMP_LIBS)
 
-        find_package(OpenMP ${_QUIET})
-        # Have to check several OPENMP_FOUND due to bug in
-        # one version of CMake and the docs (fixed in patch release)
-        # OpenMP is missing on macOS llvm default, for example
-        if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
-          set(GEARSHIFFT_FFTW_THREADS 1)
-          # CMake 3.9 FindOpenMP allows correct linking with Clang in more cases
-          if(TARGET OpenMP::OpenMP_CXX)
-            target_link_libraries(FFTW INTERFACE OpenMP::OpenMP_CXX)
-          else()
-            # Clang may need -fopenmp=libiomp5 instead, can't be detected here without CMake 3.9
-            target_link_libraries(FFTW INTERFACE
-              $<$<CXX_COMPILER_ID:GNU>:${OpenMP_CXX_FLAGS}>
-              $<$<CXX_COMPILER_ID:Clang>:${OpenMP_CXX_FLAGS}>
-              $<$<CXX_COMPILER_ID:Intel>:${OpenMP_CXX_FLAGS}>
-              )
-            target_compile_options(FFTW INTERFACE ${OpenMP_CXX_FLAGS})
-          endif()
-        else()
+        find_and_add_openmp(FFTW ${_QUIET})
 
-          message(WARNING "OpenMP not found")
+        if(GEARSHIFFT_OPENMP_FOUND)
+          set(GEARSHIFFT_FFTW_THREADS 1)
+        else()
+          message(WARNING "Could not find OpenMP")
           set(GEARSHIFFT_FFTW_OPENMP OFF)
-        endif() # OpenMP_FOUND
+        endif()
       else()
 
         message(WARNING "FFTW libraries for OpenMP not found")
@@ -293,7 +281,7 @@ if(GEARSHIFFT_FFTW)
       target_include_directories(FFTW INTERFACE ${FFTW_INCLUDE_DIR})
       target_compile_definitions(FFTW INTERFACE
         FFTW_ENABLED
-        GEARSHIFFT_FFTW_THREADS=${GEARSHIFFT_FFTW_THREADS})
+        GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
       target_link_libraries(FFTW INTERFACE
         Common
         $<$<STREQUAL:${GEARSHIFFT_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
@@ -306,6 +294,61 @@ if(GEARSHIFFT_FFTW)
     endif()
   endif()
 endif()
+
+#------------------------------------------------------------------------------
+# FFTW Wrappers of MKL
+#------------------------------------------------------------------------------
+
+# TODO: add backend cmake option for FFTWWrappers
+find_package(FFTWWrappers ${_QUIET})
+if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
+
+  if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+      OR FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    message(WARNING "Compiler does not match found FFTWWrappers")
+  else()
+
+    add_library(FFTWWrappers INTERFACE)
+    add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
+
+    if(FFTWWrappers_GNU_LIBRARIES)
+      target_link_libraries(FFTWWrappers INTERFACE
+        $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
+        $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
+        )
+    endif()
+
+    if(FFTWWrappers_INTEL_LIBRARIES)
+      target_link_libraries(FFTWWrappers INTERFACE
+        $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
+        )
+    endif()
+
+    # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
+    find_and_add_openmp(FFTWWrappers ${_QUIET})
+
+    if(GEARSHIFFT_OPENMP_FOUND)
+      set(GEARSHIFFT_FFTW_THREADS 1)
+    endif()
+
+    target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
+    target_compile_definitions(FFTWWrappers INTERFACE
+      FFTW_ENABLED
+      GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
+    target_link_libraries(FFTWWrappers INTERFACE
+      Common
+      ${FFTWWrappers_MKL_LIBRARIES}
+#      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+      )
+
+    message(STATUS " gearshifft::FFTWWrappers enabled.")
+
+  endif() # compiler match fftwwrappers
+
+endif()
+
+
+#-------------------------------------------------------------------------------
 
 if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::CLFFT
