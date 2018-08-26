@@ -309,6 +309,11 @@ if(GEARSHIFFT_FFTW)
   endif()
 endif()
 
+if(NOT TARGET gearshifft::CUFFT
+    AND NOT TARGET gearshifft::CLFFT
+    AND NOT TARGET gearshifft::FFTW)
+  message(WARNING "No FFT backend found.")
+endif()
 #-------------------------------------------------------------------------------
 
 add_subdirectory(src)
