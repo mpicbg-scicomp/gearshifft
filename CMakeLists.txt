@@ -34,10 +34,12 @@ option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
 option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if possible" ON)
 option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if possible" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if possible" ON)
-option(GEARSHIFFT_CXX11_ABI "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
 option(GEARSHIFFT_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if found" ON)
 option(GEARSHIFFT_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF)
 option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+
+set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
+set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
 
 set(GEARSHIFFT_FLOAT16_SUPPORT "0" CACHE STRING "Enable float16 data type (cufft and ComputeCapability 5.3+ only)")
 set_property(CACHE GEARSHIFFT_FLOAT16_SUPPORT PROPERTY STRINGS "0;1")
