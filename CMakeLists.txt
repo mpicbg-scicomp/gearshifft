@@ -38,7 +38,7 @@ option(GEARSHIFFT_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" 
 option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if available?" ON)
 option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
-option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+option(GEARSHIFFT_ROCFFT "(experimental) Compile gearshifft_rocfft if available?" OFF)
 option(GEARSHIFFT_FLOAT16_SUPPORT "Enable float16 data type (cufft and ComputeCapability 5.3+ only)" OFF)
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
@@ -153,19 +153,20 @@ if(NOT CLFFT_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# ROCM+HCFFT
+# ROCM+ROCFFT
 #------------------------------------------------------------------------------
 
-find_package(hcFFT)
-if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
-  include_directories(${HCFFT_INCLUDE_DIRS})
-  list(APPEND FFTLIBS "hcfft") # register fft lib client for compilation
-  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
-  message(">> Warning: no runner for hcfft implemented yet")
+find_package(rocfft)
+if(rocfft_FOUND AND GEARSHIFFT_ROCFFT)
+  list(APPEND FFTLIBS "rocfft") # register fft lib client for compilation
+  message(">> rocfft -> " ${rocfft_INCLUDE_DIR})
+  message(WARNING ">> no runner for rocfft implemented yet")
+else()
+  message(WARNING ">> rocfft not found .${rocfft_INCLUDE_DIR}. ")
 endif()
 
-if(NOT HCFFT_FOUND)
-  message("<< hcFFT benchmark disabled.")
+if(NOT rocfft_FOUND)
+  message("<< rocfft benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
