@@ -4,10 +4,12 @@
 #include "core/get_memory_size.hpp"
 #include "core/unused.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <cuda_runtime.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <cufft.h>
+#pragma GCC diagnostic pop
+
 #include <sstream>
 #include <stdexcept>
 

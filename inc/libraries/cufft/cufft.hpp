@@ -10,11 +10,15 @@
 
 #include "cufft_helper.hpp"
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <cuda_fp16.h>
 #include <cufft.h>
 #include <cufftXt.h>
+#pragma GCC diagnostic pop
+
 #include <vector_types.h>
+
 #include <array>
 #include <regex>
 
