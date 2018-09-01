@@ -114,12 +114,18 @@ target_include_directories(Common INTERFACE
 target_compile_options(Common INTERFACE
   # g++
   $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wall>>
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wextra>>
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wold-style-cast>>
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wnull-dereference>> # if pointer to be dereferenced can become zero
+#  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wshadow>> # maybe too many false positives
   $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-braces>
   $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
   $<$<CXX_COMPILER_ID:GNU>:-Wno-ignored-attributes>
   $<$<CXX_COMPILER_ID:GNU>:-Wno-unused-local-typedefs>
   # Clang
   $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wall>>
+  $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wextra>>
+  $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wshadow>> # see above, does better job than gcc
   $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-braces>
   $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>
   $<$<CXX_COMPILER_ID:Clang>:-Wno-ignored-attributes>
