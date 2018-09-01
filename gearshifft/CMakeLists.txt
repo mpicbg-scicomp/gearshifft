@@ -4,9 +4,16 @@ function(gearshifft_add_executable TARGET BACKEND)
   if(TARGET ${BACKEND})
 
     add_executable(${TARGET} benchmark.cpp options.cpp)
+
+    target_compile_definitions(${TARGET} PRIVATE
+      GEARSHIFFT_NUMBER_WARM_RUNS=${GEARSHIFFT_NUMBER_WARM_RUNS}
+      GEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
+      GEARSHIFFT_ERROR_BOUND=${GEARSHIFFT_ERROR_BOUND}
+      )
     target_link_libraries(${TARGET} PRIVATE ${BACKEND})
 
-    #  add_test(NAME ${TARGET} COMMAND ${TARGET} -e 64)
+    # test the gearshifft back-end with a small 64-point FFT
+    # add_test(NAME ${TARGET} COMMAND ${TARGET} -e 64)
 
     install(
       TARGETS ${TARGET}

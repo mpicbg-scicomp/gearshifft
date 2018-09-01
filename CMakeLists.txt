@@ -87,12 +87,6 @@ find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
 
 include(BoostTargets)
 
-#------------------------------------------------------------------------------
-# Threads
-#------------------------------------------------------------------------------
-
-# find_package(Threads) # TODO: not needed by gearshifft, so find dependency target
-
 #----------------------------------------------------------------------------
 # Generic target
 #----------------------------------------------------------------------------
@@ -148,12 +142,9 @@ add_library(gearshifft_version STATIC
 
 target_link_libraries(gearshifft_version PUBLIC Common)
 
-# continue with Common interface
+# continue with Common interface used by all gearshifft targets
 target_compile_definitions(Common INTERFACE
   $<$<CXX_COMPILER_ID:GNU>:_GLIBCXX_USE_CXX11_ABI=${GEARSHIFFT_CXX11_ABI}>
-  GEARSHIFFT_NUMBER_WARM_RUNS=${GEARSHIFFT_NUMBER_WARM_RUNS}
-  GEARSHIFFT_NUMBER_WARMUPS=${GEARSHIFFT_NUMBER_WARMUPS}
-  GEARSHIFFT_ERROR_BOUND=${GEARSHIFFT_ERROR_BOUND}
   $<BUILD_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${CMAKE_SOURCE_DIR}/share/gearshifft/extents.conf>
   $<INSTALL_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${GEARSHIFFT_INSTALL_CONFIG_PATH}/extents.conf>
   GEARSHIFFT_FLOAT16_SUPPORT=${GEARSHIFFT_FLOAT16_SUPPORT}
