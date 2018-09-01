@@ -17,8 +17,6 @@
 #include <cufftXt.h>
 #pragma GCC diagnostic pop
 
-#include <vector_types.h>
-
 #include <array>
 #include <regex>
 
