@@ -13,7 +13,7 @@ function(gearshifft_add_executable TARGET BACKEND)
     target_link_libraries(${TARGET} PRIVATE ${BACKEND})
 
     # test the gearshifft back-end with a small 64-point FFT
-    # add_test(NAME ${TARGET} COMMAND ${TARGET} -e 64)
+    add_test(NAME ${TARGET} COMMAND ${TARGET} -e 64)
 
     install(
       TARGETS ${TARGET}
