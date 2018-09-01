@@ -1,7 +1,7 @@
 #ifndef CUFFT_HELPER_HPP_
 #define CUFFT_HELPER_HPP_
 
-#include "core/get_memory_size.h"
+#include "core/get_memory_size.hpp"
 #include "core/unused.hpp"
 
 #include <cuda_runtime.h>

@@ -201,22 +201,27 @@ if(GEARSHIFFT_CLFFT)
   if(OpenCL_FOUND)
     find_package(clFFT)
 
-    add_library(CLFFT INTERFACE)
-    add_library(gearshifft::CLFFT ALIAS CLFFT)
+    if(clFFT_FOUND)
 
-    target_include_directories(CLFFT INTERFACE ${CLFFT_INCLUDE_DIRS})
-    target_compile_definitions(CLFFT INTERFACE CLFFT_ENABLED)
-    target_link_libraries(CLFFT INTERFACE
-      Common
-      ${CLFFT_LIBRARIES}
-      OpenCL::OpenCL
-      )
+      add_library(CLFFT INTERFACE)
+      add_library(gearshifft::CLFFT ALIAS CLFFT)
 
-    target_compile_options(Common INTERFACE
-      $<$<CXX_COMPILER_ID:GNU>:-Wno-catch-value>
-      )
+      find_and_add_openmp(CLFFT ${_QUIET})
 
-    message(STATUS " gearshifft::CLFFT enabled")
+      target_include_directories(CLFFT INTERFACE ${CLFFT_INCLUDE_DIRS})
+      target_compile_definitions(CLFFT INTERFACE CLFFT_ENABLED)
+      target_link_libraries(CLFFT INTERFACE
+        Common
+        ${CLFFT_LIBRARIES}
+        OpenCL::OpenCL
+        )
+
+      target_compile_options(Common INTERFACE
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-catch-value>
+        )
+
+      message(STATUS " gearshifft::CLFFT enabled")
+    endif()
   endif()
 endif()
 
