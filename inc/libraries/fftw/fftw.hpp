@@ -9,6 +9,7 @@
 #include "core/fft.hpp"
 #include "core/benchmark_suite.hpp"
 #include "core/get_memory_size.h"
+#include "core/unused.hpp"
 
 #include <string.h>
 #include <vector>
@@ -214,6 +215,7 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
         for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
@@ -233,6 +235,7 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
         for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
@@ -295,6 +298,7 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
         for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
@@ -315,6 +319,7 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
         for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];

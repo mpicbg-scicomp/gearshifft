@@ -2,6 +2,7 @@
 #define CUFFT_HELPER_HPP_
 
 #include "core/get_memory_size.h"
+#include "core/unused.hpp"
 
 #include <cuda_runtime.h>
 #include <stdio.h>
@@ -103,6 +104,8 @@ namespace CuFFT {
   }
   inline
   void check_cuda(cufftResult code, const char* msg,  const char *func, const char *file, int line) {
+    gearshifft::ignore_unused(msg);
+
     if (code != CUFFT_SUCCESS) {
       throw_error(static_cast<int>(code),
                   cufftResultToString(code), "cufft", func, file, line);
