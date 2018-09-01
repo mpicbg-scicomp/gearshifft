@@ -138,31 +138,31 @@ namespace gearshifft {
       cl_uint maxComputeUnits;
       // print device name
       clGetDeviceInfo(dev_id, CL_DEVICE_NAME, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_NAME, valueSize, value, NULL);
       values.emplace_back("Device", value);
-      free(value);
+      delete[] value;
 
       // print hardware device version
       clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, valueSize, value, NULL);
       values.emplace_back("Hardware", value);
-      free(value);
+      delete[] value;
 
       // print software driver version
       clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, valueSize, value, NULL);
       values.emplace_back("Software", value);
-      free(value);
+      delete[] value;
 
       // print c version supported by compiler for device
       clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
       values.emplace_back("OpenCL", value);
-      free(value);
+      delete[] value;
 
       // print parallel compute units
       clGetDeviceInfo(dev_id, CL_DEVICE_MAX_COMPUTE_UNITS,

@@ -471,7 +471,7 @@ namespace fftw {
     //////////////////////////////////////////////////////////////////////////////////////
     // COMPILE TIME FIELDS
 
-    using Extent = std::array<std::size_t,(int)NDim>;
+    using Extent = std::array<std::size_t, NDim>;
     using Api  = typename traits::plan<TPrecision>;
     using ComplexType = typename traits::plan<TPrecision>::ComplexType;
     using RealType = typename traits::plan<TPrecision>::RealType;
