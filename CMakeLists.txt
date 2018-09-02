@@ -116,7 +116,6 @@ target_compile_options(Common INTERFACE
   $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wall>>
   $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wextra>>
   $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wold-style-cast>>
-  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wnull-dereference>> # if pointer to be dereferenced can become zero
 #  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wshadow>> # maybe too many false positives
   $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-braces>
   $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
