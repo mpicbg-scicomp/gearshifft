@@ -31,6 +31,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
 # gearshifft cmake options
 
 option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
+option(GEARSHIFFT_USE_STATIC_LIBS "Static linking of libraries." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
 
 option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if possible" ON)
@@ -74,10 +75,7 @@ endif()
 # Boost
 #------------------------------------------------------------------------------
 
-option(Boost_USE_STATIC_LIBS "Use static versions of Boost libraries" OFF)
-if(WIN32)
-  set(Boost_USE_STATIC_LIBS ON)
-endif()
+set(Boost_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
 
 find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   system
@@ -230,6 +228,7 @@ endif()
 #------------------------------------------------------------------------------
 
 if(GEARSHIFFT_FFTW)
+  set(FFTW_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
   find_package(FFTW ${_QUIET} COMPONENTS float double) #TODO: only optional float/double in benchmark
 
   if(FFTW_FOUND)
