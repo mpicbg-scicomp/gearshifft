@@ -1,22 +1,7 @@
-#####################################################################
-# This file is part of libLiFFT.
-#
-# libLiFFT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# libLiFFT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
-#####################################################################
 
 dist: trusty
-
+os: linux
+sudo: required
 language: cpp
 
 sudo: false
@@ -28,16 +13,12 @@ branches:
 
 env:
     global:
-        - AMDAPPSDKROOT=${TRAVIS_BUILD_DIR}/deps/AMDAPPSDK
         - BOOST_VERSION=1.60.0
         - CUDA_VERSION=8.0.61-1
         - CUDA_VERSION_SHORT=8.0
         #- GEARSHIFFT_CLFFT_VERSION=v2.12.2
         - CLANG_VERSION=3.8
         - FFTW_CACHE_PATH=${TRAVIS_BUILD_DIR}/deps/fftw
-        #- AMDAPPSDK_VERSION=291
-#        - AMDAPPSDK_VERSION=300
-
         
 cache:
     directories:
@@ -45,7 +26,6 @@ cache:
         #- ${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
         - ${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}
         - ${TRAVIS_BUILD_DIR}/sources/
-        #- ${AMDAPPSDKROOT}
         - ${FFTW_CACHE_PATH}
 
 addons:
@@ -60,21 +40,15 @@ addons:
             
 matrix:
     include:
-        #  clang # Release
-        - os: linux
+        - name: Clang-3.8 CUDA-8.0.61 Boost-1.60.0 FFTW3 Release
           compiler: clang
           env: GEARSHIFFT_BUILD_TYPE=Release
-          sudo: required
-        #  gcc # Release
-        - os: linux
+        - name: g++-5 CUDA-8.0.61 Boost-1.60.0 FFTW3 Release
           compiler: gcc
           env: GEARSHIFFT_BUILD_TYPE=Release
-          sudo: required
-        #  gcc # Debug
-        - os: linux
+        - name: g++-5 CUDA-8.0.61 Boost-1.60.0 FFTW3 Debug
           compiler: gcc
           env: GEARSHIFFT_BUILD_TYPE=Debug
-          sudo: required
   
 before_install:
     - set -e
@@ -91,19 +65,6 @@ before_install:
       travis_retry sudo apt-get update -qq
       CUDA_APT=${CUDA_VERSION_SHORT/./-}
       travis_retry sudo apt-get install -qy cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT} cuda-cufft-${CUDA_APT} cuda-cufft-dev-${CUDA_APT}
-    # - bash .travis/install_amd_sdk.sh ${AMDAPPSDK_VERSION}
-    # - |
-    #   if [[ ${AMDAPPSDK_VERSION} == "300" ]]; then
-    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${LD_LIBRARY_PATH}
-    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${CMAKE_LIBRARY_PATH}
-    #   else # 291
-    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${LD_LIBRARY_PATH}
-    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${CMAKE_LIBRARY_PATH}
-    #   fi
-    #   export OPENCL_VENDOR_PATH=${AMDAPPSDKROOT}/etc/OpenCL/vendors
-    #   mkdir -p ${OPENCL_VENDOR_PATH};
-    #   echo libamdocl64.so > ${OPENCL_VENDOR_PATH}/amdocl64.icd;
-    # - ${AMDAPPSDKROOT}/bin/x86_64/clinfo
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-5; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
@@ -122,25 +83,13 @@ install:
         else
             echo "Using cached boost version at $BOOST_ROOT"
         fi
+
     # CUDA
     - |
       export CUDA_ROOT=/usr/local/cuda-${CUDA_VERSION_SHORT}
       export LD_LIBRARY_PATH=${CUDA_ROOT}/lib64:${LD_LIBRARY_PATH}
       export PATH=${CUDA_ROOT}/bin:${PATH}
-      
-    # clfft
-    # - |
-    #   export CLFFT_ROOT=${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
-    #   export CMAKE_PREFIX_PATH=${CLFFT_ROOT}:${CMAKE_PREFIX_PATH}
-    #   CLFFT_SRC=${TRAVIS_BUILD_DIR}/sources/clfft-${GEARSHIFFT_CLFFT_VERSION}
-            
-    #   if [[ -z "$(ls -A ${CLFFT_ROOT})" ]]; then
-    #     travis_retry git clone https://github.com/clMathLibraries/clFFT.git ${CLFFT_SRC}
-    #     (cd ${CLFFT_SRC}; git checkout ${GEARSHIFFT_CLFFT_VERSION})
-    #     (cd ${CLFFT_SRC}/src; cmake -DBUILD64=ON -DBUILD_CALLBACK_CLIENT=OFF -DBUILD_CLIENT=OFF -DBUILD_EXAMPLES=OFF -DBUILD_LOADLIBRARIES=ON -DBUILD_RUNTIME=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TEST=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${CLFFT_ROOT} -DSUFFIX_LIB=64 && make && make install)
-    #   else
-    #     echo "Using cached clfft version at $CLFFT_ROOT"
-    #   fi
+
     # Versions
     - $CXX --version
     - nvcc --version
@@ -154,3 +103,5 @@ script:
     - ctest --output-on-failure
     - set +e
 
+notifications:
+    email: false
