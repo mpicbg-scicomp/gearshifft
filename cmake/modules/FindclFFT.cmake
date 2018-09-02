@@ -1,77 +1,72 @@
 # - Find clFFT, AMD's OpenCL FFT library
-
-# This script defines the following variables:
-# CLFFT_INCLUDE_DIRS    - Location of clFFT's include directory.
-# CLFFT_LIBRARIES       - Location of clFFT's libraries
-# CLFFT_FOUND           - True if clFFT has been located
+#
+# Usage:
+#   find_package(clFFT [REQUIRED] [QUIET])
+#
+# It sets the following variables:
+# clFFT_INCLUDE_DIRS    - Location of clFFT's include directory.
+# clFFT_LIBRARIES       - Location of clFFT's libraries
+# clFFT_FOUND           - True if clFFT has been located
+#
+# It also defines the imported target clFFT::clFFT.
 #
 # If your clFFT installation is not in a standard installation directory, you
 # may provide a hint to where it may be found. Simply set the value CLFFT_ROOT
 # to the directory containing 'include/clFFT.h" prior to calling this script.
-#
-# By default this script will attempt to find the 32-bit version of clFFT.
-# If you desire to use the 64-bit version instead, set
-#   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-# prior to calling this script.
-#=============================================================================
-# Copyright 2014 Brian Kloppenborg
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#=============================================================================
-# - changed path finding functions to be more generic (tdd11235813)
-#=============================================================================
 
-IF(CLFFT_INCLUDE_DIRS)
-  # Already in cache, be silent
-  set (CLFFT_FIND_QUIETLY TRUE)
-ENDIF (CLFFT_INCLUDE_DIRS)
 
-FIND_PATH(CLFFT_ROOT_DIR
+find_path(CLFFT_ROOT_DIR
   NAMES include/clFFT.h
   PATHS CLFFT_ROOT
   PATHS ENV CLFFT_ROOT
   DOC "clFFT root directory.")
 
-FIND_PATH(CLFFT_ROOT_DIR
+find_path(CLFFT_ROOT_DIR
   NAMES include/clFFT.h
   DOC "clFFT root directory.")
 
-FIND_PATH(_CLFFT_INCLUDE_DIRS
+find_path(_CLFFT_INCLUDE_DIRS
   NAMES clFFT.h
-  PATHS ${CLFFT_ROOT_DIR}
+  PATHS "${CLFFT_ROOT_DIR}" "/usr"
   PATH_SUFFIXES "include"
   DOC "clFFT include directory")
 
-FIND_PATH(_CLFFT_INCLUDE_DIRS
+find_path(_CLFFT_INCLUDE_DIRS
   NAMES clFFT.h
   DOC "clFFT include directory")
 
-FIND_LIBRARY(_CLFFT_LIBRARY
+find_library(_CLFFT_LIBRARY
   NAMES clFFT
-  PATHS ${CLFFT_ROOT_DIR}
+  PATHS "${CLFFT_ROOT_DIR}" "/usr"
   PATH_SUFFIXES "lib" "lib64"
   DOC "clFFT library directory")
 
-FIND_LIBRARY(_CLFFT_LIBRARY
+find_library(_CLFFT_LIBRARY
   NAMES clFFT
   DOC "clFFT library directory")
 
 
-SET(CLFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
-SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})
+set(clFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
+set(clFFT_LIBRARIES ${_CLFFT_LIBRARY})
 
-# handle the QUIETLY and REQUIRED arguments and set CLFFT_FOUND to TRUE if
+add_library(clFFT::clFFT IMPORTED INTERFACE)
+set_target_properties(clFFT::clFFT PROPERTIES
+  INTERFACE_LINK_LIBRARIES "${clFFT_LIBRARIES}"
+  INTERFACE_INCLUDE_DIRECTORIES "${clFFT_INCLUDE_DIRS}"
+  )
+
+# handle the QUIETLY and REQUIRED arguments and set clFFT_FOUND to TRUE if
 # all listed variables are TRUE
-INCLUDE (FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(CLFFT DEFAULT_MSG CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
-MARK_AS_ADVANCED(CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args(clFFT DEFAULT_MSG clFFT_LIBRARIES clFFT_INCLUDE_DIRS)
+
+if(NOT clFFT_FIND_QUIETLY)
+  message("++ FindclFFT")
+  message("++ clFFT_INCLUDES    : ${clFFT_INCLUDE_DIRS}")
+  message("++ clFFT_LIBRARIES   : ${clFFT_LIBRARIES}")
+endif()
+
+mark_as_advanced(
+  clFFT_LIBRARIES
+  clFFT_INCLUDE_DIRS
+  )
