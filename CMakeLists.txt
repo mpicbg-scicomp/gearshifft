@@ -31,6 +31,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
 # gearshifft cmake options
 
 option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
+option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
+
 option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if possible" ON)
 option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if possible" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if possible" ON)
@@ -47,8 +49,6 @@ set_property(CACHE GEARSHIFFT_FLOAT16_SUPPORT PROPERTY STRINGS "0;1")
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
 set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
-
-set(GEARSHIFFT_INSTALL_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/share/gearshifft/" CACHE STRING "Default install path of config files.")
 
 #-------------------------------------------------------------------------------
 
@@ -199,7 +199,7 @@ endif()
 if(GEARSHIFFT_CLFFT)
   find_package(OpenCL ${_QUIET}) # cmake >= 3.7 provides imported targets
   if(OpenCL_FOUND)
-    find_package(clFFT)
+    find_package(clFFT ${_QUIET})
 
     if(clFFT_FOUND)
 
@@ -208,16 +208,11 @@ if(GEARSHIFFT_CLFFT)
 
       find_and_add_openmp(CLFFT ${_QUIET})
 
-      target_include_directories(CLFFT INTERFACE ${CLFFT_INCLUDE_DIRS})
       target_compile_definitions(CLFFT INTERFACE CLFFT_ENABLED)
       target_link_libraries(CLFFT INTERFACE
         Common
-        ${CLFFT_LIBRARIES}
+        clFFT::clFFT
         OpenCL::OpenCL
-        )
-
-      target_compile_options(Common INTERFACE
-        $<$<CXX_COMPILER_ID:GNU>:-Wno-catch-value>
         )
 
       message(STATUS " gearshifft::CLFFT enabled")
@@ -380,14 +375,14 @@ endif()
 # installs config extents files
 
 install(
-  DIRECTORY share/gearshifft/
-  DESTINATION ${GEARSHIFFT_INSTALL_CONFIG_PATH}
+  DIRECTORY share/gearshifft
+  DESTINATION share
   FILES_MATCHING
   PATTERN *.conf
   )
 install(
   FILES README.md LICENSE
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
+  DESTINATION doc
   )
 
 #-------------------------------------------------------------------------------

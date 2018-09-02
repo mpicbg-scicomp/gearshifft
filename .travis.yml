@@ -149,15 +149,8 @@ install:
 script:
     - mkdir build && cd build
     - set -e
-    - cmake ../ -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} -DCMAKE_VERBOSE_MAKEFILE=ON
-    - make
-    # - |
-    #     echo "clFFT"
-    #     ./gearshifft_clfft -l
-    #     ./gearshifft_clfft -e 32
-    - |
-        echo "FFTW"
-        ./gearshifft_fftw -l
-        ./gearshifft_fftw -e 32
+    - cmake -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} -DGEARSHIFFT_VERBOSE=ON -DGEARSHIFFT_TESTS_ADD_CPU_ONLY=ON ..
+    - make -j 2
+    - ctest --output-on-failure
     - set +e
 
