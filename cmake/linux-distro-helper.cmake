@@ -20,7 +20,7 @@ macro(get_linux_distro_name)
         PATHS /etc
         NO_DEFAULT_PATH)
       if(OS_RELEASE)
-        execute_process(COMMAND "awk -F= '/^NAME/{print $2}' /etc/os-release"
+        execute_process(COMMAND awk -F= "/^NAME/{print $2}" /etc/os-release
           OUTPUT_VARIABLE GEARSHIFFT_LINUX_DISTRO
           OUTPUT_STRIP_TRAILING_WHITESPACE
           )
