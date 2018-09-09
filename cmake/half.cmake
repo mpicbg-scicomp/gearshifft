@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.7)
 
-set(GEARSHIFFT_HALF_VERSION "1.12.0")
+set(GEARSHIFFT_HALF_VERSION "1.12.0" CACHE STRING "'half' version to be built.")
+set_property(CACHE GEARSHIFFT_HALF_VERSION PROPERTY STRINGS "1.12.0")
 
 find_path(half_INCLUDE_DIR
   NAMES half-${GEARSHIFFT_HALF_VERSION}.zip
-  PATHS ${GEARSHIFFT_EXT_DIR}/half/src)
+  PATHS ${GEARSHIFFT_EXT_DIR}/half/src
+  NO_DEFAULT_PATH)
 
 if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
-  # we couldn't find the header files for FOO or they don't exist
+
   message("'half' library could not be found, so [make] will download it.")
 
   include(ExternalProject)
