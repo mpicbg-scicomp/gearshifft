@@ -21,11 +21,11 @@ project(gearshifft
 
 set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
 
+# gearshifft cmake options (requires GEARSHIFFT_ROOT)
+include(${GEARSHIFFT_ROOT}/cmake/gearshifft-options.cmake)
+
 # guard against in-source builds and bad build-type strings
 include(${GEARSHIFFT_ROOT}/cmake/safeguards.cmake)
-
-# gearshifft cmake options
-include(${GEARSHIFFT_ROOT}/cmake/gearshifft-options.cmake)
 
 # half-code for half precision data type
 if(GEARSHIFFT_FLOAT16_SUPPORT)
@@ -132,6 +132,7 @@ target_link_libraries(Common INTERFACE
   Boost::unit_test_framework
   Boost::program_options
   #Threads::threads
+  ${CMAKE_DL_LIBS}
   )
 
 #------------------------------------------------------------------------------
@@ -151,7 +152,7 @@ if(GEARSHIFFT_BACKEND_CUFFT)
     target_link_libraries(CUFFT INTERFACE
       Common
       ${CUDA_LIBRARIES}
-      ${CUDA_CUFFT_LIBRARIES})
+      ${CUDA_CUFFT_LIBRARIES}) # TODO: add static cufft library if gearshifft requires it
 
     if(GEARSHIFFT_FLOAT16_SUPPORT)
       add_dependencies(CUFFT half)
