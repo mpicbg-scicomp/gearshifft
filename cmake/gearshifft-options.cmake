@@ -11,7 +11,7 @@ option(GEARSHIFFT_BACKEND_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if fou
 option(GEARSHIFFT_BACKEND_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF)
 option(GEARSHIFFT_BACKEND_HCFFT "< Not implemented yet >" OFF)
 
-set( GEARSHIFFT_EXT_DIR ${CMAKE_SOURCE_DIR}/../ext CACHE STRING "Install directory for external dependencies")
+set( GEARSHIFFT_EXT_DIR ${GEARSHIFFT_ROOT}/ext CACHE STRING "Install directory for external dependencies")
 
 set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
 set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
@@ -33,5 +33,5 @@ endif()
 if(GEARSHIFFT_VERBOSE)
   include(${GEARSHIFFT_ROOT}/cmake/get-gearshifft-options.cmake)
   get_gearshifft_options(gearshifft_options "\n ")
-  message(" ${gearshifft_options}")
+  message(" ${gearshifft_options}\n")
 endif()
