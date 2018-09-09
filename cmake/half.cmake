@@ -4,7 +4,7 @@ set(GEARSHIFFT_HALF_VERSION "1.12.0")
 
 find_path(half_INCLUDE_DIR
   NAMES half-${GEARSHIFFT_HALF_VERSION}.zip
-  PATHS ${CMAKE_SOURCE_DIR}/ext/half/src)
+  PATHS ${GEARSHIFFT_EXT_DIR}/half/src)
 
 if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
   # we couldn't find the header files for FOO or they don't exist
@@ -13,8 +13,8 @@ if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
   include(ExternalProject)
 
   # half-code is a header-only library, so no build and install required
-  ExternalProject_Add(ext_half
-    PREFIX ${CMAKE_SOURCE_DIR}/ext/half
+  ExternalProject_Add(ExtHalf
+    PREFIX ${GEARSHIFFT_EXT_DIR}/half
     URL https://downloads.sourceforge.net/project/half/half/${GEARSHIFFT_HALF_VERSION}/half-${GEARSHIFFT_HALF_VERSION}.zip
     URL_MD5 86d023c0729abf3465bcd55665a39013
     INSTALL_COMMAND ""
@@ -24,9 +24,8 @@ if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
     LOG_CONFIGURE OFF
     LOG_BUILD OFF
     )
-  ExternalProject_Get_Property(ext_half DOWNLOAD_DIR)
 
-  set(half_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/ext/half/src
+  set(half_INCLUDE_DIR ${GEARSHIFFT_EXT_DIR}/half/src
     CACHE PATH "'half' include directory")
 endif()
 
