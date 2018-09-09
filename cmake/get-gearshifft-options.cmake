@@ -1,0 +1,10 @@
+
+macro(get_gearshifft_options result_var prefix)
+  get_cmake_property(_variableNames VARIABLES)
+  list (SORT _variableNames)
+  foreach (_variableName ${_variableNames})
+    if(_variableName MATCHES "GEARSHIFFT")
+      string(APPEND ${result_var} "${prefix}${_variableName}=${${_variableName}} ")
+    endif()
+  endforeach()
+endmacro()

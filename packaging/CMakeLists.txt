@@ -32,7 +32,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CPACK_GENERATOR TGZ)
 
   # distro specific packages
-  include(linux-distro-helper)
+  include(${GEARSHIFFT_ROOT}/cmake/linux-distro-helper.cmake)
   get_linux_distro_name()
 
   if(GEARSHIFFT_LINUX_DISTRO)
