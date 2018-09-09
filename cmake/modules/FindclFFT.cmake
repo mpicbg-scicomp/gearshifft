@@ -14,37 +14,39 @@
 # may provide a hint to where it may be found. Simply set the value CLFFT_ROOT
 # to the directory containing 'include/clFFT.h" prior to calling this script.
 
+if(CLFFT_ROOT)
+  find_path(CLFFT_ROOT_DIR
+    NAMES include/clFFT.h
+    PATHS ${CLFFT_ROOT}
+    PATHS ENV CLFFT_ROOT
+    DOC "clFFT root directory."
+    NO_DEFAULT_PATH)
+  find_path(_CLFFT_INCLUDE_DIRS
+    NAMES clFFT.h
+    PATHS ${CLFFT_ROOT_DIR} /usr
+    PATH_SUFFIXES include
+    DOC "clFFT include directory"
+    NO_DEFAULT_PATH)
+  find_library(_CLFFT_LIBRARY
+    NAMES clFFT
+    PATHS ${CLFFT_ROOT_DIR} /usr
+    PATH_SUFFIXES lib lib64 lib/import lib64/import
+    DOC "clFFT library directory"
+    NO_DEFAULT_PATH)
 
-find_path(CLFFT_ROOT_DIR
-  NAMES include/clFFT.h
-  PATHS CLFFT_ROOT
-  PATHS ENV CLFFT_ROOT
-  DOC "clFFT root directory.")
+else()
+  find_path(CLFFT_ROOT_DIR
+    NAMES include/clFFT.h
+    DOC "clFFT root directory.")
 
-find_path(CLFFT_ROOT_DIR
-  NAMES include/clFFT.h
-  DOC "clFFT root directory.")
+  find_path(_CLFFT_INCLUDE_DIRS
+    NAMES clFFT.h
+    DOC "clFFT include directory")
 
-find_path(_CLFFT_INCLUDE_DIRS
-  NAMES clFFT.h
-  PATHS "${CLFFT_ROOT_DIR}" "/usr"
-  PATH_SUFFIXES "include"
-  DOC "clFFT include directory")
-
-find_path(_CLFFT_INCLUDE_DIRS
-  NAMES clFFT.h
-  DOC "clFFT include directory")
-
-find_library(_CLFFT_LIBRARY
-  NAMES clFFT
-  PATHS "${CLFFT_ROOT_DIR}" "/usr"
-  PATH_SUFFIXES "lib" "lib64"
-  DOC "clFFT library directory")
-
-find_library(_CLFFT_LIBRARY
-  NAMES clFFT
-  DOC "clFFT library directory")
-
+  find_library(_CLFFT_LIBRARY
+    NAMES clFFT
+    DOC "clFFT library directory")
+endif()
 
 set(clFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
 set(clFFT_LIBRARIES ${_CLFFT_LIBRARY})
