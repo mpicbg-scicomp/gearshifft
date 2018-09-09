@@ -1,3 +1,4 @@
+//#define BOOST_TEST_ALTERNATIVE_INIT_API // TODO: fix this test, when boost::utf is compiled without main
 #define BOOST_TEST_MODULE TestClFFTGlobalFixture
 
 #include "libraries/clfft/clfft_helper.hpp"
