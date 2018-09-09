@@ -34,12 +34,14 @@ option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
 option(GEARSHIFFT_USE_STATIC_LIBS "Static linking of libraries." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
 
-option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if possible" ON)
-option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if possible" ON)
-option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if possible" ON)
-option(GEARSHIFFT_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if found" ON)
-option(GEARSHIFFT_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF)
-option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+option(GEARSHIFFT_BACKEND_CUFFT "Compile gearshifft_cufft if possible" ON)
+option(GEARSHIFFT_BACKEND_CLFFT "Compile gearshifft_clfft if possible" ON)
+option(GEARSHIFFT_BACKEND_FFTW  "Compile gearshifft_fftw if possible" ON)
+option(GEARSHIFFT_BACKEND_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if found" ON)
+option(GEARSHIFFT_BACKEND_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF)
+option(GEARSHIFFT_BACKEND_HCFFT "< Not implemented yet >" OFF)
+
+set( GEARSHIFFT_EXT_DIR ${CMAKE_SOURCE_DIR}/../ext/ CACHE STRING "Install directory for external dependencies")
 
 set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
 set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
@@ -53,7 +55,7 @@ set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0
 
 #-------------------------------------------------------------------------------
 
-if(GEARSHIFFT_HCFFT)
+if(GEARSHIFFT_BACKEND_HCFFT)
   message(FATAL_ERROR "HCFFT is not implemented yet.")
 endif()
 
@@ -70,13 +72,11 @@ else()
   set(_QUIET "QUIET")
 endif()
 
-
 #------------------------------------------------------------------------------
 # Boost
 #------------------------------------------------------------------------------
 
 set(Boost_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
-
 find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   system
   unit_test_framework
@@ -167,7 +167,7 @@ target_link_libraries(Common INTERFACE
 #------------------------------------------------------------------------------
 
 # CUDA+CUFFT
-if(GEARSHIFFT_CUFFT)
+if(GEARSHIFFT_BACKEND_CUFFT)
   find_package(CUDA ${_QUIET}) # no imported targets, will be language in cmake >= 3.10
   if(CUDA_FOUND)
 
@@ -193,7 +193,7 @@ endif()
 # OPENCL+CLFFT
 #------------------------------------------------------------------------------
 
-if(GEARSHIFFT_CLFFT)
+if(GEARSHIFFT_BACKEND_CLFFT)
   find_package(OpenCL ${_QUIET}) # cmake >= 3.7 provides imported targets
   if(OpenCL_FOUND)
     find_package(clFFT ${_QUIET})
@@ -227,7 +227,7 @@ endif()
 # FFTW
 #------------------------------------------------------------------------------
 
-if(GEARSHIFFT_FFTW)
+if(GEARSHIFFT_BACKEND_FFTW)
   set(FFTW_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
   find_package(FFTW ${_QUIET} COMPONENTS float double) #TODO: only optional float/double in benchmark
 
@@ -236,43 +236,43 @@ if(GEARSHIFFT_FFTW)
     add_library(FFTW INTERFACE)
     add_library(gearshifft::FFTW ALIAS FFTW)
 
-    set(GEARSHIFFT_FFTW_THREADS 0)
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 0)
 
-    if(GEARSHIFFT_FFTW_OPENMP)
+    if(GEARSHIFFT_BACKEND_FFTW_OPENMP)
 
       if(FFTW_OPENMP_LIBS)
 
         find_and_add_openmp(FFTW ${_QUIET})
 
         if(GEARSHIFFT_OPENMP_FOUND)
-          set(GEARSHIFFT_FFTW_THREADS 1)
+          set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
         else()
           message(WARNING "Could not find OpenMP")
-          set(GEARSHIFFT_FFTW_OPENMP OFF)
+          set(GEARSHIFFT_BACKEND_FFTW_OPENMP OFF)
         endif()
       else()
 
         message(WARNING "FFTW libraries for OpenMP not found")
-        set(GEARSHIFFT_FFTW_OPENMP OFF)
+        set(GEARSHIFFT_BACKEND_FFTW_OPENMP OFF)
       endif() # FFTW_OPENMP_LIBS
-    endif() # GEARSHIFFT_FFTW_OPENMP
+    endif() # GEARSHIFFT_BACKEND_FFTW_OPENMP
 
-    if(GEARSHIFFT_FFTW_PTHREADS)
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS)
       if(FFTW_THREADS_LIBS)
         find_package(Threads)
-        set(GEARSHIFFT_FFTW_THREADS 1)
+        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
       else()
         message(WARNING "FFTW libraries for pthreads not found")
-        set(GEARSHIFFT_FFTW_PTHREADS OFF)
+        set(GEARSHIFFT_BACKEND_FFTW_PTHREADS OFF)
       endif()
     endif()
 
-    if(GEARSHIFFT_FFTW_PTHREADS AND GEARSHIFFT_FFTW_OPENMP)
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS AND GEARSHIFFT_BACKEND_FFTW_OPENMP)
       message(FATAL_ERROR "FFTW: Cannot use both OpenMP and pthreads, please disable one")
     endif()
 
-    if(GEARSHIFFT_FFTW_PTHREADS
-        OR GEARSHIFFT_FFTW_OPENMP
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS
+        OR GEARSHIFFT_BACKEND_FFTW_OPENMP
         OR FFTW_SERIAL_LIBS)
 
       target_include_directories(FFTW INTERFACE ${FFTW_INCLUDE_DIR})
@@ -281,8 +281,8 @@ if(GEARSHIFFT_FFTW)
         GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
       target_link_libraries(FFTW INTERFACE
         Common
-        $<$<STREQUAL:${GEARSHIFFT_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
-        $<$<STREQUAL:${GEARSHIFFT_FFTW_PTHREADS},ON>:${FFTW_THREADS_LIBS}>
+        $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
+        $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_PTHREADS},ON>:${FFTW_THREADS_LIBS}>
         ${FFTW_SERIAL_LIBS}
         $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
         )
@@ -312,7 +312,7 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     find_and_add_openmp(FFTWWrappers ${_QUIET})
 
     if(GEARSHIFFT_OPENMP_FOUND)
-      set(GEARSHIFFT_FFTW_THREADS 1)
+      set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
     endif()
 
     target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
