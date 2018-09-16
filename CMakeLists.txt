@@ -129,7 +129,7 @@ target_link_libraries(Common INTERFACE
   Boost::system
   Boost::unit_test_framework
   Boost::program_options
-  #Threads::threads
+  Boost::thread
   ${CMAKE_DL_LIBS}
   )
 
@@ -181,6 +181,7 @@ if(GEARSHIFFT_BACKEND_CLFFT)
         Common
         clFFT::clFFT
         OpenCL::OpenCL
+        ${CMAKE_DL_LIBS}
         )
 
       message(STATUS " gearshifft::CLFFT enabled")
@@ -346,12 +347,20 @@ endif()
 install(
   DIRECTORY share/gearshifft
   DESTINATION share
+  COMPONENT config
   FILES_MATCHING
   PATTERN *.conf
+  PERMISSIONS OWNER_READ OWNER_WRITE
+              GROUP_READ
+              WORLD_READ
   )
 install(
-  FILES README.md LICENSE
+  FILES README.md
   DESTINATION doc
+  COMPONENT doc
+  PERMISSIONS OWNER_READ OWNER_WRITE
+              GROUP_READ
+              WORLD_READ
   )
 
 #-------------------------------------------------------------------------------

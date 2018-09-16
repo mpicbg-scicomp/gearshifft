@@ -35,14 +35,14 @@ endif()
 #     )
 # endif()
 
-# if(NOT TARGET Boost::thread)
-#   find_package(Threads)
-#   add_library(Boost::thread IMPORTED INTERFACE)
-#   set_target_properties(Boost::thread PROPERTIES
-#     INTERFACE_LINK_LIBRARIES "${Boost_THREAD_LIBRARY};Threads::Threads"
-#     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-#     )
-# endif()
+if(NOT TARGET Boost::thread)
+  find_package(Threads)
+  add_library(Boost::thread IMPORTED INTERFACE)
+  set_target_properties(Boost::thread PROPERTIES
+    INTERFACE_LINK_LIBRARIES "${Boost_THREAD_LIBRARY};Threads::Threads"
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    )
+endif()
 
 # if(NOT TARGET Boost::date_time)
 #   add_library(Boost::date_time IMPORTED INTERFACE)
