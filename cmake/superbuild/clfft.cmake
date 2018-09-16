@@ -66,7 +66,7 @@ if((NOT CLFFT_INCLUDE_DIR) OR (NOT EXISTS ${CLFFT_INCLUDE_DIR})
       -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
       -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
       )
-    set(gearshifft_DEPENDENCIES clfft)
+    list(APPEND gearshifft_DEPENDENCIES clfft)
 
   endif()
 endif()

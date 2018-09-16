@@ -68,6 +68,6 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
   # defines in b2 command above are required, otherwise linking will fail (boost::unit_test::unit_test_main)
   # https://www.boost.org/doc/libs/1_68_0/libs/test/doc/html/boost_test/adv_scenarios/static_lib_customizations/entry_point.html
 
-  set(gearshifft_DEPENDENCIES Boost)
+  list(APPEND gearshifft_DEPENDENCIES Boost)
 
 endif()

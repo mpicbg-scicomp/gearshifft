@@ -60,7 +60,7 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
     BUILD_COMMAND make -j 4
     INSTALL_COMMAND make install
     )
-  set(gearshifft_DEPENDENCIES fftw)
+  list(APPEND gearshifft_DEPENDENCIES fftw)
 
   ExternalProject_Add(fftwf
     BUILD_IN_SOURCE 1
@@ -72,6 +72,6 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
     BUILD_COMMAND make -j 4
     INSTALL_COMMAND make install
     )
-  set(gearshifft_DEPENDENCIES fftwf)
+  list(APPEND gearshifft_DEPENDENCIES fftwf)
 
 endif()
