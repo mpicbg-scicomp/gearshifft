@@ -9,23 +9,23 @@ else()
   cmake_policy(VERSION 3.12)
 endif()
 
-if (NOT CMAKE_BUILD_TYPE)
-  message(STATUS "No build type selected, default to RelWithDebInfo")
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type")
-endif()
+#-------------------------------------------------------------------------------
+
+set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
+
+# guard against in-source builds and default build-type
+include(cmake/safeguards.cmake)
+
+# cmake module path with additional finders
+list(APPEND CMAKE_MODULE_PATH ${GEARSHIFFT_ROOT}/cmake/modules)
 #-------------------------------------------------------------------------------
 
 project(gearshifft
   VERSION 0.4.0
   LANGUAGES C CXX)
 
-set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
-
 # gearshifft cmake options (requires GEARSHIFFT_ROOT)
 include(${GEARSHIFFT_ROOT}/cmake/gearshifft-options.cmake)
-
-# guard against in-source builds and bad build-type strings
-include(${GEARSHIFFT_ROOT}/cmake/safeguards.cmake)
 
 # half-code for half precision data type
 if(GEARSHIFFT_FLOAT16_SUPPORT)
@@ -34,8 +34,6 @@ endif()
 
 include(${GEARSHIFFT_ROOT}/cmake/openmp-helper.cmake)
 
-# cmake module path with additional finders
-list(APPEND CMAKE_MODULE_PATH ${GEARSHIFFT_ROOT}/cmake/modules)
 #------------------------------------------------------------------------------
 
 if(GEARSHIFFT_VERBOSE)
