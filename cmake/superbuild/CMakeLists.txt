@@ -70,6 +70,10 @@ get_gearshifft_options(cmake_pass_args ";-D") # ; to convert to a list
 
 # to get BUILD_TESTING option, which is just forwarded to gearshifft
 include(CTest)
+if(GEARSHIFFT_USE_STATIC_LIBS AND NOT GEARSHIFFT_EXT_USE_SYSTEM_Boost)
+  # TODO: not supported yet
+  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+endif()
 
 ExternalProject_Add( gearshifft
   DEPENDS ${gearshifft_DEPENDENCIES}
