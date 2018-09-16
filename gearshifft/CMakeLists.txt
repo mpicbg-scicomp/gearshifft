@@ -1,5 +1,8 @@
 
-function(gearshifft_add_executable TARGET BACKEND)
+set(GEARSHIFFT_COMPONENTS "" CACHE STRING "Contains gearshifft targets")
+mark_as_advanced(GEARSHIFFT_COMPONENTS)
+
+macro(gearshifft_add_executable TARGET BACKEND)
 
   if(TARGET ${BACKEND})
 
@@ -14,10 +17,13 @@ function(gearshifft_add_executable TARGET BACKEND)
 
     install(
       TARGETS ${TARGET}
-      DESTINATION bin
+      RUNTIME DESTINATION bin
+      COMPONENT ${TARGET}
       )
+    list(APPEND GEARSHIFFT_COMPONENTS ${TARGET})
+
   endif()
-endfunction()
+endmacro()
 
 gearshifft_add_executable(gearshifft_cufft gearshifft::CUFFT)
 gearshifft_add_executable(gearshifft_clfft gearshifft::CLFFT)
