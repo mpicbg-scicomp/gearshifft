@@ -3,12 +3,15 @@ cmake_minimum_required(VERSION 3.7)
 set(GEARSHIFFT_HALF_VERSION "1.12.0" CACHE STRING "'half' version to be built.")
 set_property(CACHE GEARSHIFFT_HALF_VERSION PROPERTY STRINGS "1.12.0")
 
-find_path(half_INCLUDE_DIR
-  NAMES half-${GEARSHIFFT_HALF_VERSION}.zip
-  PATHS ${GEARSHIFFT_EXT_DIR}/half/src
+set(half_INCLUDE_DIR ${GEARSHIFFT_EXT_DIR}/half/src/ext_half/include
+    CACHE PATH "'half' include directory")
+
+find_path(_half_INCLUDE_DIR
+  NAMES half.hpp
+  PATHS ${half_INCLUDE_DIR}
   NO_DEFAULT_PATH)
 
-if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
+if((NOT _half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
 
   message("'half' library could not be found, so [make] will download it.")
 
@@ -27,8 +30,6 @@ if((NOT half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
     LOG_BUILD OFF
     )
 
-  set(half_INCLUDE_DIR ${GEARSHIFFT_EXT_DIR}/half/src
-    CACHE PATH "'half' include directory")
 endif()
 
 # for convenience setup a target

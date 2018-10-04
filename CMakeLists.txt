@@ -157,9 +157,12 @@ if(GEARSHIFFT_BACKEND_CUFFT)
 
     if(GEARSHIFFT_FLOAT16_SUPPORT)
       add_dependencies(CUFFT half)
+      target_link_libraries(CUFFT INTERFACE half)
+      message(STATUS " gearshifft::CUFFT enabled (with half precision).")
+    else()
+      message(STATUS " gearshifft::CUFFT enabled.")
     endif()
 
-    message(STATUS " gearshifft::CUFFT enabled.")
   endif()
 endif()
 
