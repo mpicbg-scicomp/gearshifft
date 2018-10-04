@@ -12,14 +12,13 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 
 ## Requirements
 
-- cmake 3.1+ or 3.6.2+ for allowing cmake to automatically download of half-code (float16 support)
+- cmake 3.7+
 - C++14 capable compiler
 - CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.59+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
-  - if your Nvidia GPU does not support float16, you will see a `CUFFT_INVALID_DEVICE` message in the results
 
 ## Build
 
@@ -30,7 +29,7 @@ cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After `make` have finished you can run e.g. `./gearshifft_cufft`.
+After `make` have finished you can run e.g. `./gearshifft/gearshifft_cufft`.
 
 If the FFT library paths cannot be found, `CMAKE_PREFIX_PATH` has to be used, e.g.:
 
@@ -41,9 +40,8 @@ export CMAKE_PREFIX_PATH=${HOME}/software/clFFT-cuda8.0-gcc5.4/:/opt/cuda:$CMAKE
 Enable float16 support for cuFFT:
 
 ```bash
-cmake -DGEARSHIFFT_FLOAT16_SUPPORT=ON ..
-make half-code         # for float16 data type
-make gearshifft_cufft
+cmake -DGEARSHIFFT_FLOAT16_SUPPORT=1 ..
+make gearshifft_cufft # automatically downloads half library
 ```
 
 Another example with Boost and FFTW dependencies:
@@ -65,17 +63,16 @@ make
 
 ## Install
 
-Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
+Set `CMAKE_INSTALL_PREFIX` as you wish, otherwise defaults are used.
 ```bash
 mkdir release && cd release
-cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft \
-      -DGEARSHIFFT_INSTALL_CONFIG_PATH=${HOME}/gearshifft/configs \
-      ..
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft ..
 make -j 4 install
-
 ```
 
 ### Build Boost from Source
+
+Use cmake superbuild or follwing compile script.
 
 <details>
 
@@ -100,6 +97,8 @@ fi
 </details>
 
 ### Build FFTW from Source
+
+Use cmake superbuild or follwing compile script.
 
 <details>
 
@@ -141,10 +140,27 @@ make install
 
 </details>
 
+## Superbuild and Packaging
+
+To automatically download and compile the dependencies, a separate superbuild cmake configuration is provided.
+It is also intended for creating packages by using static linking of the dependencies.
+
+```bash
+cmake -DGEARSHIFFT_FLOAT16_SUPPORT=1 -DBUILD_TESTING=OFF ../cmake/superbuild
+make -j
+cd gearshifft-build
+make package
+```
 
 ## Testing
 
 The tests can be executed by `make test` after you have compiled the binaries.
+
+```
+cmake -DBUILD_TESTING=ON ..
+make -j 4
+make test
+```
 
 ## Usage
 
