@@ -152,6 +152,13 @@ namespace CuFFT {
       info << "\"ID\"," << i << "," << getCUDADeviceInformations(i).str() << std::endl;
     return info;
   }
+
+  bool deviceSupportsHalfPrecision(int dev) {
+    cudaDeviceProp prop;
+    CHECK_CUDA( cudaGetDeviceProperties(&prop, dev) );
+    return ( (prop.major==5 && prop.minor>=3)
+            || prop.major>=6 );
+  }
 } // CuFFT
 } // gearshifft
 #endif

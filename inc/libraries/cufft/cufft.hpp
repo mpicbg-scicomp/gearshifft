@@ -104,12 +104,15 @@ namespace CuFFT {
 
   }  // namespace traits
 
+  struct CuFFTContextAttributes {
+    int device = 0;
+    bool supportsHalfPrecision = false;
+  };
+
   /**
    * CUDA context create() and destroy(). Time is benchmarked.
    */
-  struct CuFFTContext : public ContextDefault<> {
-
-    int device = 0;
+  struct CuFFTContext : public ContextDefault<OptionsDefault,CuFFTContextAttributes> {
 
     static const std::string title() {
       return "CuFFT";
@@ -120,19 +123,20 @@ namespace CuFFT {
     }
 
     std::string get_used_device_properties() {
-      auto ss = getCUDADeviceInformations(device);
+      auto ss = getCUDADeviceInformations(context().device);
       return ss.str();
     }
 
     void create() {
       const std::string options_devtype = options().getDevice();
-      device = atoi(options_devtype.c_str());
+      context().device = atoi(options_devtype.c_str());
       int nrdev=0;
       CHECK_CUDA(cudaGetDeviceCount(&nrdev));
       assert(nrdev>0);
-      if(device<0 || device>=nrdev)
-        device = 0;
-      CHECK_CUDA(cudaSetDevice(device));
+      if(context().device<0 || context().device>=nrdev)
+        context().device = 0;
+      CHECK_CUDA(cudaSetDevice(context().device));
+      context().supportsHalfPrecision = deviceSupportsHalfPrecision(context().device);
     }
 
     void destroy() {
@@ -308,6 +312,10 @@ namespace CuFFT {
     bool         use64bit_          = false;
 
     CuFFTImpl(const Extent& cextents) {
+
+      if( IsHalf && CuFFTContext::context().supportsHalfPrecision==false )
+        throw std::runtime_error("Requested half precision, but device does not support it.");
+
       extents_ = interpret_as::column_major(cextents);
       extents_complex_ = extents_;
       n_ = std::accumulate(extents_.begin(),
