@@ -121,6 +121,9 @@ target_compile_definitions(Common INTERFACE
   $<BUILD_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${CMAKE_SOURCE_DIR}/share/gearshifft/extents.conf>
   $<INSTALL_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${GEARSHIFFT_INSTALL_CONFIG_PATH}/extents.conf>
   GEARSHIFFT_FLOAT16_SUPPORT=${GEARSHIFFT_FLOAT16_SUPPORT}
+  GEARSHIFFT_PRECISION_HALF_ONLY=${GEARSHIFFT_PRECISION_HALF_ONLY}
+  GEARSHIFFT_PRECISION_SINGLE_ONLY=${GEARSHIFFT_PRECISION_SINGLE_ONLY}
+  GEARSHIFFT_PRECISION_DOUBLE_ONLY=${GEARSHIFFT_PRECISION_DOUBLE_ONLY}
   )
 #TODO: check paths
 
@@ -216,7 +219,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
 
         find_and_add_openmp(FFTW ${_QUIET})
 
-        if(GEARSHIFFT_OPENMP_FOUND)
+        if(HELPER_OPENMP_FOUND)
           set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
         else()
           message(WARNING "Could not find OpenMP")
@@ -283,7 +286,7 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
     find_and_add_openmp(FFTWWrappers ${_QUIET})
 
-    if(GEARSHIFFT_OPENMP_FOUND)
+    if(HELPER_OPENMP_FOUND)
       set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
     endif()
 

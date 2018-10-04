@@ -7,13 +7,8 @@
 #include "benchmark_suite.hpp"
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 namespace gearshifft {
-
-  /// List alias
-  template<typename... Types>
-  using List = boost::mpl::list<Types...>;
 
   /**
    * Benchmark API class for clients.
