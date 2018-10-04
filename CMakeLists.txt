@@ -162,7 +162,7 @@ if(GEARSHIFFT_BACKEND_CUFFT)
         message(FATAL_ERROR "CuFFT does not support static linking under Windows.")
       endif()
       find_library(CUDA_CUFFT_STATIC_LIBRARY
-        NAMES cufft_static
+        NAMES cufft_static_nocallback
         PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64
         NO_DEFAULT_PATH)
       if(NOT CUDA_CUFFT_STATIC_LIBRARY)
@@ -191,6 +191,11 @@ endif()
 #------------------------------------------------------------------------------
 
 if(GEARSHIFFT_BACKEND_CLFFT)
+  # can help to find opencl from nvidia
+  if(GEARSHIFFT_BACKEND_CUFFT AND NOT ENV{CUDA_PATH})
+    set(ENV{CUDA_PATH} ${CUDA_TOOLKIT_ROOT_DIR})
+  endif()
+
   find_package(OpenCL ${_QUIET}) # cmake >= 3.7 provides imported targets
   if(OpenCL_FOUND)
     find_package(clFFT ${_QUIET})
