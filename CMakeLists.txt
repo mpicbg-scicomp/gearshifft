@@ -136,6 +136,9 @@ target_link_libraries(Common INTERFACE
   ${CMAKE_DL_LIBS}
   )
 
+if(GEARSHIFFT_FLOAT16_SUPPORT)
+  target_link_libraries(Common INTERFACE half)
+endif()
 #------------------------------------------------------------------------------
 # Find gearshifft back-ends
 #------------------------------------------------------------------------------
@@ -155,13 +158,7 @@ if(GEARSHIFFT_BACKEND_CUFFT)
       ${CUDA_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}) # TODO: add static cufft library if gearshifft requires it
 
-    if(GEARSHIFFT_FLOAT16_SUPPORT)
-      add_dependencies(CUFFT half)
-      target_link_libraries(CUFFT INTERFACE half)
-      message(STATUS " gearshifft::CUFFT enabled (with half precision).")
-    else()
-      message(STATUS " gearshifft::CUFFT enabled.")
-    endif()
+    message(STATUS " gearshifft::CUFFT enabled.")
 
   endif()
 endif()

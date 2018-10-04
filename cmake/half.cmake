@@ -3,8 +3,13 @@ cmake_minimum_required(VERSION 3.7)
 set(GEARSHIFFT_HALF_VERSION "1.12.0" CACHE STRING "'half' version to be built.")
 set_property(CACHE GEARSHIFFT_HALF_VERSION PROPERTY STRINGS "1.12.0")
 
-set(half_INCLUDE_DIR ${GEARSHIFFT_EXT_DIR}/half/src/ext_half/include
-    CACHE PATH "'half' include directory")
+set(half_INCLUDE_DIR ${GEARSHIFFT_EXT_DIR}/half/src/ExtHalf/include
+  CACHE PATH "'half' include directory")
+
+
+# for convenience setup a target
+add_library(half INTERFACE)
+target_include_directories(half INTERFACE ${half_INCLUDE_DIR})
 
 find_path(_half_INCLUDE_DIR
   NAMES half.hpp
@@ -30,13 +35,6 @@ if((NOT _half_INCLUDE_DIR) OR (NOT EXISTS ${half_INCLUDE_DIR}))
     LOG_BUILD OFF
     )
 
+  # required to trigger download
+  add_dependencies(half ExtHalf)
 endif()
-
-# for convenience setup a target
-add_library(half INTERFACE)
-target_include_directories(half INTERFACE
-  $<BUILD_INTERFACE:${half_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}>)
-
-# need to export target as well
-install(TARGETS half EXPORT gearshifftExport DESTINATION lib)
