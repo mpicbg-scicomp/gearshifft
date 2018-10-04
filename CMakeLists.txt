@@ -155,8 +155,31 @@ if(GEARSHIFFT_BACKEND_CUFFT)
     target_compile_definitions(CUFFT INTERFACE CUFFT_ENABLED)
     target_link_libraries(CUFFT INTERFACE
       Common
-      ${CUDA_LIBRARIES}
-      ${CUDA_CUFFT_LIBRARIES}) # TODO: add static cufft library if gearshifft requires it
+      ${CUDA_LIBRARIES})
+
+    if(GEARSHIFFT_USE_STATIC_LIBS)
+      if(WIN32)
+        message(FATAL_ERROR "CuFFT does not support static linking under Windows.")
+      endif()
+      find_library(CUDA_CUFFT_STATIC_LIBRARY
+        NAMES cufft_static
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+        NO_DEFAULT_PATH)
+      if(NOT CUDA_CUFFT_STATIC_LIBRARY)
+        message(FATAL_ERROR "Could not find static cufft library.")
+      endif()
+
+      find_library(CUDA_CULIBOS_LIBRARY
+        NAMES culibos
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+        NO_DEFAULT_PATH)
+      if(NOT CUDA_CULIBOS_LIBRARY)
+        message(FATAL_ERROR "Could not find culibos library.")
+      endif()
+      target_link_libraries(CUFFT INTERFACE ${CUDA_CUFFT_STATIC_LIBRARY} ${CUDA_CULIBOS_LIBRARY})
+    else()
+      target_link_libraries(CUFFT INTERFACE ${CUDA_CUFFT_LIBRARIES})
+    endif()
 
     message(STATUS " gearshifft::CUFFT enabled.")
 
