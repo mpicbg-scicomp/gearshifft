@@ -373,7 +373,7 @@ namespace fftw {
     static std::string get_device_list() {
       std::ostringstream msg;
 
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
       int av_procs = std::thread::hardware_concurrency();
       msg << av_procs << " CPU Threads supported.\n";
 #else
@@ -385,7 +385,7 @@ namespace fftw {
 
     std::string get_used_device_properties() {
 
-#if GEARSHIFFT_FFTW_THREADS==1
+#if GEARSHIFFT_FFTW_USE_THREADS==1
       // Returns the number of supported concurrent threads of implementation
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = options().getNumberDevices();
