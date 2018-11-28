@@ -78,6 +78,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
+#set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
 
 #------------------------------------------------------------------------------
@@ -155,17 +156,19 @@ endif()
 #------------------------------------------------------------------------------
 # ROCM+ROCFFT
 #------------------------------------------------------------------------------
+if(GEARSHIFFT_ROCFFT)
+  find_package(rocfft)
 
-find_package(rocfft)
-if(rocfft_FOUND AND GEARSHIFFT_ROCFFT)
-  list(APPEND FFTLIBS "rocfft") # register fft lib client for compilation
-  message(">> rocfft -> " ${rocfft_INCLUDE_DIR})
-  message(WARNING ">> no runner for rocfft implemented yet")
-else()
-  message(WARNING ">> rocfft not found .${rocfft_INCLUDE_DIR}. ")
+  if(rocfft_FOUND)
+    list(APPEND FFTLIBS "rocfft") # register fft lib client for compilation
+    message(STATUS ">> rocfft -> " ${rocfft_INCLUDE_DIR})
+    message(STATUS ">> [Experimental] no benchmark runner for rocfft implemented yet")
+  else()
+    message(WARNING ">> rocfft not found .${rocfft_INCLUDE_DIR}. ")
+  endif()
 endif()
 
-if(NOT rocfft_FOUND)
+if(NOT rocfft_FOUND OR NOT GEARSHIFFT_ROCFFT)
   message("<< rocfft benchmark disabled.")
 endif()
 
