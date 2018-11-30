@@ -1,22 +1,15 @@
-
-set(HELPER_OPENMP_FOUND OFF CACHE BOOL "OpenMP has been found, do not find again.")
-mark_as_advanced(GEARSHIFFT_OPENMP_FOUND)
-
-function(find_and_add_openmp TARGET)
+macro(find_and_add_openmp TARGET)
   set(_QUIET ${ARGN})
 
-  if(NOT HELPER_OPENMP_FOUND)
+  find_package(OpenMP ${_QUIET})
 
-    find_package(OpenMP ${_QUIET})
+  # Have to check several OPENMP_FOUND due to bug in
+  # one version of CMake and the docs (fixed in patch release)
+  # OpenMP is missing on macOS llvm default, for example
+  if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
 
-    # Have to check several OPENMP_FOUND due to bug in
-    # one version of CMake and the docs (fixed in patch release)
-    # OpenMP is missing on macOS llvm default, for example
-    if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
-
-      set(HELPER_OPENMP_FOUND ON CACHE BOOL "" FORCE)
-      find_package(Threads REQUIRED)
-
+    find_package(Threads REQUIRED)
+    if(Threads_FOUND)
       # CMake 3.9 FindOpenMP allows correct linking with Clang in more cases
       if(TARGET OpenMP::OpenMP_CXX)
         target_link_libraries(${TARGET} INTERFACE OpenMP::OpenMP_CXX)
@@ -28,9 +21,8 @@ function(find_and_add_openmp TARGET)
         set_property(TARGET ${TARGET}
           PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
       endif()
+    endif()
 
-    endif() # OpenMP_FOUND
+  endif() # OpenMP_FOUND
 
-  endif()
-
-endfunction()
+endmacro()
