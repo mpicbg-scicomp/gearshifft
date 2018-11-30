@@ -45,8 +45,9 @@ endif()
 #------------------------------------------------------------------------------
 # Boost
 #------------------------------------------------------------------------------
-
-set(Boost_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
+if(GEARSHIFFT_USE_STATIC_LIBS)
+  set(Boost_USE_STATIC_LIBS ON) # otherwise find libs automatically
+endif()
 find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   system
   unit_test_framework
@@ -221,17 +222,13 @@ if(GEARSHIFFT_BACKEND_CLFFT)
 endif()
 
 #------------------------------------------------------------------------------
-# ROCM+HCFFT
-#------------------------------------------------------------------------------
-
-#find_package(hcFFT)
-
-#------------------------------------------------------------------------------
 # FFTW
 #------------------------------------------------------------------------------
 
 if(GEARSHIFFT_BACKEND_FFTW)
-  set(FFTW_USE_STATIC_LIBS ${GEARSHIFFT_USE_STATIC_LIBS})
+  if(GEARSHIFFT_USE_STATIC_LIBS)
+    set(FFTW_USE_STATIC_LIBS ON) # otherwise find libs automatically
+  endif()
   find_package(FFTW ${_QUIET} COMPONENTS float double) #TODO: only optional float/double in benchmark
 
   if(FFTW_FOUND)
