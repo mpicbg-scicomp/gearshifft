@@ -10,6 +10,7 @@
 
 BOOST_AUTO_TEST_CASE( listDevices, * boost::unit_test::tolerance(0.0001f) )
 {
-    auto sstr = gearshifft::Rocfft::listHipDevices();
+    std::stringstream sstr("");
+    gearshifft::Rocfft::listHipDevices(sstr);
     BOOST_CHECK_GT(sstr.str().size(),0);
 }

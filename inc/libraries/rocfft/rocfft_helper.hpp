@@ -24,7 +24,7 @@ namespace gearshifft {
 namespace Rocfft {
 
     inline void rocfftGetVersion(int *version){
-        version = 10000*rocfft_version_major + 100*rocfft_version_minor + rocfft_version_patch;
+        *version = 10000*rocfft_version_major + 100*rocfft_version_minor + rocfft_version_patch;
         return;
     }
 
@@ -86,20 +86,20 @@ namespace Rocfft {
   }
   inline
   void check_hip(rocfft_status_e code, const char* msg,  const char *func, const char *file, int line) {
-    if (code != ROCFFT_SUCCESS) {
+    if (code != rocfft_status_success) {
       throw_error(static_cast<int>(code),
                   rocfftResultToString(code), "rocfft", func, file, line);
     }
   }
 
   inline
-  std::stringstream getHIPDeviceInformations(int dev) {
-    std::stringstream info;
-    hipDeviceProp prop;
+  std::stringstream& getHIPDeviceInformations(int dev, std::stringstream& info) {
+
+    hipDeviceProp_t prop;
     //int runtimeVersion = 0;
     int rocfftv = 0;
     size_t f=0, t=0;
-    CHECK_HIP(rocfftGetVersion(&rocfftv));
+    rocfftGetVersion(&rocfftv);
     //CHECK_HIP( hipRuntimeGetVersion(&runtimeVersion) );
     CHECK_HIP(hipGetDeviceProperties(&prop, dev));
     CHECK_HIP(hipMemGetInfo(&f, &t));
@@ -111,7 +111,7 @@ namespace Rocfft {
          << ", \"Memory [MiB]\", "<< t/1048576
          << ", \"MemoryFree [MiB]\", " << f/1048576
          << ", \"HostMemory [MiB]\", "<< getMemorySize()/1048576
-         << ", \"ECC enabled\", " << prop.ECCEnabled
+        //<< ", \"ECC enabled\", " << prop.ECCEnabled
          << ", \"MemClock [MHz]\", " << prop.memoryClockRate/1000
          << ", \"GPUClock [MHz]\", " << prop.clockRate/1000
         //<< ", \"HIP Runtime\", " << runtimeVersion
@@ -120,14 +120,18 @@ namespace Rocfft {
     return info;
   }
 
-  std::stringstream listHipDevices() {
-    std::stringstream info;
+  std::stringstream& listHipDevices(std::stringstream& info) {
+
     int nrdev = 0;
     CHECK_HIP( hipGetDeviceCount( &nrdev ) );
     if(nrdev==0)
       throw std::runtime_error("No HIP capable device found");
-    for(int i=0; i<nrdev; ++i)
-      info << "\"ID\"," << i << "," << getHIPDeviceInformations(i).str() << std::endl;
+    for(int i=0; i<nrdev; ++i){
+        info << "\"ID\"," << i << ",";
+        getHIPDeviceInformations(i,info);
+        info << std::endl;
+    }
+
     return info;
   }
 } // Rocfft
