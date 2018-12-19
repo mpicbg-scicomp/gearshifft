@@ -38,6 +38,19 @@ function(add_exec Tlib)
     set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
   endif()
 
+  if (Tlib STREQUAL "rocfft")
+
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DROCFFT_ENABLED)
+    target_include_directories(${PROJECT_EXEC} PRIVATE ${rocfft_INCLUDE_DIR})
+    target_include_directories(${PROJECT_EXEC} PRIVATE $<TARGET_PROPERTY:hip::hip_hcc,INTERFACE_INCLUDE_DIRECTORIES>)
+    set(LIBS roc::rocfft hip::hip_hcc)
+    if(HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+      target_compile_options( ${PROJECT_EXEC} PRIVATE -Wno-unused-command-line-argument )
+    endif()
+    set_target_properties( ${PROJECT_EXEC} PROPERTIES CXX_EXTENSIONS OFF)
+
+  endif()
+
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC} -e 64)
 

@@ -158,11 +158,13 @@ endif()
 #------------------------------------------------------------------------------
 if(GEARSHIFFT_ROCFFT)
   find_package(rocfft)
-
+  include(CheckCCompilerFlag)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag(-Wno-unused-command-line-argument HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
   if(rocfft_FOUND)
+    find_package(hip)
     list(APPEND FFTLIBS "rocfft") # register fft lib client for compilation
     message(STATUS ">> rocfft -> " ${rocfft_INCLUDE_DIR})
-    message(STATUS ">> [Experimental] no benchmark runner for rocfft implemented yet")
   else()
     message(WARNING ">> rocfft not found .${rocfft_INCLUDE_DIR}. ")
   endif()
