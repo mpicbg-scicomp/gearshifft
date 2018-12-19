@@ -2,7 +2,7 @@
 #define ROCFFT_HPP_
 
 #include "core/application.hpp"
-#include "core/timer_cuda.hpp"
+#include "core/timer_hip.hpp"
 #include "core/fft.hpp"
 #include "core/types.hpp"
 #include "core/traits.hpp"
