@@ -8,19 +8,17 @@
 #include "core/traits.hpp"
 #include "core/context.hpp"
 
-//#include "rocfft_helper.hpp"
-
+#include "rocfft_helper.hpp"
 
 #include "hip/hip_runtime_api.h"
 #include "hip/hip_vector_types.h"
 #include "rocfft.h"
 
-#include <vector_types.h>
 #include <array>
 #include <regex>
 
 namespace gearshifft {
-namespace Rocfft {
+namespace RocFFT {
 
 
   namespace traits{
@@ -28,8 +26,8 @@ namespace Rocfft {
     template<typename T_Precision=float>
     struct Types
     {
-        using ComplexType = std::complex<float32_t>;
-        using RealType = float32_t;
+        using ComplexType = std::complex<float>;
+        using RealType = float;
 
         static constexpr rocfft_transform_type_e FFTRealForward = rocfft_transform_type_real_forward;
         static constexpr rocfft_transform_type_e FFTRealInverse = rocfft_transform_type_real_inverse;
@@ -37,29 +35,14 @@ namespace Rocfft {
         static constexpr rocfft_transform_type_e FFTComplexForward = rocfft_transform_type_complex_forward;
         static constexpr rocfft_transform_type_e FFTComplexInverse = rocfft_transform_type_complex_inverse;
 
-        struct FFTExecuteForward{
-            void operator()(rocfft_plan plan, RealType* in, ComplexType* out){
-                CHECK_HIP(rocfft_execute(plan, (void**) &in, out, nullptr));
-            }
-            void operator()(rocfftHandle plan, ComplexType* in, ComplexType* out){
-                CHECK_HIP(rocfft_execute(plan, (void**) &in, out, nullptr));
-            }
-        };
-        struct FFTExecuteInverse{
-            void operator()(rocfftHandle plan, ComplexType* in, RealType* out){
-                CHECK_HIP(rocfft_execute(plan, (void**) &in, out, nullptr));
-            }
-            void operator()(rocfftHandle plan, ComplexType* in, ComplexType* out){
-                CHECK_HIP(rocfft_execute(plan, (void**) &in, out, nullptr));
-            }
-        };
+
     };
 
     template<>
     struct Types<double>
     {
-        using ComplexType = std::complex<float64_t>;
-        using RealType = float64_t;
+        using ComplexType = std::complex<double>;
+        using RealType = double;
 
         static constexpr rocfft_transform_type_e FFTRealForward = rocfft_transform_type_real_forward;
         static constexpr rocfft_transform_type_e FFTRealInverse = rocfft_transform_type_real_inverse;
@@ -75,38 +58,41 @@ namespace Rocfft {
   /**
    * HIP context create() and destroy(). Time is benchmarked.
    */
-  struct RocfftContext : public ContextDefault<> {
+    struct RocFFTContext : public ContextDefault<> {
 
-    int device = 0;
+        int device = 0;
 
-    static const std::string title() {
-      return "Rocfft";
-    }
+        static const std::string title() {
+            return "RocFFT";
+        }
 
-    static std::string get_device_list() {
-      return listHipDevices().str();
-    }
+        static std::string get_device_list() {
+            std::stringstream msg;
+            listHipDevices(msg);
+            return msg.str();
+        }
 
-    std::string get_used_device_properties() {
-      auto ss = getHIPDeviceInformations(device);
-      return ss.str();
-    }
+        std::string get_used_device_properties() {
+            std::stringstream ss;
+            getHIPDeviceInformations(device,ss);
+            return ss.str();
+        }
 
-    void create() {
-      const std::string options_devtype = options().getDevice();
-      device = atoi(options_devtype.c_str());
-      int nrdev=0;
-      CHECK_HIP(hipGetDeviceCount(&nrdev));
-      assert(nrdev>0);
-      if(device<0 || device>=nrdev)
-        device = 0;
-      CHECK_HIP(hipSetDevice(device));
-    }
+        void create() {
+            const std::string options_devtype = options().getDevice();
+            device = atoi(options_devtype.c_str());
+            int nrdev=0;
+            CHECK_HIP(hipGetDeviceCount(&nrdev));
+            assert(nrdev>0);
+            if(device<0 || device>=nrdev)
+                device = 0;
+            CHECK_HIP(hipSetDevice(device));
+        }
 
-    void destroy() {
-      CHECK_HIP(hipDeviceReset());
-    }
-  };
+        void destroy() {
+            CHECK_HIP(hipDeviceReset());
+        }
+    };
 
 
   /**
@@ -124,7 +110,7 @@ namespace Rocfft {
 
 
   /**
-   * Rocfft plan and execution class.
+   * RocFFT plan and execution class.
    *
    * This class handles:
    * - {1D, 2D, 3D} x {R2C, C2R, C2C} x {inplace, outplace} x {float, double}.
@@ -133,7 +119,7 @@ namespace Rocfft {
            typename TPrecision, // double, float
            size_t   NDim // 1..3
            >
-  struct RocfftImpl {
+  struct RocFFTImpl {
     using Extent = std::array<size_t,NDim>;
     using Types  = typename traits::Types<TPrecision>;
     using ComplexType = typename Types::ComplexType;
@@ -143,10 +129,10 @@ namespace Rocfft {
      bool IsInplace = TFFT::IsInplace;
     static constexpr
      bool IsComplex = TFFT::IsComplex;
-    static constexpr
-     bool IsHalf = std::is_same<TPrecision, float16>::value;
+    // static constexpr
+    //  bool IsHalf = std::is_same<TPrecision, float16>::value;
       static constexpr
-     bool IsSingle = std::is_same<TPrecision, float32_t>::value;
+     bool IsSingle = std::is_same<TPrecision, float>::value;
     static constexpr
      bool IsInplaceReal = IsInplace && IsComplex==false;
     static constexpr
@@ -156,7 +142,7 @@ namespace Rocfft {
     static constexpr
     rocfft_precision FFTPrecision = IsSingle ? rocfft_precision_single : rocfft_precision_double;
       static constexpr
-    rocfft_precision FFTPlacement = IsInplace ? rocfft_placement_inplace : rocfft_placement_notinplace;
+    rocfft_result_placement FFTPlacement = IsInplace ? rocfft_placement_inplace : rocfft_placement_notinplace;
 
 
 
@@ -181,7 +167,7 @@ namespace Rocfft {
     /// size in bytes of FFT(input) for out-of-place transforms
     size_t       data_complex_size_ = 0;
 
-    RocfftImpl(const Extent& cextents) {
+    RocFFTImpl(const Extent& cextents) {
       extents_ = interpret_as::column_major(cextents);
       extents_complex_ = extents_;
       n_ = std::accumulate(extents_.begin(),
@@ -205,7 +191,7 @@ namespace Rocfft {
 
     }
 
-    ~RocfftImpl() {
+    ~RocFFTImpl() {
       destroy();
     }
 
@@ -274,12 +260,12 @@ namespace Rocfft {
      * Allocate buffers on CUDA device
      */
     void allocate() {
-      CHECK_CUDA(cudaMalloc(&data_, data_size_));
+      CHECK_HIP(hipMalloc(&data_, data_size_));
 
       if(IsInplace) {
         data_complex_ = reinterpret_cast<ComplexType*>(data_);
       }else{
-        CHECK_CUDA(cudaMalloc(&data_complex_, data_complex_size_));
+        CHECK_HIP(hipMalloc(&data_complex_, data_complex_size_));
       }
     }
 
@@ -293,27 +279,40 @@ namespace Rocfft {
 
         if(data_size_ < 1024){
             size_t workBufferSize = 0;
-            rocfft_plan_get_work_buffer_size(plan_, &workBufferSize_fwd);
+            rocfft_plan_get_work_buffer_size(plan_, &workBufferSize);
 
             rocfft_execution_info_create(&plan_info_);
 
             if(workBufferSize > 0)
             {
-                CHECK_HIP(hipMalloc(&work_buffer, workBufferSize));
-                rocfft_execution_info_set_work_buffer(plan_info_, work_buffer, workBufferSize);
+                CHECK_HIP(hipMalloc(&work_buffer_, workBufferSize));
+                rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize);
             }
         }
 
     }
 
     // recreates plan if needed
-    void init_inverse() {
-      rocfft_plan_create(&plan_,
-                           FFTPlacement,
-                           FFTInverse,
-                           FFTPrecision,
-                           extents_.size(), extents_.data(), 1, nullptr);
-    }
+      void init_inverse() {
+          rocfft_plan_create(&plan_,
+                             FFTPlacement,
+                             FFTInverse,
+                             FFTPrecision,
+                             extents_.size(), extents_.data(), 1, nullptr);
+          if(data_size_ < 1024){
+              size_t workBufferSize = 0;
+              rocfft_plan_get_work_buffer_size(plan_, &workBufferSize);
+
+              rocfft_execution_info_create(&plan_info_);
+
+              if(workBufferSize > 0)
+              {
+                  CHECK_HIP(hipMalloc(&work_buffer_, workBufferSize));
+                  rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize);
+              }
+          }
+
+      }
 
     void execute_forward() {
         rocfft_execute(plan_, (void**) &data_, (void**) &data_complex_, plan_info_);
@@ -357,30 +356,38 @@ namespace Rocfft {
         data_complex_ = nullptr;
       }
       if(plan_) {
-        CHECK_HIP( rocfftDestroy(plan_) );
+        CHECK_HIP( rocfft_plan_destroy(plan_) );
         plan_=0;
+      }
+      if(work_buffer_){
+          CHECK_HIP( hipFree(work_buffer_) );
+          work_buffer_ = nullptr;
+      }
+      if(plan_info_){
+          CHECK_HIP(rocfft_execution_info_destroy(plan_info_));
+          plan_info_ = nullptr;
       }
     }
   };
 
     using Inplace_Real = gearshifft::FFT<FFT_Inplace_Real,
                                          FFT_Plan_Reusable,
-                                         RocfftImpl,
+                                         RocFFTImpl,
                                          TimerGPU >;
     using Outplace_Real = gearshifft::FFT<FFT_Outplace_Real,
                                           FFT_Plan_Reusable,
-                                          RocfftImpl,
+                                          RocFFTImpl,
                                           TimerGPU >;
     using Inplace_Complex = gearshifft::FFT<FFT_Inplace_Complex,
                                             FFT_Plan_Reusable,
-                                            RocfftImpl,
+                                            RocFFTImpl,
                                             TimerGPU >;
     using Outplace_Complex = gearshifft::FFT<FFT_Outplace_Complex,
                                              FFT_Plan_Reusable,
-                                             RocfftImpl,
+                                             RocFFTImpl,
                                              TimerGPU >;
 
-} // namespace Rocfft
+} // namespace RocFFT
 } // namespace gearshifft
 
 

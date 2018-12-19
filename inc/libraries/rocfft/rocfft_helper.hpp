@@ -13,15 +13,15 @@
 #include <stdexcept>
 
 #ifndef HIP_DISABLE_ERROR_CHECKING
-#define CHECK_HIP(ans) gearshifft::Rocfft::check_hip((ans), "", #ans, __FILE__, __LINE__)
-#define CHECK_LAST(msg) gearshifft::Rocfft::check_hip(hipGetLastError(), msg, "CHECK_LAST", __FILE__, __LINE__)
+#define CHECK_HIP(ans) gearshifft::RocFFT::check_hip((ans), "", #ans, __FILE__, __LINE__)
+#define CHECK_LAST(msg) gearshifft::RocFFT::check_hip(hipGetLastError(), msg, "CHECK_LAST", __FILE__, __LINE__)
 #else
 #define CHECK_HIP(ans) {}
 #define CHECK_LAST(msg) {}
 #endif
 
 namespace gearshifft {
-namespace Rocfft {
+namespace RocFFT {
 
     inline void rocfftGetVersion(int *version){
         *version = 10000*rocfft_version_major + 100*rocfft_version_minor + rocfft_version_patch;
@@ -134,6 +134,6 @@ namespace Rocfft {
 
     return info;
   }
-} // Rocfft
+} // RocFFT
 } // gearshifft
 #endif

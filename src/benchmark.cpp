@@ -47,8 +47,8 @@ using FFT_Is_Normalized = std::false_type;
 #elif defined(ROCFFT_ENABLED)
 #include "libraries/rocfft/rocfft.hpp"
 
-using namespace gearshifft::rocfft;
-using Context           = FftwContext;
+using namespace gearshifft::RocFFT;
+using Context           = RocFFTContext;
 using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
