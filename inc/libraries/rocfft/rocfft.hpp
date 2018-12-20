@@ -102,7 +102,9 @@ namespace RocFFT {
   size_t estimateAllocSize(rocfft_plan& plan)
   {
       size_t s=0;
-      CHECK_HIP( rocfft_plan_get_work_buffer_size(plan, &s) );
+      if(plan != 0){
+          CHECK_HIP( rocfft_plan_get_work_buffer_size(plan, &s) );}
+
       return s;
   }
 
@@ -167,6 +169,8 @@ namespace RocFFT {
     /// size in bytes of FFT(input) for out-of-place transforms
     size_t       data_complex_size_ = 0;
 
+    size_t       work_buffer_size_allocated_         = 0;
+
     RocFFTImpl(const Extent& cextents) {
       extents_ = interpret_as::column_major(cextents);
       extents_complex_ = extents_;
@@ -188,11 +192,12 @@ namespace RocFFT {
       if(IsInplace==false)
         data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
-
+      rocfft_setup();
     }
 
     ~RocFFTImpl() {
       destroy();
+      rocfft_cleanup();
     }
 
     /**
@@ -221,20 +226,8 @@ namespace RocFFT {
       size_t size2 = 0; // size inverse trafo
 
 
-      size1 = estimateAllocSize(plan_);
-
-      // CHECK_CUDA(rocfftDestroy(plan_));
-      // plan_=0;
-
-      // if(IsHalf)
-      //   size2 = estimateAllocSizeHalf<ComplexType, value_type>(plan_, extents_);
-      // else if(use64bit_)
-      //   size2 = estimateAllocSize64<FFTInverse>(plan_,extents_);
-      // else{
-      //   size2 = estimateAllocSize<FFTInverse>(plan_,extents_);
-      // }
-      // CHECK_CUDA(rocfftDestroy(plan_));
-      // plan_=0;
+      size1 = work_buffer_size_allocated_ > 0 ? work_buffer_size_allocated_ : estimateAllocSize(plan_);
+      size2 = size1;
 
       // check available GPU memory
       size_t mem_free=0, mem_tot=0;
@@ -253,11 +246,33 @@ namespace RocFFT {
       }
       return std::max(size1,size2);
     }
+/**
+     * Free work buffer for rocfft
+     */
+      void free_work_buffer(){
+          if(work_buffer_){
+              CHECK_HIP( hipFree(work_buffer_) );
+              work_buffer_ = nullptr;
+          }
+          work_buffer_size_allocated_ = 0;
+
+      }
+
+/**
+     * Allocate work buffer for rocfft on HIP device (free it first if requred, do nothing if work buffer is already large enough)
+     */
+      void allocate_work_buffer(std::size_t _bytes){
+          if(_bytes > work_buffer_size_allocated_){
+              free_work_buffer();
+              CHECK_HIP(hipMalloc(&work_buffer_, _bytes));
+              work_buffer_size_allocated_ = _bytes;
+          }
+      }
 
     // --- next methods are benchmarked ---
 
     /**
-     * Allocate buffers on CUDA device
+     * Allocate buffers on HIP device
      */
     void allocate() {
       CHECK_HIP(hipMalloc(&data_, data_size_));
@@ -269,63 +284,69 @@ namespace RocFFT {
       }
     }
 
-    // create FFT plan handle
-    void init_forward() {
-        rocfft_plan_create(&plan_,
-                           FFTPlacement,
-                           FFTForward,
-                           FFTPrecision,
-                           extents_.size(), extents_.data(), 1, nullptr);
+      // create FFT plan handle
+      void init_forward() {
 
-        if(data_size_ < 1024){
-            size_t workBufferSize = 0;
-            rocfft_plan_get_work_buffer_size(plan_, &workBufferSize);
+          CHECK_HIP(rocfft_plan_create(&plan_,
+                             FFTPlacement,
+                             FFTForward,
+                             FFTPrecision,
+                                       extents_.size(), extents_.data(), 1, nullptr));
 
-            rocfft_execution_info_create(&plan_info_);
 
-            if(workBufferSize > 0)
-            {
-                CHECK_HIP(hipMalloc(&work_buffer_, workBufferSize));
-                rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize);
-            }
-        }
+          size_t workBufferSize = 0;
+          CHECK_HIP(rocfft_plan_get_work_buffer_size(plan_, &workBufferSize));
 
-    }
+          if(!plan_info_)
+              CHECK_HIP(rocfft_execution_info_create(&plan_info_));
 
-    // recreates plan if needed
+          if(work_buffer_size_allocated_ < workBufferSize)
+          {
+              allocate_work_buffer(workBufferSize);
+              CHECK_HIP(rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize));
+          }
+
+
+      }
+
+      // recreates plan if needed
       void init_inverse() {
-          rocfft_plan_create(&plan_,
+
+          CHECK_HIP(rocfft_plan_create(&plan_,
                              FFTPlacement,
                              FFTInverse,
                              FFTPrecision,
-                             extents_.size(), extents_.data(), 1, nullptr);
-          if(data_size_ < 1024){
-              size_t workBufferSize = 0;
-              rocfft_plan_get_work_buffer_size(plan_, &workBufferSize);
+                                       extents_.size(), extents_.data(), 1, nullptr));
+          size_t workBufferSize = 0;
+          CHECK_HIP(rocfft_plan_get_work_buffer_size(plan_, &workBufferSize));
 
-              rocfft_execution_info_create(&plan_info_);
+          if(!plan_info_)
+              CHECK_HIP(rocfft_execution_info_create(&plan_info_));
 
-              if(workBufferSize > 0)
-              {
-                  CHECK_HIP(hipMalloc(&work_buffer_, workBufferSize));
-                  rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize);
-              }
+          if(work_buffer_size_allocated_ < workBufferSize)
+          {
+              allocate_work_buffer(workBufferSize);
+              CHECK_HIP(rocfft_execution_info_set_work_buffer(plan_info_, work_buffer_, workBufferSize));
           }
+
 
       }
 
     void execute_forward() {
-        rocfft_execute(plan_, (void**) &data_, (void**) &data_complex_, plan_info_);
+
+        CHECK_HIP(rocfft_execute(plan_, (void**) &data_, (void**) &data_complex_, plan_info_));
 
     }
 
     void execute_inverse() {
-        rocfft_execute(plan_, (void**) &data_complex_, (void**) &data_, plan_info_);
+
+        CHECK_HIP(rocfft_execute(plan_, (void**) &data_complex_, (void**) &data_, plan_info_));
 
     }
 
     template<typename THostData>
     void upload(THostData* input) {
+
       if(IsInplaceReal && NDim>1) {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
@@ -338,6 +359,7 @@ namespace RocFFT {
 
     template<typename THostData>
     void download(THostData* output) {
+
       if(IsInplaceReal && NDim>1) {
         size_t w      = extents_[NDim-1] * sizeof(THostData);
         size_t h      = n_ * sizeof(THostData) / w;
