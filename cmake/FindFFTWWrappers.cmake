@@ -162,7 +162,7 @@ endif()
 
 list(APPEND FFTWWrappers_MKL_LIBRARIES "m;dl")
 
-if(NOT FFTW_FIND_QUIETLY)
+if(NOT FFTWWrappers_FIND_QUIETLY)
   message("++ FindFFTWWrappers")
   message("++ FFTWWrappers_GNU_LIBRARIES    : ${FFTWWrappers_GNU_LIBRARIES}")
   message("++ FFTWWrappers_INTEL_LIBRARIES  : ${FFTWWrappers_INTEL_LIBRARIES}")
