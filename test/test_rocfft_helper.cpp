@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestrocFFTHlper
+#define BOOST_TEST_MODULE TestrocFFTHelper
 #include <iostream>
 #include <vector>
 #include <cstdint>
