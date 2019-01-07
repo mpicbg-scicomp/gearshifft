@@ -106,4 +106,4 @@ BOOST_AUTO_TEST_CASE( FFT1D2Threads, * boost::unit_test::tolerance(0.0001) )
   fftw_cleanup();
 }
 #endif
-#endif
+
