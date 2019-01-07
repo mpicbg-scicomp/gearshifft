@@ -192,12 +192,12 @@ namespace RocFFT {
       if(IsInplace==false)
         data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
-      rocfft_setup();
+      CHECK_HIP(rocfft_setup());
     }
 
     ~RocFFTImpl() {
       destroy();
-      rocfft_cleanup();
+      CHECK_HIP(rocfft_cleanup());
     }
 
     /**
