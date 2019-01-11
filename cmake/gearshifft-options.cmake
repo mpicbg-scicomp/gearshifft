@@ -3,7 +3,6 @@
 option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
 option(GEARSHIFFT_USE_STATIC_LIBS "Force static linking Boost and FFTW (use libraries' cmake variables otherwise)." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
-set( GEARSHIFFT_EXT_DIR "${GEARSHIFFT_ROOT}/ext" CACHE STRING "Install directory for external dependencies")
 
 set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
 set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
@@ -35,11 +34,6 @@ set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benc
 set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
 
 #-------------------------------------------------------------------------------
-
-if(GEARSHIFFT_BACKEND_HCFFT)
-  message(FATAL_ERROR "HCFFT is not implemented yet.")
-endif()
-
 
 if(GEARSHIFFT_VERBOSE)
   include(${GEARSHIFFT_ROOT}/cmake/get-gearshifft-options.cmake)

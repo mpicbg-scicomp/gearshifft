@@ -14,6 +14,14 @@ endif()
 #-------------------------------------------------------------------------------
 
 set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}/../..")
+option(GEARSHIFFT_EXT_INBUILD "Builds external libraries in build directory (otherwise it is built in ext/)" ON)
+set( GEARSHIFFT_EXT_DIR "${GEARSHIFFT_ROOT}/ext" CACHE STRING "Install directory for external dependencies")
+
+if(GEARSHIFFT_EXT_INBUILD)
+  set( GEARSHIFFT_EXT_DIR "${CMAKE_BINARY_DIR}/ext" CACHE STRING "" FORCE)
+endif()
+set( GEARSHIFFT_EXT_SOURCE_DIR "${GEARSHIFFT_EXT_DIR}/src" CACHE STRING "Source directory for external dependencies")
+
 
 # gearshifft cmake options (requires GEARSHIFFT_ROOT)
 include(${GEARSHIFFT_ROOT}/cmake/gearshifft-options.cmake)

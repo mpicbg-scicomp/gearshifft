@@ -57,7 +57,9 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
     BUILD_IN_SOURCE 1
     URL ${Boost_url}
     URL_MD5 ${Boost_hash}
-    DOWNLOAD_DIR ${GEARSHIFFT_EXT_DIR}/downloads/
+    PREFIX ${GEARSHIFFT_EXT_DIR}
+    SOURCE_DIR ${GEARSHIFFT_EXT_SOURCE_DIR}/boost
+    DOWNLOAD_DIR ${GEARSHIFFT_ROOT}/ext/downloads/
     UPDATE_COMMAND ""
     # --with-toolset=
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command} --with-libraries=program_options,filesystem,system,test

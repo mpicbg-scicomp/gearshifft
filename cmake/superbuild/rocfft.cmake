@@ -19,12 +19,15 @@ find_library(ROCFFT_LIBRARY_DIR
   PATH_SUFFIXES lib lib64 lib/import lib64/import
   NO_DEFAULT_PATH)
 
-if((NOT ROCFFT_INCLUDE_DIR) OR (NOT EXISTS ${ROCFFT_INCLUDE_DIR})
+if(NOT CMAKE_CXX_COMPILER MATCHES "hcc$")
+  message(WARNING "rocFFT is currently only supported on HCC platform.")
+
+elseif((NOT ROCFFT_INCLUDE_DIR) OR (NOT EXISTS ${ROCFFT_INCLUDE_DIR})
     OR
     (NOT ROCFFT_LIBRARY_DIR) OR (NOT EXISTS ${ROCFFT_LIBRARY_DIR})
     )
 
-  message("'rocfft' library could not be found, so [make] will download and build it (HCC must be available).")
+  message("'rocfft' library could not be found, so [make] will download and build it.")
 
   set(HIP_PLATFORM "hcc")
 
@@ -51,9 +54,9 @@ if((NOT ROCFFT_INCLUDE_DIR) OR (NOT EXISTS ${ROCFFT_INCLUDE_DIR})
     GIT_TAG ${GEARSHIFFT_EXT_ROCFFT_VERSION}
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
-    SOURCE_DIR rocFFT
+    SOURCE_DIR ${GEARSHIFFT_EXT_SOURCE_DIR}/rocFFT
     # SOURCE_SUBDIR library/src
-    BINARY_DIR rocfft-build
+    BINARY_DIR ${GEARSHIFFT_EXT_SOURCE_DIR}/rocfft-build
     CMAKE_ARGS
     -DHIP_PLATFORM=${HIP_PLATFORM}
     -DBUILD_CLIENTS_SAMPLES=OFF
