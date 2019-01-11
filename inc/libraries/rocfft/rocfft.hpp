@@ -10,9 +10,9 @@
 
 #include "rocfft_helper.hpp"
 
-#include "hip/hip_runtime_api.h"
-#include "hip/hip_vector_types.h"
-#include "rocfft.h"
+#include <hip/hip_runtime_api.h>
+#include <hip/hip_vector_types.h>
+#include <rocfft.h>
 
 #include <array>
 #include <regex>

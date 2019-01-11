@@ -6,9 +6,8 @@
 #include <hip/hip_runtime_api.h>
 #include <rocfft.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <rocfft.h>
+#include <cstdio>
+#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 
@@ -23,9 +22,8 @@
 namespace gearshifft {
 namespace RocFFT {
 
-    inline void rocfftGetVersion(int *version){
+    inline void getRocfftVersion(int *version){
         *version = 10000*rocfft_version_major + 100*rocfft_version_minor + rocfft_version_patch;
-        return;
     }
 
   inline
@@ -85,7 +83,7 @@ namespace RocFFT {
     }
   }
   inline
-  void check_hip(rocfft_status_e code, const char* msg,  const char *func, const char *file, int line) {
+  void check_hip(rocfft_status_e code, const char* /*msg*/,  const char *func, const char *file, int line) {
     if (code != rocfft_status_success) {
       throw_error(static_cast<int>(code),
                   rocfftResultToString(code), "rocfft", func, file, line);
@@ -99,7 +97,7 @@ namespace RocFFT {
     //int runtimeVersion = 0;
     int rocfftv = 0;
     size_t f=0, t=0;
-    CHECK_HIP(rocfftGetVersion(&rocfftv));
+    getRocfftVersion(&rocfftv);
     //CHECK_HIP( hipRuntimeGetVersion(&runtimeVersion) );
     CHECK_HIP(hipGetDeviceProperties(&prop, dev));
     CHECK_HIP(hipMemGetInfo(&f, &t));

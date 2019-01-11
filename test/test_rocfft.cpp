@@ -1,16 +1,17 @@
 #define BOOST_TEST_MODULE TestrocFFT
+#include "libraries/rocfft/rocfft_helper.hpp"
+
+#include <hip/hip_runtime_api.h>
+#include <hip/hip_vector_types.h>
+#include <rocfft.h>
+
+#include <boost/test/unit_test.hpp>
+
+#include <cstdint>
+
 #include <iostream>
 #include <vector>
 #include <complex>
-
-#include <cstdint>
-#include "hip/hip_runtime_api.h"
-#include "hip/hip_vector_types.h"
-#include "rocfft.h"
-#include <boost/test/unit_test.hpp>
-#include <iostream>
-
-#include "libraries/rocfft/rocfft_helper.hpp"
 
 BOOST_AUTO_TEST_CASE( FFT1DSmall, * boost::unit_test::tolerance(0.0001f) )
 {
