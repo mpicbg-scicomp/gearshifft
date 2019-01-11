@@ -270,7 +270,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
   if(GEARSHIFFT_USE_STATIC_LIBS)
     set(FFTW_USE_STATIC_LIBS ON) # otherwise find libs automatically
   endif()
-  find_package(FFTW ${_QUIET} COMPONENTS float double) #TODO: only optional float/double in benchmark
+  find_package(FFTW ${_QUIET})
 
   if(FFTW_FOUND)
 
