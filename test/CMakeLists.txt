@@ -20,6 +20,8 @@ endif()
 gearshifft_add_test(test_clfft gearshifft::CLFFT test_clfft.cpp)
 gearshifft_add_test(test_clfft_global gearshifft::CLFFT test_clfft_global_fixture.cpp)
 gearshifft_add_test(test_fftw gearshifft::FFTW test_fftw.cpp)
+gearshifft_add_test(test_rocfft_helper gearshifft::ROCFFT test_rocfft_helper.cpp)
+gearshifft_add_test(test_rocfft gearshifft::ROCFFT test_rocfft.cpp)
 
 # test the gearshifft back-end with a small 32-point FFT
 
@@ -49,4 +51,12 @@ if(TARGET gearshifft::CUFFT AND NOT GEARSHIFFT_TESTS_ADD_CPU_ONLY)
     COMMAND ${CMAKE_BINARY_DIR}/gearshifft/gearshifft_cufft -l)
   add_test(NAME gearshifft_cufft
     COMMAND ${CMAKE_BINARY_DIR}/gearshifft/gearshifft_cufft -e 32)
+endif()
+
+if(TARGET gearshifft::ROCFFT)
+  #https://github.com/ROCmSoftwarePlatform/rocFFT/wiki/Example-cpp-code-calling-rocFFT-routine-with--gnu-compiler
+  add_test(NAME gearshifft_rocfft_list
+    COMMAND ${CMAKE_BINARY_DIR}/gearshifft/gearshifft_rocfft -l)
+  add_test(NAME gearshifft_rocfft
+    COMMAND ${CMAKE_BINARY_DIR}/gearshifft/gearshifft_rocfft -e 32)
 endif()

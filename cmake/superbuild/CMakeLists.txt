@@ -62,6 +62,20 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
+# ROCM+rocFFT
+#------------------------------------------------------------------------------
+option(GEARSHIFFT_EXT_USE_SYSTEM_ROCFFT "Use system libraries for rocfft" OFF )
+
+if(NOT GEARSHIFFT_EXT_USE_SYSTEM_ROCFFT)
+  # looks in /gearshifft/ext/rocfft, and may download+build it
+  # sets ROCFFT_ROOT
+  include(rocfft.cmake)
+else()
+  set(ROCFFT_ROOT "")
+endif()
+
+
+#------------------------------------------------------------------------------
 # gearshifft
 #------------------------------------------------------------------------------
 
@@ -74,6 +88,7 @@ if(GEARSHIFFT_USE_STATIC_LIBS AND NOT GEARSHIFFT_EXT_USE_SYSTEM_Boost)
   # TODO: not supported yet
   set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 endif()
+
 
 ExternalProject_Add( gearshifft
   DEPENDS ${gearshifft_DEPENDENCIES}
@@ -93,5 +108,7 @@ ExternalProject_Add( gearshifft
   -DBOOST_ROOT:PATH=${BOOST_ROOT}
   -DFFTW_ROOT:PATH=${FFTW_ROOT}
   -DCLFFT_ROOT:PATH=${CLFFT_ROOT}
+  -DROCFFT_ROOT:PATH=${ROCFFT_ROOT}
   INSTALL_COMMAND ""
   )
+

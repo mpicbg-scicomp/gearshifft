@@ -14,7 +14,7 @@ option(GEARSHIFFT_BACKEND_CLFFT "Compile gearshifft_clfft if possible" ON)
 option(GEARSHIFFT_BACKEND_FFTW  "Compile gearshifft_fftw if possible" ON)
 option(GEARSHIFFT_BACKEND_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if found" ON)
 option(GEARSHIFFT_BACKEND_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF)
-option(GEARSHIFFT_BACKEND_HCFFT "< Not implemented yet >" OFF)
+option(GEARSHIFFT_BACKEND_ROCFFT "Compile gearshifft_rocfft if possible (requires HCC as compiler)" ON)
 
 # precisions
 set(GEARSHIFFT_PRECISION_HALF_ONLY "0" CACHE STRING "Compile benchmarks in half precision only.")

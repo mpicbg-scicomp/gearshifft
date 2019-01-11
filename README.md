@@ -301,6 +301,7 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - clFFT on CPU cannot transform the 4096-FFT and 4096x4096-FFTs (see [this issue](https://github.com/clMathLibraries/clFFT/issues/171))
 - clFFT seems to have lower transform size limits on CPU than on GPU (a complex 16384x16384 segfaults on clfft CPU, while it works on GPU). gearshifft marks these cases as "Unsupported lengths" and skips them.
+- rocFFT is currently only supported on the HCC platform (no support for rocFFT->cuFFT path)
 - At the moment this is for single-GPUs, batches are not considered
 - if `gearshifft` is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the Boost version (e.g. 1.62.0) you have is more recent than your `cmake` (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`

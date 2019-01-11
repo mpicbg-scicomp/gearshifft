@@ -128,6 +128,11 @@ target_compile_definitions(Common INTERFACE
   )
 #TODO: check paths
 
+if(NOT Boost_VERSION VERSION_LESS 1.68.0)
+  # https://github.com/boostorg/system/issues/26
+  target_compile_definitions(Common INTERFACE BOOST_ERROR_CODE_HEADER_ONLY)
+endif()
+
 target_link_libraries(Common INTERFACE
   gearshifft_version
   Boost::system
@@ -217,6 +222,42 @@ if(GEARSHIFFT_BACKEND_CLFFT)
         )
 
       message(STATUS " gearshifft::CLFFT enabled")
+    endif()
+  endif()
+endif()
+#------------------------------------------------------------------------------
+# ROCM+ROCFFT
+#------------------------------------------------------------------------------
+if(GEARSHIFFT_BACKEND_ROCFFT)
+  find_package(rocfft ${_QUIET}) # TODO: config via rocfft lib, e.g., /opt/rocm/rocfft/lib/cmake/rocfft
+  if(rocfft_FOUND)
+
+    find_package(hip ${_QUIET}) # needed for HC includes (target hip::hip_hcc does that)
+
+    if(hip_FOUND AND hcc_DIR)
+      if(NOT CMAKE_CXX_COMPILER MATCHES "hipcc$|hcc$")
+        message(FATAL_ERROR "HCC required. Please rerun cmake with cmake -DCMAKE_CXX_COMPILER=hcc ... or disable ROCFFT backend.")
+      endif()
+      add_library(ROCFFT INTERFACE)
+      add_library(gearshifft::ROCFFT ALIAS ROCFFT)
+
+      # TODO: what is about that flag?
+      include(CheckCCompilerFlag)
+      include(CheckCXXCompilerFlag)
+      check_cxx_compiler_flag(-Wno-unused-command-line-argument HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+      if(HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+        target_compile_options( ROCFFT INTERFACE -Wno-unused-command-line-argument )
+      endif()
+
+      # find_and_add_openmp(ROCFFT ${_QUIET})
+      target_compile_definitions(ROCFFT INTERFACE ROCFFT_ENABLED)
+      target_link_libraries(ROCFFT INTERFACE
+        Common
+        roc::rocfft
+        hip::hip_hcc
+        # ${CMAKE_DL_LIBS} # TODO: needed?
+        )
+      message(STATUS " gearshifft::ROCFFT enabled.")
     endif()
   endif()
 endif()
@@ -340,7 +381,6 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     target_link_libraries(FFTWWrappers INTERFACE
       -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group
       )
-
     message(STATUS " gearshifft::FFTWWrappers enabled.")
 
   endif() # compiler match fftwwrappers
@@ -354,6 +394,7 @@ if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::CLFFT
     AND NOT TARGET gearshifft::FFTW
     AND NOT TARGET gearshifft::FFTWWrappers
+    AND NOT TARGET gearshifft::ROCFFT
     )
   message(WARNING "No FFT backend found.")
 endif()
