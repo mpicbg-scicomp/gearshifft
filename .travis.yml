@@ -5,7 +5,7 @@ sudo: required
 language: cpp
 
 sudo: false
-    
+
 branches:
     only:
         - master
@@ -19,7 +19,7 @@ env:
         #- GEARSHIFFT_CLFFT_VERSION=v2.12.2
         - CLANG_VERSION=3.8
         - FFTW_CACHE_PATH=${TRAVIS_BUILD_DIR}/deps/fftw
-        
+
 cache:
     directories:
         - ${TRAVIS_BUILD_DIR}/deps/cuda-${CUDA_VERSION_SHORT}
@@ -37,7 +37,7 @@ addons:
             - cmake
             - libfftw3-dev
             - opencl-headers
-            
+
 matrix:
     include:
         - name: Clang-3.8 CUDA-8.0.61 Boost-1.60.0 FFTW3 Release
@@ -49,7 +49,7 @@ matrix:
         - name: g++-5 CUDA-8.0.61 Boost-1.60.0 FFTW3 Debug
           compiler: gcc
           env: GEARSHIFFT_BUILD_TYPE=Debug
-  
+
 before_install:
     - set -e
     - travis_retry sudo apt-get install -qq g++-5
