@@ -214,7 +214,7 @@ endif()
 # FFTW Wrappers of MKL
 #------------------------------------------------------------------------------
 
-find_package(FFTWWrappers)
+find_package(FFTWWrappers QUIET)
 if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(FFTWWrappers_GNU_LIBRARIES)
@@ -234,7 +234,7 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     message(WARNING "Could not detect GNU or Intel compiler.")
   endif()
 
-#  link_directories(${FFTWWrappers_LIBRARY_DIR})
+
 endif(FFTWWrappers_FOUND)
 
 if(FFTWWrappers_LIBRARIES)
@@ -248,7 +248,7 @@ if(FFTWWrappers_LIBRARIES)
   set(GEARSHIFFT_FFTW_USE_THREADS 1) #
 
   list(APPEND FFTLIBS fftwwrappers)
-  message(">> FFTWWrappers -> ${FFTWWrappers_LIBRARIES}")
+  message(">> FFTWWrappers found! ${FFTWWrappers_LIBRARIES}")
 else()
   message("<< FFTWWrappers benchmark disabled.")
 endif()
