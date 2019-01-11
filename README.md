@@ -4,7 +4,7 @@
 
 This is a simple and easy extensible benchmark system to answer the question, which FFT library performs best under which conditions.
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
-This project is still in development. 
+This project is still in development.
 
 If you want to just browse our results, see the [raw benchmark data](https://www.github.com/mpicbg-scicomp/gearshifft_results/) or our [online visualisation and comparison tool](https://www.kcod.de/gearshifft/).
 
@@ -17,7 +17,7 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 - CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.59+
   - should be compiled with same compiler version or ...
-  - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
+  - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
 
 ## Build
@@ -116,7 +116,7 @@ if [ "$1" == "clean" ]; then
   echo "clean sources"
   rm -rf fftw-${VERS_single} fftw-${VERS_double}
 fi
-# if directories do not exist, create them and unpack fftw_**.tar.gz 
+# if directories do not exist, create them and unpack fftw_**.tar.gz
 if [ ! -d "fftw-${VERS_single}" ] && [ ! -d "fftw-${VERS_double}" ]; then
   wget http://www.fftw.org/fftw-${VERS}.tar.gz
   mkdir fftw-${VERS_single}
@@ -166,25 +166,25 @@ make test
 
 See help message (pass `--help|-h`) for the command line options.
 ```
-  -h [ --help ]                     Print help messages                                                                                      
-  -e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of                                                              
-                                    args possible]                                                                                           
-  -f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.                                                                
-                                    of args possible]                                                                                        
-  -o [ --output ] arg (=result.csv) output csv file, will be overwritten!                                                                    
-  -v [ --verbose ]                  for console output                                                                                       
-  -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If                                                                  
-                                    device is not supported by FFT lib, then it                                                              
-                                    is ignored and default is used.                                                                          
-  -n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by                                                               
-                                    FFT lib (e.g. clfft and fftw with n CPU                                                                  
-                                    threads).                                                                                                
-  -l [ --list-devices ]             List of available compute devices with IDs,                                                              
-                                    if supported.                                                                                            
+  -h [ --help ]                     Print help messages
+  -e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of
+                                    args possible]
+  -f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.
+                                    of args possible]
+  -o [ --output ] arg (=result.csv) output csv file, will be overwritten!
+  -v [ --verbose ]                  for console output
+  -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If
+                                    device is not supported by FFT lib, then it
+                                    is ignored and default is used.
+  -n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by
+                                    FFT lib (e.g. clfft and fftw with n CPU
+                                    threads).
+  -l [ --list-devices ]             List of available compute devices with IDs,
+                                    if supported.
   -b [ --list-benchmarks ]          Show registered benchmarks
-  -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards 
+  -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards
                                     possible, e.g. ClFFT/float/*/Inplace_Real)
-  --rigor arg (=measure)            FFTW rigor (measure, estimate, wisdom, 
+  --rigor arg (=measure)            FFTW rigor (measure, estimate, wisdom,
                                     patient or exhaustive)
   --wisdom_sp arg                   Wisdom file for single-precision.
   --wisdom_dp arg                   Wisdom file for double-precision.
@@ -207,7 +207,7 @@ The extents configurations are loaded by the `gearshifft` command-line interface
 ./gearshifft_fftw -f myextents.conf
 ```
 
-### Examples 
+### Examples
 
 Runs complete benchmark for clFFT (also applies for cuFFT, FFTW, ..)
 ```bash
@@ -271,12 +271,12 @@ The library dependent FFT steps are abstracted, where following steps are wrappe
 - total time (allocation, planning, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
 
-Furthermore, the required buffer sizes to run the FFT are recorded. 
+Furthermore, the required buffer sizes to run the FFT are recorded.
 
 ## CSV Output
 
 The results of the benchmark runs are stored into a comma-separated values file (.csv), after the last run has been completed.
-To ease evaluation, the entries are sorted by columns 
+To ease evaluation, the entries are sorted by columns
 - FFT transform kind and precision
 - dimkind (oddshape, powerof2, radix357)
  - oddshape: at least one extent is not a combination of a power of 2,3,5,7
