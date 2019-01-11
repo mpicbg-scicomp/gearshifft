@@ -14,11 +14,12 @@ macro(find_and_add_openmp TARGET)
       if(TARGET OpenMP::OpenMP_CXX)
         target_link_libraries(${TARGET} INTERFACE OpenMP::OpenMP_CXX)
       else()
+        add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
         # Clang may need -fopenmp=libiomp5 instead, can't be detected here without CMake 3.9
-        set_property(TARGET ${TARGET}
+        set_property(TARGET OpenMP::OpenMP_CXX
           PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
         # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
-        set_property(TARGET ${TARGET}
+        set_property(TARGET OpenMP::OpenMP_CXX
           PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
       endif()
     endif()

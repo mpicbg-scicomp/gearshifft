@@ -244,7 +244,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
 
         find_and_add_openmp(FFTW ${_QUIET})
 
-        if(HELPER_OPENMP_FOUND)
+        if(TARGET OpenMP::OpenMP_CXX)
           set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
         else()
           message(WARNING "Could not find OpenMP")
@@ -311,7 +311,7 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
     find_and_add_openmp(FFTWWrappers ${_QUIET})
 
-    if(HELPER_OPENMP_FOUND)
+    if(TARGET OpenMP::OpenMP_CXX)
       set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
     endif()
 
@@ -360,7 +360,7 @@ endif()
 
 #-------------------------------------------------------------------------------
 
-add_subdirectory(gearshifft)
+add_subdirectory(src gearshifft)
 
 include(CTest) # defines: BUILD_TESTING, default is ON
 
