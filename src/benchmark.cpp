@@ -44,6 +44,17 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Complex >;
 using Precisions        = List<float, double>;
 using FFT_Is_Normalized = std::false_type;
+#elif defined(ROCFFT_ENABLED)
+#include "libraries/rocfft/rocfft.hpp"
+
+using namespace gearshifft::RocFFT;
+using Context           = RocFFTContext;
+using FFTs              = List<Inplace_Real,
+                               Inplace_Complex,
+                               Outplace_Real,
+                               Outplace_Complex >;
+using Precisions        = List<float, double>;
+using FFT_Is_Normalized = std::false_type;
 #endif
 
 // ----------------------------------------------------------------------------

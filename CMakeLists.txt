@@ -38,7 +38,7 @@ option(GEARSHIFFT_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" 
 option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if available?" ON)
 option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
 option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
-option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
+option(GEARSHIFFT_ROCFFT "(experimental) Compile gearshifft_rocfft if available?" OFF)
 option(GEARSHIFFT_FLOAT16_SUPPORT "Enable float16 data type (cufft and ComputeCapability 5.3+ only)" OFF)
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
@@ -78,6 +78,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
+#set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
 
 #------------------------------------------------------------------------------
@@ -153,19 +154,24 @@ if(NOT CLFFT_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# ROCM+HCFFT
+# ROCM+ROCFFT
 #------------------------------------------------------------------------------
-
-find_package(hcFFT)
-if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
-  include_directories(${HCFFT_INCLUDE_DIRS})
-  list(APPEND FFTLIBS "hcfft") # register fft lib client for compilation
-  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
-  message(">> Warning: no runner for hcfft implemented yet")
+if(GEARSHIFFT_ROCFFT)
+  find_package(rocfft)
+  include(CheckCCompilerFlag)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag(-Wno-unused-command-line-argument HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+  if(rocfft_FOUND)
+    find_package(hip)
+    list(APPEND FFTLIBS "rocfft") # register fft lib client for compilation
+    message(STATUS ">> rocfft -> " ${rocfft_INCLUDE_DIR})
+  else()
+    message(WARNING ">> rocfft not found .${rocfft_INCLUDE_DIR}. ")
+  endif()
 endif()
 
-if(NOT HCFFT_FOUND)
-  message("<< hcFFT benchmark disabled.")
+if(NOT rocfft_FOUND OR NOT GEARSHIFFT_ROCFFT)
+  message("<< rocfft benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
