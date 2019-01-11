@@ -99,7 +99,7 @@ namespace RocFFT {
     //int runtimeVersion = 0;
     int rocfftv = 0;
     size_t f=0, t=0;
-    rocfftGetVersion(&rocfftv);
+    CHECK_HIP(rocfftGetVersion(&rocfftv));
     //CHECK_HIP( hipRuntimeGetVersion(&runtimeVersion) );
     CHECK_HIP(hipGetDeviceProperties(&prop, dev));
     CHECK_HIP(hipMemGetInfo(&f, &t));
