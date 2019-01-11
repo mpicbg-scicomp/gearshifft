@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( FFT1D, * boost::unit_test::tolerance(0.0001) )
   fftw_cleanup();
 }
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
 BOOST_AUTO_TEST_CASE( FFT1D2Threads, * boost::unit_test::tolerance(0.0001) )
 {
   static const int N = 32;

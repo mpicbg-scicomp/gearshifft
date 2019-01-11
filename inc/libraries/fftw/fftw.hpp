@@ -378,7 +378,7 @@ namespace fftw {
     static std::string get_device_list() {
       std::ostringstream msg;
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       int av_procs = std::thread::hardware_concurrency();
       msg << av_procs << " CPU Threads supported.\n";
 #else
@@ -390,7 +390,7 @@ namespace fftw {
 
     std::string get_used_device_properties() {
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       // Returns the number of supported concurrent threads of implementation
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = options().getNumberDevices();
@@ -540,7 +540,7 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
@@ -555,13 +555,13 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       traits::thread_api<TPrecision>::cleanup_threads();
 #else
       traits::no_thread_api<TPrecision>::cleanup();
 #endif
     }
-      
+
     /**
      * Returns allocated memory for FFT
      */
@@ -609,7 +609,7 @@ namespace fftw {
      get_plan_size() should return 0, Sizes of transform buffers are already returned by get_allocation_size().
     */
     size_t get_plan_size() {
-      
+
       return 0;
     }
 

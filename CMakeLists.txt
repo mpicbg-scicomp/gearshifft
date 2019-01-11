@@ -319,7 +319,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
       target_include_directories(FFTW INTERFACE ${FFTW_INCLUDE_DIR})
       target_compile_definitions(FFTW INTERFACE
         FFTW_ENABLED
-        GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
+        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
       target_link_libraries(FFTW INTERFACE
         Common
         $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
@@ -359,7 +359,7 @@ if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
     target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
     target_compile_definitions(FFTWWrappers INTERFACE
       FFTW_ENABLED
-      GEARSHIFFT_USE_FFTW_THREADS=${GEARSHIFFT_USE_FFTW_THREADS})
+      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
     target_link_libraries(FFTWWrappers INTERFACE
       Common
 #      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
