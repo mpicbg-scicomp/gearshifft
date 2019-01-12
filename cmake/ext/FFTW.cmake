@@ -49,6 +49,8 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
     set(BUILD_LIBS "shared")
   endif()
 
+  #FFTW does not distinguish between "release" and "debug"
+
   set(FFTW_BUILD_FLAGS --enable-openmp --enable-sse2 -q --enable-${BUILD_LIBS}=yes --with-gnu-ld  --enable-silent-rules --with-pic)
   ExternalProject_Add(fftw
     BUILD_IN_SOURCE 1

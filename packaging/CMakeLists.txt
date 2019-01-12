@@ -1,7 +1,7 @@
 
 set(CPACK_PACKAGE_NAME gearshifft)
 set(CPACK_PACKAGE_VENDOR mpicbg-scicomp)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "FFT library benchmark suite for cuFFT, clFFT and FFTW")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "FFT library benchmark suite for cuFFT, clFFT, FFTW and rocFFT(hcc)")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
 set(CPACK_PACKAGE_VERSION_MAJOR     ${PROJECT_VERSION_MAJOR})
@@ -24,6 +24,7 @@ set(CPACK_COMPONENTS_ALL ${GEARSHIFFT_COMPONENTS} config)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
+list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};gearshifft;ALL;/")
 # default system name by cmake
 set(SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 
@@ -37,7 +38,7 @@ elseif(APPLE)
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-  include(${GEARSHIFFT_ROOT}/cmake/linux-distro-helper.cmake)
+  include(gearshifft_linux_distro)
   set(SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${GEARSHIFFT_LINUX_DISTRO}") # overwrite to include distro
 
   # always generate tar
@@ -67,10 +68,6 @@ set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CP
 
 
 include(CPack)
-
-if(NOT CMAKE_SOURCE_DIR MATCHES "superbuild" AND NOT GEARSHIFFT_USE_STATIC_LIBS)
-  message(STATUS "Note:\n   For packaging '/gearshifft/cmake/superbuild' is available for cmake, where static libs can be configured.")
-endif()
 
 foreach(comp ${GEARSHIFFT_COMPONENTS})
   cpack_add_component(${comp} DESCRIPTION "gearshifft benchmark binary")

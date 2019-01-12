@@ -8,31 +8,49 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 else()
   cmake_policy(VERSION 3.12)
 endif()
-
 #-------------------------------------------------------------------------------
-
 set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
 
-# guard against in-source builds and default build-type
-include(cmake/safeguards.cmake)
-
 # cmake module path with additional finders
-list(APPEND CMAKE_MODULE_PATH ${GEARSHIFFT_ROOT}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH
+  ${GEARSHIFFT_ROOT}/cmake
+  ${GEARSHIFFT_ROOT}/cmake/modules
+  )
+#-------------------------------------------------------------------------------
+# guard against in-source builds and default build-type
+include(safeguards)
+include(init_build_type)
+include(CMakeDependentOption)
+#-------------------------------------------------------------------------------
+
+# gearshifft cmake options (requires GEARSHIFFT_ROOT)
+include(gearshifft_options)
+
+# Superbuild (enabled by default)
+option(GEARSHIFFT_USE_SUPERBUILD "Invokes gearshifft superbuild" ON)
+
+if(GEARSHIFFT_USE_SUPERBUILD)
+  project(GEARSHIFFT_SUPERBUILD NONE)
+  # execute the superbuild (this script will be invoked again without the
+  # USE_SUPERBUILD option this time)
+  include(superbuild)
+
+  return()                      # <-- STOP processing this file further
+
+endif()
+
 #-------------------------------------------------------------------------------
 
 project(gearshifft
   VERSION 0.4.0
   LANGUAGES C CXX)
 
-# gearshifft cmake options (requires GEARSHIFFT_ROOT)
-include(${GEARSHIFFT_ROOT}/cmake/gearshifft-options.cmake)
-
 # half-code for half precision data type
 if(GEARSHIFFT_FLOAT16_SUPPORT)
-  include(${GEARSHIFFT_ROOT}/cmake/half.cmake)
+  include(ext/half)
 endif()
 
-include(${GEARSHIFFT_ROOT}/cmake/openmp-helper.cmake)
+include(find_and_add_openmp)
 
 #------------------------------------------------------------------------------
 
@@ -45,8 +63,10 @@ endif()
 #------------------------------------------------------------------------------
 # Boost
 #------------------------------------------------------------------------------
+
 if(GEARSHIFFT_USE_STATIC_LIBS)
   set(Boost_USE_STATIC_LIBS ON) # otherwise find libs automatically
+  message(STATUS "Static linking with Boost system libraries may give linker error. Enable GEARSHIFFT_EXT_DOWNLOAD_Boost then (requires GEARSHIFFT_USE_SUPERBUILD).")
 endif()
 find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   system
@@ -54,7 +74,7 @@ find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   program_options
   )
 
-include(${GEARSHIFFT_ROOT}/cmake/BoostTargets.cmake)
+include(boost_targets)
 
 #----------------------------------------------------------------------------
 # Generic target

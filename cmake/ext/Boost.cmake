@@ -53,6 +53,7 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
     set(BUILD_LIBS "shared")
   endif()
 
+  # currently builds always in release
   ExternalProject_Add(Boost
     BUILD_IN_SOURCE 1
     URL ${Boost_url}
