@@ -9,7 +9,10 @@ else()
   cmake_policy(VERSION 3.12)
 endif()
 #-------------------------------------------------------------------------------
-set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
+if(NOT GEARSHIFFT_ROOT)
+  set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
+endif()
+
 
 # cmake module path with additional finders
 list(APPEND CMAKE_MODULE_PATH
@@ -20,7 +23,6 @@ list(APPEND CMAKE_MODULE_PATH
 # guard against in-source builds and default build-type
 include(safeguards)
 include(init_build_type)
-include(CMakeDependentOption)
 #-------------------------------------------------------------------------------
 
 # gearshifft cmake options (requires GEARSHIFFT_ROOT)
@@ -66,7 +68,7 @@ endif()
 
 if(GEARSHIFFT_USE_STATIC_LIBS)
   set(Boost_USE_STATIC_LIBS ON) # otherwise find libs automatically
-  message(STATUS "Static linking with Boost system libraries may give linker error. Enable GEARSHIFFT_EXT_DOWNLOAD_Boost then (requires GEARSHIFFT_USE_SUPERBUILD).")
+  message(STATUS "Static linking with Boost system libraries may give linker problems. Enable GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost then (requires GEARSHIFFT_USE_SUPERBUILD).")
 endif()
 find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
   system
@@ -346,8 +348,8 @@ if(GEARSHIFFT_BACKEND_FFTW)
         $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_PTHREADS},ON>:${FFTW_THREADS_LIBS}>
         ${FFTW_SERIAL_LIBS}
         $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+        "-fopenmp" # TODO:
         )
-
       message(STATUS " gearshifft::FFTW enabled.")
     endif()
   endif()
@@ -357,54 +359,55 @@ endif()
 # FFTW Wrappers of MKL
 #------------------------------------------------------------------------------
 
-# TODO: add backend cmake option for FFTWWrappers
-find_package(FFTWWrappers ${_QUIET})
-if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
+if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
+  find_package(FFTWWrappers ${_QUIET})
+  if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
 
-  if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
-      AND FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    message(WARNING "Compiler does not match found FFTWWrappers")
-  else()
+    if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+        AND FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+      message(WARNING "Compiler does not match found FFTWWrappers")
+    else()
 
-    add_library(FFTWWrappers INTERFACE)
-    add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
+      add_library(FFTWWrappers INTERFACE)
+      add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
 
-    # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
-    find_and_add_openmp(FFTWWrappers ${_QUIET})
+      # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
+      find_and_add_openmp(FFTWWrappers ${_QUIET})
 
-    if(TARGET OpenMP::OpenMP_CXX)
-      set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
-    endif()
+      if(TARGET OpenMP::OpenMP_CXX)
+        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+      endif()
 
-    target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
-    target_compile_definitions(FFTWWrappers INTERFACE
-      FFTW_ENABLED
-      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
-    target_link_libraries(FFTWWrappers INTERFACE
-      Common
-#      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
-      )
-
-    if(FFTWWrappers_GNU_LIBRARIES)
+      target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
+      target_compile_definitions(FFTWWrappers INTERFACE
+        FFTW_ENABLED
+        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
       target_link_libraries(FFTWWrappers INTERFACE
-        $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
-        $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
+        Common
+        #      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
         )
-    endif()
 
-    if(FFTWWrappers_INTEL_LIBRARIES)
+      if(FFTWWrappers_GNU_LIBRARIES)
+        target_link_libraries(FFTWWrappers INTERFACE
+          $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
+          $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
+          )
+      endif()
+
+      if(FFTWWrappers_INTEL_LIBRARIES)
+        target_link_libraries(FFTWWrappers INTERFACE
+          $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
+          )
+      endif()
+
       target_link_libraries(FFTWWrappers INTERFACE
-        $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
+        -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group
         )
-    endif()
+      message(STATUS " gearshifft::FFTWWrappers enabled.")
 
-    target_link_libraries(FFTWWrappers INTERFACE
-      -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group
-      )
-    message(STATUS " gearshifft::FFTWWrappers enabled.")
+    endif() # compiler match fftwwrappers
 
-  endif() # compiler match fftwwrappers
-
+  endif()
 endif()
 
 

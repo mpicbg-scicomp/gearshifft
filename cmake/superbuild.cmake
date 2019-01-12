@@ -81,15 +81,17 @@ endif()
 
 include(get_gearshifft_options)
 get_gearshifft_options(cmake_pass_args ";-D") # ; to convert to a list
+set(SEPARATE_BACKENDS)
 
-function(append_args ARGS)
-  foreach(ARG in ${ARGS})
-    if(ARG)
-      set(cmake_pass_args "${cmake_pass_args};-D${ARG}=${${ARG}}")
+macro(append_args VAR)
+  foreach(ARG IN ITEMS ${ARGN})
+    if(${ARG})
+      string(APPEND ${VAR} ";-D${ARG}=${${ARG}}")
     endif()
   endforeach()
-endfunction()
+endmacro()
 
+# builds specific backend, changes to cmake_pass_args remains local (as it is a cmake function)
 function(build_gearshifft BACKEND)
   if(BACKEND MATCHES "rocfft")
     if(NOT CMAKE_CXX_COMPILER MATCHES "hcc$")
@@ -100,19 +102,24 @@ function(build_gearshifft BACKEND)
       endif()
       set(CMAKE_CXX_COMPILER ${PROGRAM_HCC})
     endif()
-    append_args(ROCFFT_ROOT)
-    # TODO: disable other backends
+    append_args(cmake_pass_args
+      ROCFFT_ROOT
+      CMAKE_CXX_COMPILER)
+    set(cmake_pass_args "${cmake_pass_args};-DGEARSHIFFT_BACKEND_ROCFFT_ONLY=ON")
   else()
-    set(cmake_pass_args "${cmake_pass_args};-DGEARSHIFFT_BACKEND_ROCFFT=OFF")
-    append_args(BOOST_ROOT
+    append_args(cmake_pass_args
+      BOOST_ROOT
       FFTW_ROOT
       CLFFT_ROOT)
+    set(cmake_pass_args "${cmake_pass_args};-DGEARSHIFFT_BACKEND_ROCFFT=OFF")
   endif()
+
   if(BACKEND)
     set(BACKEND "-${BACKEND}")
   else()
     set(BACKEND "")
   endif()
+
   ExternalProject_Add( gearshifft${BACKEND}
     DEPENDS ${gearshifft_DEPENDENCIES}
     DOWNLOAD_COMMAND ""
@@ -124,27 +131,26 @@ function(build_gearshifft BACKEND)
     CMAKE_ARGS
     ${cmake_pass_args}
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DGEARSHIFFT_USE_SUPERBUILD:BOOL=OFF
-    -DCPACK_INSTALL_CMAKE_PROJECTS=${CPACK_INSTALL_CMAKE_PROJECTS}
+    -DGEARSHIFFT_SUPERBUILD_DIR:PATH=${CMAKE_BINARY_DIR}
+    -DSEPARATE_BACKENDS:LIST=${SEPARATE_BACKENDS}
     INSTALL_COMMAND ""
     )
+  set(SEPARATE_BACKENDS "gearshifft${BACKEND};${SEPARATE_BACKENDS}" PARENT_SCOPE)
 endfunction()
 
+# always as separate build due to probably different compiler chain (eg HCC, g++, ..)
 if(GEARSHIFFT_BACKEND_ROCFFT)
   build_gearshifft("rocfft")
-  if(EXISTS "${CMAKE_BINARY_DIR}/gearshifft-rocfft-build/gearshifft/gearshifft-rocfft")
-    message("Adds gearshifft-rocfft to later package.")
-    list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR}/gearshifft-rocfft-build/gearshifft/;gearshifft;gearshifft-rocfft;/")
-  endif()
 endif()
 
-# actual build
+# actual build (must be the last target, i.e., after all backend-specific builds)
 build_gearshifft("")
+
 ExternalProject_Add_Step(gearshifft package
+  DEPENDS ${SEPARATE_BACKENDS}
   COMMAND ${CMAKE_COMMAND} --build gearshifft-build --target package
   DEPENDEES build #steps we depend on
   ALWAYS YES # always appear out of date

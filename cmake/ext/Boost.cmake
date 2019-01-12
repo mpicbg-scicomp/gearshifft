@@ -5,7 +5,7 @@
 
 set(GEARSHIFFT_EXT_BOOST_VERSION "1.66.0" CACHE STRING "Boost version to be built.")
 set_property(CACHE GEARSHIFFT_EXT_BOOST_VERSION PROPERTY STRINGS "1.65.1;1.66.0")
-set(BOOST_ROOT ${GEARSHIFFT_EXT_DIR}/boost/ CACHE PATH "'Boost' root directory")
+set(BOOST_ROOT ${GEARSHIFFT_SUPERBUILD_EXT_DIR}/boost/ CACHE PATH "'Boost' root directory")
 
 find_path(Boost_INCLUDE_DIR
   NAMES boost/config.hpp
@@ -58,8 +58,8 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
     BUILD_IN_SOURCE 1
     URL ${Boost_url}
     URL_MD5 ${Boost_hash}
-    PREFIX ${GEARSHIFFT_EXT_DIR}
-    SOURCE_DIR ${GEARSHIFFT_EXT_SOURCE_DIR}/boost
+    PREFIX ${GEARSHIFFT_SUPERBUILD_EXT_DIR}
+    SOURCE_DIR ${GEARSHIFFT_SUPERBUILD_EXT_SOURCE_DIR}/boost
     DOWNLOAD_DIR ${GEARSHIFFT_ROOT}/ext/downloads/
     UPDATE_COMMAND ""
     # --with-toolset=

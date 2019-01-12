@@ -24,7 +24,17 @@ set(CPACK_COMPONENTS_ALL ${GEARSHIFFT_COMPONENTS} config)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
-list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};gearshifft;ALL;/")
+# looking for specific backend builds from superbuild
+
+if(SEPARATE_BACKENDS MATCHES "gearshifft-rocfft")
+  set(CPACK_INSTALL_CMAKE_PROJECTS
+    "${GEARSHIFFT_SUPERBUILD_DIR}/gearshifft-rocfft-build;gearshifft;gearshifft_rocfft;/")
+endif()
+
+set(CPACK_INSTALL_CMAKE_PROJECTS
+  "${CPACK_INSTALL_CMAKE_PROJECTS}"
+  "${CMAKE_BINARY_DIR};gearshifft;ALL;/")
+
 # default system name by cmake
 set(SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 
