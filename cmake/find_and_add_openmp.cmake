@@ -8,10 +8,9 @@ macro(find_and_add_openmp TARGET)
   # OpenMP is missing on macOS llvm default, for example
   if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
 
-    find_package(Threads REQUIRED)
-
     # CMake 3.9 FindOpenMP allows correct linking with Clang in more cases
     if(NOT TARGET OpenMP::OpenMP_CXX)
+      find_package(Threads REQUIRED)
       add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
       # Clang may need -fopenmp=libiomp5 instead, can't be detected here without CMake 3.9
       set_property(TARGET OpenMP::OpenMP_CXX

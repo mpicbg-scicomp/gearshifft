@@ -103,6 +103,7 @@ function(build_gearshifft BACKEND)
       set(CMAKE_CXX_COMPILER ${PROGRAM_HCC})
     endif()
     append_args(cmake_pass_args
+      BOOST_ROOT
       ROCFFT_ROOT
       CMAKE_CXX_COMPILER)
     set(cmake_pass_args "${cmake_pass_args};-DGEARSHIFFT_BACKEND_ROCFFT_ONLY=ON")
