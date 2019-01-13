@@ -348,7 +348,6 @@ if(GEARSHIFFT_BACKEND_FFTW)
         $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_PTHREADS},ON>:${FFTW_THREADS_LIBS}>
         ${FFTW_SERIAL_LIBS}
         $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
-        #"-fopenmp" # TODO:
         )
       message(STATUS " gearshifft::FFTW enabled.")
     endif()
