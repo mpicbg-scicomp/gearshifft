@@ -1,10 +1,8 @@
 
 dist: trusty
 os: linux
-sudo: required
 language: cpp
-
-sudo: false
+sudo: required
 
 branches:
     only:
@@ -20,9 +18,7 @@ env:
 
 cache:
     directories:
-        - ${TRAVIS_BUILD_DIR}/deps/cuda-${CUDA_VERSION_SHORT}
-        #- ${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
-        - ${TRAVIS_BUILD_DIR}/sources/
+        - ${TRAVIS_BUILD_DIR}/deps/
 
 addons:
     apt:
@@ -79,10 +75,20 @@ install:
 script:
     - mkdir build && cd build
     - set -e
-    - cmake -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} -DGEARSHIFFT_VERBOSE=ON -DGEARSHIFFT_TESTS_ADD_CPU_ONLY=ON -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=ON -DGEARSHIFFT_USE_STATIC_LIBS=OFF -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT=ON -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW=ON ..
-    - make gearshifft -j 2
-    - cd gearshifft-build
-    - ctest --output-on-failure
+    - |
+      cmake -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} \
+            -DGEARSHIFFT_VERBOSE=ON \
+            -DGEARSHIFFT_TESTS_ADD_CPU_ONLY=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DIR=${TRAVIS_BUILD_DIR}/deps \
+            -DGEARSHIFFT_USE_STATIC_LIBS=OFF \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT=OFF \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW=ON \
+            ..
+      make gearshifft -j 2
+      cd gearshifft-build
+      ctest --output-on-failure
     - set +e
 
 notifications:

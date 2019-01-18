@@ -23,6 +23,7 @@ if(GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost)
   # looks in /gearshifft/ext/boost, and may download+build it
   # sets BOOST_ROOT
   include(ext/Boost)
+  message(STATUS "Boost: ${BOOST_ROOT}")
 else()
   set(BOOST_ROOT "")
 endif()
