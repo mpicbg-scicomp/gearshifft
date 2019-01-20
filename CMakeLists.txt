@@ -187,13 +187,18 @@ if(GEARSHIFFT_BACKEND_CUFFT)
       Common
       ${CUDA_LIBRARIES})
 
-    if(GEARSHIFFT_USE_STATIC_LIBS)
+    if(GEARSHIFFT_USE_STATIC_LIBS AND CUDA_VERSION VERSION_LESS 9.2)
+      message(WARNING "CUDA <9.2 and static cufft build not supported. Using shared linking for cufft.")
+    endif()
+    if(GEARSHIFFT_USE_STATIC_LIBS AND NOT CUDA_VERSION VERSION_LESS 9.2)
       if(WIN32)
         message(FATAL_ERROR "CuFFT does not support static linking under Windows.")
       endif()
+
+      # Static library without callback support (to avoid separate device compile step with nvcc)
       find_library(CUDA_CUFFT_STATIC_LIBRARY
         NAMES cufft_static_nocallback
-        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib ${CUDA_TOOLKIT_ROOT_DIR}/lib64
         NO_DEFAULT_PATH)
       if(NOT CUDA_CUFFT_STATIC_LIBRARY)
         message(FATAL_ERROR "Could not find static cufft library.")
