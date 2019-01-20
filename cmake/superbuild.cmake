@@ -77,13 +77,6 @@ endif()
 
 # to get BUILD_TESTING option, which is just forwarded to gearshifft
 include(CTest)
-# static+boost not supported for testing, as main function is not build
-# (static gearshifft+boost requires that; unfortunately it breaks the regular test files)
-if(GEARSHIFFT_USE_STATIC_LIBS AND GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost)
-  # TODO: not supported yet
-  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-endif()
-
 
 include(get_gearshifft_options)
 get_gearshifft_options(cmake_pass_args ";-D") # ; to convert to a list

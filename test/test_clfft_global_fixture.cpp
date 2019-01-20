@@ -1,11 +1,9 @@
-//#define BOOST_TEST_ALTERNATIVE_INIT_API // TODO: fix this test, when boost::utf is compiled without main
 #define BOOST_TEST_MODULE TestClFFTGlobalFixture
 
 #include "libraries/clfft/clfft_helper.hpp"
 #include <boost/test/unit_test.hpp>
 
 using namespace gearshifft::ClFFT;
-
 
 struct Fixt {
     cl_device_id device = 0;
