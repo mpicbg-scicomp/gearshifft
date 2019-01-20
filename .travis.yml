@@ -47,6 +47,7 @@ before_install:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
     - |
       CUDA_CACHE_PATH=${TRAVIS_BUILD_DIR}/deps/cuda-${CUDA_VERSION_SHORT}
+      mkdir -p ${CUDA_CACHE_PATH}
       if [[ -z "$(ls -A ${CUDA_CACHE_PATH})" ]]; then
         travis_retry wget https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1404-8-0-local-ga2_${CUDA_VERSION}_amd64-deb -q -O "${CUDA_CACHE_PATH}/cuda.deb";
       else
