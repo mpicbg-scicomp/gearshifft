@@ -44,7 +44,41 @@ cmake -DGEARSHIFFT_FLOAT16_SUPPORT=1 ..
 make gearshifft_cufft # automatically downloads half library
 ```
 
-Another example with Boost and FFTW dependencies:
+### Build Dependencies
+
+#### Automatically
+
+gearshifft's dependencies can be build automatically by using the cmake's superbuild options.
+Superbuild mode is on by default.
+
+An example for downloading and building Boost, clFFT and FFTW in `$HOME/sources/deps` (change line accordingly):
+``` bash
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DGEARSHIFFT_VERBOSE=ON \
+      -DGEARSHIFFT_USE_SUPERBUILD=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=OFF \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DIR=$HOME/sources/deps \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_ROCFFT=OFF \
+      -DGEARSHIFFT_USE_STATIC_LIBS=ON \
+      ..
+
+```
+
+**Notes:**
+
+- `GEARSHIFFT_SUPERBUILD_EXT_INBUILD=OFF` installs the dependency builts into a separate directory (`$GEARSHIFFT_SUPERBUILD_EXT_DIR`), otherwise builts are located in the binary directory (`$CMAKE_BINARY_DIR}`).
+- If `GEARSHIFFT_USE_STATIC_LIBS=OFF` then you have to take care of environment setting such as `LD_LIBRARY_PATH`
+- `GEARSHIFFT_USE_STATIC_LIBS=ON` probably requires to build Boost manually
+  - To avoid clashes Boost's unit test suite main method is not build (see [Boost doc](https://www.boost.org/doc/libs/1_65_0/libs/test/doc/html/boost_test/adv_scenarios/static_lib_customizations/entry_point.html))
+  - Boost's utf main is added with `BOOST_TEST_DYN_LINK` definition (automatically done in our cmake)
+
+#### Manually
+
+If the libraries have been build separately, just provide the correct path.
+An example:
 
 ```bash
 BOOST_VER=1.67.0
@@ -61,16 +95,7 @@ cmake ..
 make
 ```
 
-## Install
-
-Set `CMAKE_INSTALL_PREFIX` as you wish, otherwise defaults are used.
-```bash
-mkdir release && cd release
-cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft ..
-make -j 4 install
-```
-
-### Build Boost from Source
+##### Build Boost from Source
 
 Use cmake superbuild or follwing compile script.
 
@@ -96,7 +121,7 @@ fi
 
 </details>
 
-### Build FFTW from Source
+##### Build FFTW from Source
 
 Use cmake superbuild or follwing compile script.
 
@@ -140,25 +165,37 @@ make install
 
 </details>
 
+
+## Install
+
+Set `CMAKE_INSTALL_PREFIX` as you wish, otherwise defaults are used.
+```bash
+mkdir release && cd release
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft ..
+make -j 4 install
+```
+
 ## Superbuild and Packaging
 
-To automatically download and compile the dependencies, a separate superbuild cmake configuration is provided.
-It is also intended for creating packages by using static linking of the dependencies.
+Superbuild mode in cmake can be used to automatically download and compile the dependencies.
+It is also intended for creating packages together with static linking of the dependencies.
+It also supports multi-arch packaging of gearshifft targets, which have been compiled with different compiler.
+Superbuild mode is on by default.
 
 ```bash
-cmake -DGEARSHIFFT_FLOAT16_SUPPORT=1 -DBUILD_TESTING=OFF ../cmake/superbuild
+cmake -DGEARSHIFFT_USE_SUPERBUILD=ON ..
 make -j
-cd gearshifft-build
-make package
+make gearshifft-package
 ```
 
 ## Testing
 
 The tests can be executed by `make test` after you have compiled the binaries.
 
-```
+```bash
 cmake -DBUILD_TESTING=ON ..
-make -j 4
+make -j
+cd gearshifft-build/ # because superbuild generates a build subfolder for gearshifft
 make test
 ```
 
