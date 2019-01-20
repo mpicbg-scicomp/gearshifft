@@ -32,7 +32,8 @@ include(gearshifft_options)
 option(GEARSHIFFT_USE_SUPERBUILD "Invokes gearshifft superbuild" ON)
 
 if(GEARSHIFFT_USE_SUPERBUILD)
-  project(GEARSHIFFT_SUPERBUILD NONE)
+  project(GEARSHIFFT_SUPERBUILD C CXX) # .. NONE would overwrite CMAKE_CXX_COMPILER flag
+
   # execute the superbuild (this script will be invoked again without the
   # USE_SUPERBUILD option this time)
   include(superbuild)

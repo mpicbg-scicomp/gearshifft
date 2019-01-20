@@ -17,6 +17,14 @@ macro(find_and_add_openmp TARGET)
     # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
     set_property(TARGET ${TARGET}
       APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+  else()
+    # just guessing flag for clang
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+      set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
   endif() # OpenMP_FOUND
 
 endmacro()

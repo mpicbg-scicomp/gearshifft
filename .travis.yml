@@ -88,7 +88,7 @@ script:
             -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_ROCFFT=OFF \
             -DGEARSHIFFT_USE_STATIC_LIBS=ON \
             ..
-      make gearshifft -j 2
+      make gearshifft
       cd gearshifft-build
       ctest --output-on-failure
     - set +e

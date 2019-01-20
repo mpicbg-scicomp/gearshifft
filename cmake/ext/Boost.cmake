@@ -48,11 +48,16 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
   endif()
 
   if(GEARSHIFFT_USE_STATIC_LIBS)
-    set(BUILD_LIBS "static")
+    set(BUILD_LIBS "link=static" "define=BOOST_TEST_NO_MAIN" "define=BOOST_TEST_ALTERNATIVE_INIT_API")
   else()
-    set(BUILD_LIBS "shared")
+    set(BUILD_LIBS "link=shared")
   endif()
-
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(BOOST_TOOLSET "--with-toolset=clang")
+  endif()
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    set(BOOST_TOOLSET "--with-toolset=intel-linux")
+  endif()
   # currently builds always in release
   ExternalProject_Add(Boost
     BUILD_IN_SOURCE 1
@@ -63,9 +68,9 @@ if((NOT Boost_INCLUDE_DIR) OR (NOT EXISTS ${Boost_INCLUDE_DIR})
     DOWNLOAD_DIR ${GEARSHIFFT_ROOT}/ext/downloads/
     UPDATE_COMMAND ""
     # --with-toolset=
-    CONFIGURE_COMMAND ${Boost_Bootstrap_Command} --with-libraries=program_options,filesystem,system,test
+    CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER}; CXX=${CMAKE_CXX_COMPILER} ${Boost_Bootstrap_Command} ${BOOST_TOOLSET} --with-libraries=program_options,filesystem,system,test
     # -d0 Suppress all informational messages
-    BUILD_COMMAND ${Boost_b2_Command} -j8 -d0 --prefix=${BOOST_ROOT} address-model=64 link=${BUILD_LIBS} variant=release define=BOOST_TEST_NO_MAIN define=BOOST_TEST_ALTERNATIVE_INIT_API install
+    BUILD_COMMAND ${Boost_b2_Command} -j8 -d0 --prefix=${BOOST_ROOT} address-model=64 ${BUILD_LIBS} variant=release install
     INSTALL_COMMAND ""
     )
   # defines in b2 command above are required, otherwise linking will fail (boost::unit_test::unit_test_main)

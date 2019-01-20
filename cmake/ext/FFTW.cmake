@@ -48,10 +48,15 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
   else()
     set(BUILD_LIBS "shared")
   endif()
-
+  find_package(OpenMP QUIET)
+  if(OpenMP_FOUND)
+    set(FFTW_OPENMP_FLAG "--enable-openmp")
+  else()
+    message(WARNING "Build FFTW without OpenMP support (could not detect OpenMP for ${CMAKE_CXX_COMPILER}).")
+    set(FFTW_OPENMP_FLAG "--enable-openmp=no")
+  endif()
   #FFTW does not distinguish between "release" and "debug"
-
-  set(FFTW_BUILD_FLAGS --enable-openmp --enable-sse2 -q --enable-${BUILD_LIBS}=yes --with-gnu-ld  --enable-silent-rules --with-pic)
+  set(FFTW_BUILD_FLAGS ${FFTW_OPENMP_FLAG} --enable-sse2 -q --enable-${BUILD_LIBS}=yes --with-gnu-ld  --enable-silent-rules --with-pic)
   ExternalProject_Add(fftw
     BUILD_IN_SOURCE 1
     URL ${FFTW_url}
@@ -60,7 +65,7 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
     SOURCE_DIR ${GEARSHIFFT_SUPERBUILD_EXT_SOURCE_DIR}/fftw
     DOWNLOAD_DIR ${GEARSHIFFT_ROOT}/ext/downloads/
     UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ./configure --prefix=${FFTW_ROOT} ${FFTW_BUILD_FLAGS}
+    CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER}; CXX=${CMAKE_CXX_COMPILER} ./configure --prefix=${FFTW_ROOT} ${FFTW_BUILD_FLAGS}
     BUILD_COMMAND make -j 4
     INSTALL_COMMAND make install
     )
@@ -74,7 +79,7 @@ if((NOT FFTW_INCLUDE_DIR) OR (NOT EXISTS ${FFTW_INCLUDE_DIR})
     SOURCE_DIR ${GEARSHIFFT_SUPERBUILD_EXT_SOURCE_DIR}/fftwf
     DOWNLOAD_DIR ${GEARSHIFFT_ROOT}/ext/downloads/
     UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ./configure --prefix=${FFTW_ROOT} --enable-float ${FFTW_BUILD_FLAGS}
+    CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER}; CXX=${CMAKE_CXX_COMPILER} ./configure --prefix=${FFTW_ROOT} --enable-float ${FFTW_BUILD_FLAGS}
     BUILD_COMMAND make -j 4
     INSTALL_COMMAND make install
     )
