@@ -23,7 +23,7 @@ if(GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost)
   # looks in /gearshifft/ext/boost, and may download+build it
   # sets BOOST_ROOT
   include(ext/Boost)
-  message(STATUS "Boost: ${BOOST_ROOT}")
+  message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
 else()
   set(BOOST_ROOT "")
 endif()
@@ -37,6 +37,7 @@ if(GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW)
   # looks in /gearshifft/ext/fftw, and may download+build it
   # sets FFTW_ROOT
   include(ext/FFTW)
+  message(STATUS "FFTW_ROOT: ${FFTW_ROOT}")
 else()
   set(FFTW_ROOT "")
 endif()
@@ -50,6 +51,7 @@ if(GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT)
   # looks in /gearshifft/ext/clfft, and may download+build it
   # sets CLFFT_ROOT
   include(ext/clfft)
+  message(STATUS "CLFFT_ROOT: ${CLFFT_ROOT}")
 else()
   set(CLFFT_ROOT "")
 endif()
@@ -63,6 +65,7 @@ if(GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_ROCFFT)
   # looks in /gearshifft/ext/rocfft, and may download+build it
   # sets ROCFFT_ROOT
   include(ext/rocfft)
+  message(STATUS "ROCFFT_ROOT: ${ROCFFT_ROOT}")
 else()
   set(ROCFFT_ROOT "")
 endif()
@@ -138,7 +141,7 @@ function(build_gearshifft BACKEND)
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DGEARSHIFFT_USE_SUPERBUILD:BOOL=OFF
-    -DGEARSHIFFT_SUPERBUILD_DIR:PATH=${CMAKE_BINARY_DIR}
+#    -DGEARSHIFFT_SUPERBUILD_EXT_DIR:PATH=${CMAKE_BINARY_DIR} # not needed
     -DSEPARATE_BACKENDS:LIST=${SEPARATE_BACKENDS}
     INSTALL_COMMAND ""
     )
