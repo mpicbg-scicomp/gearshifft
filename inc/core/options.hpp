@@ -39,6 +39,10 @@ namespace gearshifft {
       return device_;
     }
 
+    const std::string& getTag() const {
+      return tag_;
+    }
+
     size_t getNumberDevices() const {
       return ndevices_;
     }
@@ -75,6 +79,8 @@ namespace gearshifft {
 
     std::string outputFile_;
     std::string device_;
+    std::string tag_;
+
     size_t ndevices_ = 0;
     bool listDevices_ = false;
     bool verbose_ = false;
