@@ -1,7 +1,5 @@
-## based on: https://github.com/statismo/statismo/tree/master/superbuild
-
 #---------------------------------------------------------------------------
-# Get and build boost, if it is not already installed in /gearshifft/ext
+# Get and build boost, if it is not already present
 
 set(GEARSHIFFT_EXT_BOOST_VERSION "1.66.0" CACHE STRING "Boost version to be built.")
 set_property(CACHE GEARSHIFFT_EXT_BOOST_VERSION PROPERTY STRINGS "1.65.1;1.66.0")

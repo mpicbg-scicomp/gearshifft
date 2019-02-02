@@ -2,7 +2,7 @@ include(CMakeDependentOption)
 
 # gearshifft cmake options
 
-option(GEARSHIFFT_VERBOSE "Verbose output during build generation." ON)
+option(GEARSHIFFT_VERBOSE "Verbose output during build generation." OFF)
 option(GEARSHIFFT_USE_STATIC_LIBS "Force static linking Boost and FFTW (use libraries' cmake variables otherwise)." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
 

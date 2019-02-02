@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------------
-# Get and build fftw (double+single), if it is not already installed in /gearshifft/ext
+# Get and build fftw (double+single), if it is not already present
 
 set(GEARSHIFFT_EXT_FFTW_VERSION "3.3.8" CACHE STRING "FFTW version to be built.")
 set_property(CACHE GEARSHIFFT_EXT_FFTW_VERSION PROPERTY STRINGS "3.3.8")

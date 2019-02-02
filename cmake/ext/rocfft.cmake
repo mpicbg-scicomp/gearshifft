@@ -1,7 +1,5 @@
-## based on: https://github.com/statismo/statismo/tree/master/superbuild
-
 #---------------------------------------------------------------------------
-# Get and build rocfft, if it is not already installed in /gearshifft/ext
+# Get and build rocfft, if it is not already present
 
 set(GEARSHIFFT_EXT_ROCFFT_VERSION "v0.8.8" CACHE STRING "rocFFT version to be built.")
 set_property(CACHE GEARSHIFFT_EXT_ROCFFT_VERSION PROPERTY STRINGS "v0.8.8;develop")

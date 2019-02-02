@@ -1,7 +1,5 @@
-## based on: https://github.com/statismo/statismo/tree/master/superbuild
-
 #---------------------------------------------------------------------------
-# Get and build clfft, if it is not already installed in /gearshifft/ext
+# Get and build clfft, if it is not already present
 
 set(GEARSHIFFT_EXT_CLFFT_VERSION "v2.12.2" CACHE STRING "clFFT version to be built.")
 set_property(CACHE GEARSHIFFT_EXT_CLFFT_VERSION PROPERTY STRINGS "v2.12.2;develop")

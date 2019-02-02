@@ -29,7 +29,7 @@ cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After `make` have finished you can run e.g. `./gearshifft/gearshifft_cufft`.
+After `make` is finished, you can run e.g. `./gearshifft/gearshifft_cufft`.
 
 If the FFT library paths cannot be found, `CMAKE_PREFIX_PATH` has to be used, e.g.:
 
@@ -49,13 +49,11 @@ make gearshifft_cufft # automatically downloads half library
 #### Automatically
 
 gearshifft's dependencies can be build automatically by using the cmake's superbuild options.
-Superbuild mode is on by default.
+Superbuild mode is currently OFF by default, so you have to enable it via cmake option `GEARSHIFFT_USE_SUPERBUILD=ON`.
 
-An example for downloading and building Boost, clFFT and FFTW in `$HOME/sources/deps` (change line accordingly):
+An example for downloading and building Boost, clFFT and FFTW::
 ``` bash
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DGEARSHIFFT_VERBOSE=ON \
-      -DGEARSHIFFT_USE_SUPERBUILD=ON \
+cmake -DGEARSHIFFT_USE_SUPERBUILD=ON \
       -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=OFF \
       -DGEARSHIFFT_SUPERBUILD_EXT_DIR=$HOME/sources/deps \
       -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON \
@@ -74,6 +72,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 - `GEARSHIFFT_USE_STATIC_LIBS=ON` probably requires to build Boost manually
   - To avoid clashes Boost's unit test suite main method is not build (see [Boost doc](https://www.boost.org/doc/libs/1_65_0/libs/test/doc/html/boost_test/adv_scenarios/static_lib_customizations/entry_point.html))
   - Boost's utf main is added with `BOOST_TEST_DYN_LINK` definition (automatically done in our cmake)
+- Use cmake option `GEARSHIFFT_VERBOSE=ON` to get more information during the cmake's build generation process
 
 #### Manually
 
@@ -180,7 +179,6 @@ make -j 4 install
 Superbuild mode in cmake can be used to automatically download and compile the dependencies.
 It is also intended for creating packages together with static linking of the dependencies.
 It also supports multi-arch packaging of gearshifft targets, which have been compiled with different compiler.
-Superbuild mode is on by default.
 
 ```bash
 cmake -DGEARSHIFFT_USE_SUPERBUILD=ON ..

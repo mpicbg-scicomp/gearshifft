@@ -28,8 +28,8 @@ include(init_build_type)
 # gearshifft cmake options (requires GEARSHIFFT_ROOT)
 include(gearshifft_options)
 
-# Superbuild (enabled by default)
-option(GEARSHIFFT_USE_SUPERBUILD "Invokes gearshifft superbuild" ON)
+# Superbuild
+option(GEARSHIFFT_USE_SUPERBUILD "Invokes gearshifft superbuild" OFF)
 
 if(GEARSHIFFT_USE_SUPERBUILD)
   project(GEARSHIFFT_SUPERBUILD C CXX) # .. NONE would overwrite CMAKE_CXX_COMPILER flag
