@@ -25,6 +25,7 @@ OptionsDefault::OptionsDefault() {
     ("verbose,v", "Prints benchmark statistics")
     ("version,V", "Prints gearshifft version")
     ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
+    ("add-tag,t", po::value<std::string>(&tag_)->default_value(""), "Add custom tag to header of output file")
     ("ndevices,n", po::value<size_t>(&ndevices_)->default_value(0), "Number of devices (0=all), if supported by FFT lib (e.g. clfft and fftw with n CPU threads).")
     ("list-devices,l", "List of available compute devices with IDs, if supported.")
     ("list-benchmarks,b", "Show registered benchmarks")

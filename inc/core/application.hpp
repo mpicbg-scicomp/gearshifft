@@ -88,6 +88,7 @@ namespace gearshifft {
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
                        << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
                        << ",\"gearshifft\",\"" << gearshifft::gearshifft_version() << "\""
+                       << ",\"tag\",\"" << T_Context::options().getTag() << "\""
         ;
       if(T_Context::options().getVerbose()) {
         resultAll_.print(std::cout,
