@@ -3,6 +3,8 @@
 
 #include "complex-half.hpp"
 
+#include <boost/mpl/list.hpp>
+
 #include <array>
 #include <vector>
 #include <iostream>
@@ -17,6 +19,10 @@ namespace gearshifft {
   using Extents1DVec = std::vector< Extents1D >;
   using Extents2DVec = std::vector< Extents2D >;
   using Extents3DVec = std::vector< Extents3D >;
+
+/// List alias
+  template<typename... Types>
+  using List = boost::mpl::list<Types...>;
 
   namespace interpret_as {
     template<typename T_Extents>
@@ -63,6 +69,27 @@ namespace gearshifft {
 #else
   template<typename REAL>
   using Real2D = typename std::conditional<std::is_same<REAL,float16>::value, gearshifft::complex<float16>, std::complex<REAL> >::type;
+#endif
+
+#if GEARSHIFFT_PRECISION_DOUBLE_ONLY==1
+  using DefaultPrecisions                     = List<double>;
+  using DefaultPrecisionsWithoutHalfPrecision = DefaultPrecisions;
+#elif GEARSHIFFT_PRECISION_SINGLE_ONLY==1
+  using DefaultPrecisions                     = List<float>;
+  using DefaultPrecisionsWithoutHalfPrecision = DefaultPrecisions;
+#else
+# if GEARSHIFFT_FLOAT16_SUPPORT==1
+#  if GEARSHIFFT_PRECISION_HALF_ONLY==1
+  using DefaultPrecisions                     = List<float16>;
+  using DefaultPrecisionsWithoutHalfPrecision = List<>;
+#  else
+  using DefaultPrecisions                     = List<float, double, float16>;
+  using DefaultPrecisionsWithoutHalfPrecision = List<float, double>;
+#  endif
+# else
+  using DefaultPrecisions                     = List<float, double>;
+  using DefaultPrecisionsWithoutHalfPrecision = DefaultPrecisions;
+# endif
 #endif
 
   enum struct RecordType {

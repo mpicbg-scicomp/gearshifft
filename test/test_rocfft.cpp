@@ -1,16 +1,17 @@
 #define BOOST_TEST_MODULE TestrocFFT
+#include "libraries/rocfft/rocfft_helper.hpp"
+
+#include <hip/hip_runtime_api.h>
+#include <hip/hip_vector_types.h>
+#include <rocfft.h>
+
+#include <boost/test/unit_test.hpp>
+
+#include <cstdint>
+
 #include <iostream>
 #include <vector>
 #include <complex>
-
-#include <cstdint>
-#include "hip/hip_runtime_api.h"
-#include "hip/hip_vector_types.h"
-#include "rocfft.h"
-#include <boost/test/unit_test.hpp>
-#include <iostream>
-
-#include "libraries/rocfft/rocfft_helper.hpp"
 
 BOOST_AUTO_TEST_CASE( FFT1DSmall, * boost::unit_test::tolerance(0.0001f) )
 {
@@ -38,19 +39,21 @@ BOOST_AUTO_TEST_CASE( FFT1DSmall, * boost::unit_test::tolerance(0.0001f) )
         // Create fwd rocFFT fwd
         rocfft_plan fwd = nullptr;
         std::size_t length = N;
-        rocfft_plan_create(&fwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_forward,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&fwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_forward,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Create bwd rocFFT bwd
         rocfft_plan bwd = nullptr;
-        rocfft_plan_create(&bwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_inverse,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&bwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_inverse,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
 
         // Execute fwd
@@ -121,19 +124,21 @@ BOOST_AUTO_TEST_CASE( FFT1D, * boost::unit_test::tolerance(0.0001f) )
         // Create fwd rocFFT fwd
         rocfft_plan fwd = nullptr;
         std::size_t length = N;
-        rocfft_plan_create(&fwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_forward,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&fwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_forward,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Create bwd rocFFT bwd
         rocfft_plan bwd = nullptr;
-        rocfft_plan_create(&bwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_inverse,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&bwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_inverse,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Setup work buffer
         void *workBuffer = nullptr;
@@ -225,19 +230,21 @@ BOOST_AUTO_TEST_CASE( FFT1DSmall_stdcomplex, * boost::unit_test::tolerance(0.000
         // Create fwd rocFFT fwd
         rocfft_plan fwd = nullptr;
         std::size_t length = N;
-        rocfft_plan_create(&fwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_forward,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&fwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_forward,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Create bwd rocFFT bwd
         rocfft_plan bwd = nullptr;
-        rocfft_plan_create(&bwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_complex_inverse,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&bwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_complex_inverse,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
 
         // Execute fwd
@@ -303,19 +310,21 @@ BOOST_AUTO_TEST_CASE( failing_float_265841_Inplace_Real, * boost::unit_test::tol
         // Create fwd rocFFT fwd
         rocfft_plan fwd = nullptr;
         std::size_t length = N;
-        rocfft_plan_create(&fwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_real_forward,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&fwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_real_forward,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Create bwd rocFFT bwd
         rocfft_plan bwd = nullptr;
-        rocfft_plan_create(&bwd,
-                           rocfft_placement_inplace,
-                           rocfft_transform_type_real_inverse,
-                           rocfft_precision_single,
-                           1, &length, 1, nullptr);
+        CHECK_HIP(
+          rocfft_plan_create(&bwd,
+                             rocfft_placement_inplace,
+                             rocfft_transform_type_real_inverse,
+                             rocfft_precision_single,
+                             1, &length, 1, nullptr));
 
         // Setup work buffer
         void *workBuffer = nullptr;

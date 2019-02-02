@@ -5,7 +5,6 @@
 
 using namespace gearshifft::ClFFT;
 
-
 struct Fixt {
     cl_device_id device = 0;
     cl_context ctx = 0;

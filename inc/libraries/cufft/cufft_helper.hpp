@@ -1,12 +1,15 @@
 #ifndef CUFFT_HELPER_HPP_
 #define CUFFT_HELPER_HPP_
 
-#include "core/get_memory_size.h"
+#include "core/get_memory_size.hpp"
+#include "core/unused.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <cuda_runtime.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <cufft.h>
+#pragma GCC diagnostic pop
+
 #include <sstream>
 #include <stdexcept>
 
@@ -103,6 +106,8 @@ namespace CuFFT {
   }
   inline
   void check_cuda(cufftResult code, const char* msg,  const char *func, const char *file, int line) {
+    gearshifft::ignore_unused(msg);
+
     if (code != CUFFT_SUCCESS) {
       throw_error(static_cast<int>(code),
                   cufftResultToString(code), "cufft", func, file, line);
@@ -146,6 +151,13 @@ namespace CuFFT {
     for(int i=0; i<nrdev; ++i)
       info << "\"ID\"," << i << "," << getCUDADeviceInformations(i).str() << std::endl;
     return info;
+  }
+
+  bool deviceSupportsHalfPrecision(int dev) {
+    cudaDeviceProp prop;
+    CHECK_CUDA( cudaGetDeviceProperties(&prop, dev) );
+    return ( (prop.major==5 && prop.minor>=3)
+            || prop.major>=6 );
   }
 } // CuFFT
 } // gearshifft

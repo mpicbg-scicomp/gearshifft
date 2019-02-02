@@ -7,7 +7,7 @@ struct float16 {};
 
 #else
 
-#include "half-code/include/half.hpp"
+#include "half.hpp"
 
 #include <complex>
 

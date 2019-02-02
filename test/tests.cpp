@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #ifdef DEV_TESTS
-#if defined(OPENCL_ENABLED)
+#if defined(CLFFT_ENABLED)
 #include "clfft_helper.hpp"
 using namespace gearshifft::ClFFT;
 struct Fixt {
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( CL_Context_Global_Fixture )
 
 #endif
 
-#if defined(CUDA_ENABLED)
+#if defined(CUFFT_ENABLED)
 #include "cufft_helper.hpp"
 
 BOOST_AUTO_TEST_CASE( CUDA_Large_MemAlloc_Test )

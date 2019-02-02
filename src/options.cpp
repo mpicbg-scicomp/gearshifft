@@ -1,6 +1,8 @@
 #include "core/application.hpp"
 #include "core/options.hpp"
 
+#include <gearshifft_version.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -20,10 +22,10 @@ OptionsDefault::OptionsDefault() {
     ("file,f", po::value<std::vector<std::string>>()->multitoken()->
      composing(), "File with extents (row-wise csv) [>=1 nr. of args possible]")
     ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file, will be overwritten!")
+    ("add-tag,t", po::value<std::string>(&tag_)->default_value(""), "Add custom tag to header of output file")
     ("verbose,v", "Prints benchmark statistics")
     ("version,V", "Prints gearshifft version")
     ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")
-    ("add-tag,t", po::value<std::string>(&tag_)->default_value(""), "Add custom tag to header of output file")
     ("ndevices,n", po::value<size_t>(&ndevices_)->default_value(0), "Number of devices (0=all), if supported by FFT lib (e.g. clfft and fftw with n CPU threads).")
     ("list-devices,l", "List of available compute devices with IDs, if supported.")
     ("list-benchmarks,b", "Show registered benchmarks")
@@ -78,11 +80,11 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
                                ).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
     if( vm.count("version")  ) {
-      std::cout << "gearshifft " << gearshifft::version() << "\n";
+      std::cout << "gearshifft " << gearshifft::gearshifft_version() << "\n";
       return 1;
     }
     if( vm.count("help")  ) {
-      std::cout << "gearshifft " << gearshifft::version()
+      std::cout << "gearshifft " << gearshifft::gearshifft_version() << "\n\n"
                 << desc_
                 << std::endl;
       return 1;

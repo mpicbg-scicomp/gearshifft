@@ -1,10 +1,11 @@
 #include "core/benchmark.hpp"
+#include "core/types.hpp"
 
 // ----------------------------------------------------------------------------
 template<typename... Types>
 using List = gearshifft::List<Types...>;
 
-#ifdef CUDA_ENABLED
+#ifdef CUFFT_ENABLED
 #include "libraries/cufft/cufft.hpp"
 
 using namespace gearshifft::CuFFT;
@@ -14,14 +15,10 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Real,
                                Outplace_Complex>;
 
-#if GEARSHIFFT_FLOAT16_SUPPORT == O
-using Precisions        = List<float, double>;
-#else
-using Precisions        = List<float, double, float16>;
-#endif
+using Precisions        = gearshifft::DefaultPrecisions;
 using FFT_Is_Normalized = std::false_type;
 
-#elif defined(OPENCL_ENABLED)
+#elif defined(CLFFT_ENABLED)
 #include "libraries/clfft/clfft.hpp"
 
 using namespace gearshifft::ClFFT;
@@ -30,7 +27,7 @@ using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
                                Outplace_Complex>;
-using Precisions        = List<float, double>;
+using Precisions        = gearshifft::DefaultPrecisionsWithoutHalfPrecision;
 using FFT_Is_Normalized = std::true_type;
 
 #elif defined(FFTW_ENABLED)
@@ -42,7 +39,7 @@ using FFTs              = List<Inplace_Real,
                                Inplace_Complex,
                                Outplace_Real,
                                Outplace_Complex >;
-using Precisions        = List<float, double>;
+using Precisions        = gearshifft::DefaultPrecisionsWithoutHalfPrecision;
 using FFT_Is_Normalized = std::false_type;
 #elif defined(ROCFFT_ENABLED)
 #include "libraries/rocfft/rocfft.hpp"

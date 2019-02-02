@@ -4,7 +4,7 @@
 
 This is a simple and easy extensible benchmark system to answer the question, which FFT library performs best under which conditions.
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
-This project is still in development. 
+This project is still in development.
 
 If you want to just browse our results, see the [raw benchmark data](https://www.github.com/mpicbg-scicomp/gearshifft_results/) or our [online visualisation and comparison tool](https://www.kcod.de/gearshifft/).
 
@@ -12,14 +12,13 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 
 ## Requirements
 
-- cmake 3.1+ or 3.6.2+ for allowing cmake to automatically download of half-code (float16 support)
+- cmake 3.7+
 - C++14 capable compiler
 - CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
 - Boost version 1.59+
   - should be compiled with same compiler version or ...
-  - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option 
+  - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
-  - if your Nvidia GPU does not support float16, you will see a `CUFFT_INVALID_DEVICE` message in the results
 
 ## Build
 
@@ -30,7 +29,7 @@ cmake ..
 make -j 4
 ```
 CMake tries to find the libraries and enables the corresponding make targets.
-After `make` have finished you can run e.g. `./gearshifft_cufft`.
+After `make` is finished, you can run e.g. `./gearshifft/gearshifft_cufft`.
 
 If the FFT library paths cannot be found, `CMAKE_PREFIX_PATH` has to be used, e.g.:
 
@@ -41,12 +40,44 @@ export CMAKE_PREFIX_PATH=${HOME}/software/clFFT-cuda8.0-gcc5.4/:/opt/cuda:$CMAKE
 Enable float16 support for cuFFT:
 
 ```bash
-cmake -DGEARSHIFFT_FLOAT16_SUPPORT=ON ..
-make half-code         # for float16 data type
-make gearshifft_cufft
+cmake -DGEARSHIFFT_FLOAT16_SUPPORT=1 ..
+make gearshifft_cufft # automatically downloads half library
 ```
 
-Another example with Boost and FFTW dependencies:
+### Build Dependencies
+
+#### Automatically
+
+gearshifft's dependencies can be build automatically by using the cmake's superbuild options.
+Superbuild mode is currently OFF by default, so you have to enable it via cmake option `GEARSHIFFT_USE_SUPERBUILD=ON`.
+
+An example for downloading and building Boost, clFFT and FFTW::
+``` bash
+cmake -DGEARSHIFFT_USE_SUPERBUILD=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=OFF \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DIR=$HOME/sources/deps \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW=ON \
+      -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_ROCFFT=OFF \
+      -DGEARSHIFFT_USE_STATIC_LIBS=ON \
+      ..
+
+```
+
+**Notes:**
+
+- `GEARSHIFFT_SUPERBUILD_EXT_INBUILD=OFF` installs the dependency builts into a separate directory (`$GEARSHIFFT_SUPERBUILD_EXT_DIR`), otherwise builts are located in the binary directory (`$CMAKE_BINARY_DIR}`).
+- If `GEARSHIFFT_USE_STATIC_LIBS=OFF` then you have to take care of environment setting such as `LD_LIBRARY_PATH`
+- `GEARSHIFFT_USE_STATIC_LIBS=ON` probably requires to build Boost manually
+  - To avoid clashes Boost's unit test suite main method is not build (see [Boost doc](https://www.boost.org/doc/libs/1_65_0/libs/test/doc/html/boost_test/adv_scenarios/static_lib_customizations/entry_point.html))
+  - Boost's utf main is added with `BOOST_TEST_DYN_LINK` definition (automatically done in our cmake)
+- Use cmake option `GEARSHIFFT_VERBOSE=ON` to get more information during the cmake's build generation process
+
+#### Manually
+
+If the libraries have been build separately, just provide the correct path.
+An example:
 
 ```bash
 BOOST_VER=1.67.0
@@ -63,19 +94,9 @@ cmake ..
 make
 ```
 
-## Install
+##### Build Boost from Source
 
-Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
-```bash
-mkdir release && cd release
-cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft \
-      -DGEARSHIFFT_INSTALL_CONFIG_PATH=${HOME}/gearshifft/configs \
-      ..
-make -j 4 install
-
-```
-
-### Build Boost from Source
+Use cmake superbuild or follwing compile script.
 
 <details>
 
@@ -99,7 +120,9 @@ fi
 
 </details>
 
-### Build FFTW from Source
+##### Build FFTW from Source
+
+Use cmake superbuild or follwing compile script.
 
 <details>
 
@@ -117,7 +140,7 @@ if [ "$1" == "clean" ]; then
   echo "clean sources"
   rm -rf fftw-${VERS_single} fftw-${VERS_double}
 fi
-# if directories do not exist, create them and unpack fftw_**.tar.gz 
+# if directories do not exist, create them and unpack fftw_**.tar.gz
 if [ ! -d "fftw-${VERS_single}" ] && [ ! -d "fftw-${VERS_double}" ]; then
   wget http://www.fftw.org/fftw-${VERS}.tar.gz
   mkdir fftw-${VERS_single}
@@ -142,37 +165,64 @@ make install
 </details>
 
 
+## Install
+
+Set `CMAKE_INSTALL_PREFIX` as you wish, otherwise defaults are used.
+```bash
+mkdir release && cd release
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/gearshifft ..
+make -j 4 install
+```
+
+## Superbuild and Packaging
+
+Superbuild mode in cmake can be used to automatically download and compile the dependencies.
+It is also intended for creating packages together with static linking of the dependencies.
+It also supports multi-arch packaging of gearshifft targets, which have been compiled with different compiler.
+
+```bash
+cmake -DGEARSHIFFT_USE_SUPERBUILD=ON ..
+make -j
+make gearshifft-package
+```
+
 ## Testing
 
 The tests can be executed by `make test` after you have compiled the binaries.
+
+```bash
+cmake -DBUILD_TESTING=ON ..
+make -j
+cd gearshifft-build/ # because superbuild generates a build subfolder for gearshifft
+make test
+```
 
 ## Usage
 
 See help message (pass `--help|-h`) for the command line options.
 ```
-  -h [ --help ]                     Print help messages                                                                                      
-  -e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of                                                              
-                                    args possible]                                                                                           
-  -f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.                                                                
-                                    of args possible]                                                                                        
-  -o [ --output ] arg (=result.csv) output csv file, will be overwritten!                                                                    
-  -v [ --verbose ]                  for console output                                                                                       
-  -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If                                                                  
-                                    device is not supported by FFT lib, then it                                                              
-                                    is ignored and default is used.                                                                          
-  -n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by                                                               
-                                    FFT lib (e.g. clfft and fftw with n CPU                                                                  
-                                    threads).                                                                                                
-  -l [ --list-devices ]             List of available compute devices with IDs,                                                              
-                                    if supported.                                                                                            
+  -h [ --help ]                     Print help messages
+  -e [ --extent ] arg               Specific extent (eg. 1024x1024) [>=1 nr. of
+                                    args possible]
+  -f [ --file ] arg                 File with extents (row-wise csv) [>=1 nr.
+                                    of args possible]
+  -o [ --output ] arg (=result.csv) output csv file, will be overwritten!
+  -t [ --add-tag ] arg              Add custom tag to header of output file
+  -v [ --verbose ]                  Prints benchmark statistics
+  -V [ --version ]                  Prints gearshifft version
+  -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If
+                                    device is not supported by FFT lib, then it
+                                    is ignored and default is used.
+  -n [ --ndevices ] arg (=0)        Number of devices (0=all), if supported by
+                                    FFT lib (e.g. clfft and fftw with n CPU
+                                    threads).
+  -l [ --list-devices ]             List of available compute devices with IDs,
+                                    if supported.
   -b [ --list-benchmarks ]          Show registered benchmarks
-  -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards 
+  -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards
                                     possible, e.g. ClFFT/float/*/Inplace_Real)
-  --rigor arg (=measure)            FFTW rigor (measure, estimate, wisdom, 
-                                    patient or exhaustive)
-  --wisdom_sp arg                   Wisdom file for single-precision.
-  --wisdom_dp arg                   Wisdom file for double-precision.
-  --plan_timelimit arg (=-1)        Timelimit in seconds for planning in FFTW.
+
+... further backend specific options ...
 ```
 
 ### FFT Extents Presets
@@ -191,7 +241,7 @@ The extents configurations are loaded by the `gearshifft` command-line interface
 ./gearshifft_fftw -f myextents.conf
 ```
 
-### Examples 
+### Examples
 
 Runs complete benchmark for clFFT (also applies for cuFFT, FFTW, ..)
 ```bash
@@ -255,12 +305,12 @@ The library dependent FFT steps are abstracted, where following steps are wrappe
 - total time (allocation, planning, transfers, FFTs, cleanup)
 - device initialization/teardown (only once per runtime)
 
-Furthermore, the required buffer sizes to run the FFT are recorded. 
+Furthermore, the required buffer sizes to run the FFT are recorded.
 
 ## CSV Output
 
 The results of the benchmark runs are stored into a comma-separated values file (.csv), after the last run has been completed.
-To ease evaluation, the entries are sorted by columns 
+To ease evaluation, the entries are sorted by columns
 - FFT transform kind and precision
 - dimkind (oddshape, powerof2, radix357)
  - oddshape: at least one extent is not a combination of a power of 2,3,5,7
@@ -285,6 +335,7 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - clFFT does not support arbitrary transform sizes. The benchmark renders such tests as failed.
 - clFFT on CPU cannot transform the 4096-FFT and 4096x4096-FFTs (see [this issue](https://github.com/clMathLibraries/clFFT/issues/171))
 - clFFT seems to have lower transform size limits on CPU than on GPU (a complex 16384x16384 segfaults on clfft CPU, while it works on GPU). gearshifft marks these cases as "Unsupported lengths" and skips them.
+- rocFFT is currently only supported on the HCC platform (no support for rocFFT->cuFFT path)
 - At the moment this is for single-GPUs, batches are not considered
 - if `gearshifft` is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the Boost version (e.g. 1.62.0) you have is more recent than your `cmake` (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
