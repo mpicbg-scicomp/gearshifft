@@ -204,12 +204,14 @@ make test
 See help message (pass `--help|-h`) for the command line options.
 ```
   -h [ --help ]                     Print help messages
-  -e [ --extent ] arg               specific extent (eg. 1024x1024) [>=1 nr. of
+  -e [ --extent ] arg               Specific extent (eg. 1024x1024) [>=1 nr. of
                                     args possible]
-  -f [ --file ] arg                 file with extents (row-wise csv) [>=1 nr.
+  -f [ --file ] arg                 File with extents (row-wise csv) [>=1 nr.
                                     of args possible]
   -o [ --output ] arg (=result.csv) output csv file, will be overwritten!
-  -v [ --verbose ]                  for console output
+  -t [ --add-tag ] arg              Add custom tag to header of output file
+  -v [ --verbose ]                  Prints benchmark statistics
+  -V [ --version ]                  Prints gearshifft version
   -d [ --device ] arg (=gpu)        Compute device = (gpu|cpu|acc|<ID>). If
                                     device is not supported by FFT lib, then it
                                     is ignored and default is used.
@@ -221,11 +223,8 @@ See help message (pass `--help|-h`) for the command line options.
   -b [ --list-benchmarks ]          Show registered benchmarks
   -r [ --run-benchmarks ] arg       Run specific benchmarks (wildcards
                                     possible, e.g. ClFFT/float/*/Inplace_Real)
-  --rigor arg (=measure)            FFTW rigor (measure, estimate, wisdom,
-                                    patient or exhaustive)
-  --wisdom_sp arg                   Wisdom file for single-precision.
-  --wisdom_dp arg                   Wisdom file for double-precision.
-  --plan_timelimit arg (=-1)        Timelimit in seconds for planning in FFTW.
+
+... further backend specific options ...
 ```
 
 ### FFT Extents Presets
