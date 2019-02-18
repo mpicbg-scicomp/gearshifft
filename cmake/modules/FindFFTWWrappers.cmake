@@ -150,7 +150,8 @@ list(APPEND FFTWWrappers_MKL_LIBRARY_DIRS "${MKLROOT}/../tbb/lib/intel64/gcc4.4"
 find_library(
   MKL_IOMP5
   NAMES iomp5 libiomp5 libiomp5.a
-  PATHS ${MKLROOT} ${MKLROOT}/../compiler/lib/intel64 ${MKLROOT}/../tbb/lib/intel64/gcc4.4
+  PATHS ${MKLROOT} ${MKLROOT}/../compiler ${MKLROOT}/../tbb
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64" "lib/intel64/gcc4.4"
   NO_DEFAULT_PATH
   )
 
