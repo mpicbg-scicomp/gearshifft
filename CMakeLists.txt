@@ -45,7 +45,7 @@ endif()
 #-------------------------------------------------------------------------------
 
 project(gearshifft
-  VERSION 0.4.0
+  VERSION 0.4.1
   LANGUAGES C CXX)
 
 # half-code for half precision data type
