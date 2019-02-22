@@ -1,12 +1,16 @@
 #ifndef BENCHMARK_HPP_
 #define BENCHMARK_HPP_
+// we customize the main function of the unit test framework
 #define BOOST_TEST_NO_MAIN
 #define BOOST_TEST_ALTERNATIVE_INIT_API
 
 #include "application.hpp"
 #include "benchmark_suite.hpp"
 
-#include <boost/test/unit_test.hpp>
+// see https://www.boost.org/doc/libs/1_65_1/libs/test/doc/html/boost_test/usage_variants.html
+// Single-header usage variant
+// No BOOST_TEST_MODULE as entry point is customized
+#include <boost/test/included/unit_test.hpp>
 
 namespace gearshifft {
 

@@ -1,14 +1,15 @@
 #ifndef BENCHMARK_EXECUTOR_HPP_
 #define BENCHMARK_EXECUTOR_HPP_
+#define BOOST_TEST_NO_MAIN
+#define BOOST_TEST_ALTERNATIVE_INIT_API
 
 #include "application.hpp"
 #include "benchmark_data.hpp"
 #include "types.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp> // Single-header usage variant
 
 #include <type_traits>
-
 #include <cmath>
 
 namespace gearshifft {
