@@ -28,7 +28,7 @@ set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 if(SEPARATE_BACKENDS MATCHES "gearshifft-rocfft")
   set(CPACK_INSTALL_CMAKE_PROJECTS
-    "${GEARSHIFFT_SUPERBUILD_DIR}/gearshifft-rocfft-build;gearshifft;gearshifft_rocfft;/")
+    "${GEARSHIFFT_SUPERBUILD_BINARY_DIR}/gearshifft-rocfft-build;gearshifft;gearshifft_rocfft;/")
 endif()
 
 set(CPACK_INSTALL_CMAKE_PROJECTS

@@ -1,7 +1,7 @@
 // test cases for development purposes
 #define BOOST_TEST_MODULE TestContext
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp> // Single-header usage variant
 
 #ifdef DEV_TESTS
 #if defined(CLFFT_ENABLED)
