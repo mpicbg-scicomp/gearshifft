@@ -80,18 +80,12 @@ namespace gearshifft {
 
     template<bool Normalize>
     constexpr double sub(const ComplexVector& vector, size_t i) const {
-      if(Normalize)
-        return 1.0/size_ * (vector[i].real()) - static_cast<double>(data_linear_[i]);
-      else
-        return static_cast<double>( vector[i].real() - data_linear_[i] );
+      return Normalize ? 1.0/size_ * (vector[i].real()) - static_cast<double>(data_linear_[i]) : static_cast<double>( vector[i].real() - data_linear_[i] );
     }
 
     template<bool Normalize>
     constexpr double sub(const RealVector& vector, size_t i) const {
-      if(Normalize)
-        return 1.0/size_ * (vector[i]) - static_cast<double>(data_linear_[i]);
-      else
-        return static_cast<double>( vector[i] - data_linear_[i] );
+      return Normalize ? 1.0/size_ * (vector[i]) - static_cast<double>(data_linear_[i]) : static_cast<double>( vector[i] - data_linear_[i] );
     }
 
     void init_if_dim_changed(const Extent& extents) {
