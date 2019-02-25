@@ -2,6 +2,7 @@
 
 #include "libraries/cufft/cufft_helper.hpp"
 #include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <array>
 #include <iostream>
 
 using namespace gearshifft::CuFFT;
