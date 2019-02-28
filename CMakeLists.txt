@@ -148,6 +148,7 @@ target_compile_definitions(Common INTERFACE
   GEARSHIFFT_PRECISION_HALF_ONLY=${GEARSHIFFT_PRECISION_HALF_ONLY}
   GEARSHIFFT_PRECISION_SINGLE_ONLY=${GEARSHIFFT_PRECISION_SINGLE_ONLY}
   GEARSHIFFT_PRECISION_DOUBLE_ONLY=${GEARSHIFFT_PRECISION_DOUBLE_ONLY}
+  BOOST_ALL_NO_LIB=1
   )
 #TODO: check paths
 
@@ -406,7 +407,9 @@ if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
       endif()
 
       target_link_libraries(FFTWWrappers INTERFACE
-        -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group
+        $<$<CXX_COMPILER_ID:GNU>:-Wl,--start-group>
+        ${FFTWWrappers_MKL_LIBRARIES}
+        $<$<CXX_COMPILER_ID:GNU>:-Wl,--end-group>
         )
       message(STATUS " gearshifft::FFTWWrappers enabled.")
 
