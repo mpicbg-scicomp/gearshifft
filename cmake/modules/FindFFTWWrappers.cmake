@@ -20,6 +20,16 @@
 #   MKLROOT                        ... take the MKL libraries from here
 #
 
+if(GEARSHIFFT_USE_STATIC_LIBS)
+  set(PREFERENCE_LIBRARY_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}")
+  set(PREFERENCE_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  message("FFTWWrappers will prefer libraries with prefix '${PREFERENCE_LIBRARY_PREFIX}' and suffix '${PREFERENCE_LIBRARY_SUFFIX}'")
+else()
+  set(PREFERENCE_LIBRARY_PREFIX)
+  set(PREFERENCE_LIBRARY_SUFFIX)
+  message("FFTWWrappers will prefer libraries with no prefix and no suffix")
+endif()
+
 #If environment variable FFTWWrappers_ROOT is defined, it has the same effect as the cmake variable
 if( NOT FFTWWrappers_ROOT AND DEFINED ENV{FFTWWrappers_ROOT} )
   if( EXISTS "$ENV{FFTWWrappers_ROOT}/" )
@@ -43,21 +53,21 @@ endif()
 #initialize library variables
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES fftw3xc_gnu fftw3xc_gnu.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_gnu${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_gnu
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES fftw3xc_gnu fftw3xc_gnu.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_gnu${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_gnu
   PATHS ${MKLROOT}
   PATH_SUFFIXES "lib/intel64_lin" "lib/intel64_mac" "lib/intel64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES fftw3xc_gnu fftw3xc_gnu.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_gnu${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_gnu
   )
 
 if(EXISTS ${FFTWWrappers_GNU_LIBRARIES})
@@ -66,21 +76,21 @@ endif()
 
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES fftw3xc_intel fftw3xc_intel.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_intel${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_intel
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES fftw3xc_intel fftw3xc_intel.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_intel${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_intel
   PATHS ${MKLROOT}
   PATH_SUFFIXES "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
 )
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES fftw3xc_intel fftw3xc_intel.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}fftw3xc_intel${PREFERENCE_LIBRARY_SUFFIX} fftw3xc_intel
 )
 
 if(EXISTS ${FFTWWrappers_INTEL_LIBRARIES})
@@ -128,7 +138,7 @@ endif()
 
 find_library(
   MKL_INTEL_LP64
-  NAMES mkl_intel_lp64 mkl_intel_lp64.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}mkl_intel_lp64${PREFERENCE_LIBRARY_SUFFIX} mkl_intel_lp64
   PATHS ${MKLROOT}
   PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
@@ -142,7 +152,7 @@ endif()
 
 find_library(
   MKL_INTEL_THREAD
-  NAMES mkl_intel_thread mkl_intel_thread.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}mkl_intel_thread${PREFERENCE_LIBRARY_SUFFIX} mkl_intel_thread
   PATHS ${MKLROOT}
   PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
@@ -156,7 +166,7 @@ endif()
 
 find_library(
   MKL_CORE
-  NAMES mkl_core mkl_core.a
+  NAMES ${PREFERENCE_LIBRARY_PREFIX}mkl_core${PREFERENCE_LIBRARY_SUFFIX} mkl_core
   PATHS ${MKLROOT}
   PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
@@ -171,6 +181,8 @@ endif()
 list(APPEND FFTWWrappers_MKL_LIBRARY_DIRS "${MKLROOT}/../compiler/lib/intel64")
 list(APPEND FFTWWrappers_MKL_LIBRARY_DIRS "${MKLROOT}/../tbb/lib/intel64/gcc4.4")
 
+# NOTE: According to Intel documentation, it is generally not recommended to
+# link against the static variants of the openMP libraries so we put them last:
 find_library(
   MKL_IOMP5
   NAMES iomp5 libiomp5.a libiomp5md
