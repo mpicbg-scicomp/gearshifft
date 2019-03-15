@@ -4,19 +4,20 @@
 #   find_package(FFTWWrappers [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FFTWWrappers_FOUND          ... true if fftw is found on the system
-#   FFTWWrappers_GNU_LIBRARIES  ... list of library that were build with the GNU binary layout
-#   FFTWWrappers_INTEL_LIBRARIES  ... list of library that were build with the intel binary layout
-#   FFTWWrappers_LIBRARIES      ... list of library identifiers that were found (will be filled with serial/openmp/pthreads enabled file names if present, only stubs will be filled in not full paths)
-#   FFTWWrappers_MKL_LIBRARIES  ... list of library in the MKL that need to be linked to (intel64)
-#   FFTWWrappers_MKL_INCLUDE_DIR  ... folder containing fftw3.h
+#   FFTWWrappers_FOUND             ... true if fftw is found on the system
+#   FFTWWrappers_GNU_LIBRARIES     ... list of library that were build with the GNU binary layout
+#   FFTWWrappers_INTEL_LIBRARIES   ... list of library that were build with the intel binary layout
+#   FFTWWrappers_MSVS_LIBRARIES    ... list of library that were build with the MSVS binary layout
+#   FFTWWrappers_LIBRARIES         ... list of library identifiers that were found (will be filled with serial/openmp/pthreads enabled file names if present, only stubs will be filled in not full paths)
+#   FFTWWrappers_MKL_LIBRARIES     ... list of library in the MKL that need to be linked to (intel64)
+#   FFTWWrappers_MKL_INCLUDE_DIR   ... folder containing fftw3.h
 #   FFTWWrappers_MKL_LIBRARY_DIRS  ... folder containing the libraries in FFTWWrappers_MKL_LIBRARIES
-#   FFTWWrappers_LIBRARY_DIR	... fftw library directory
+#   FFTWWrappers_LIBRARY_DIR	   ... fftw library directory
 #
 # The following variables will be checked by the function
-#   FFTWWrappers_ROOT           ... if set, the libraries are exclusively searched
-#                                   under this path
-#   MKLROOT                     ... take the MKL libraries from here
+#   FFTWWrappers_ROOT              ... if set, the libraries are exclusively searched
+#                                      under this path
+#   MKLROOT                        ... take the MKL libraries from here
 #
 
 #If environment variable FFTWWrappers_ROOT is defined, it has the same effect as the cmake variable
@@ -42,21 +43,21 @@ endif()
 #initialize library variables
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES libfftw3xc_gnu libfftw3xc_gnu.a
+  NAMES fftw3xc_gnu fftw3xc_gnu.a
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES libfftw3xc_gnu libfftw3xc_gnu.a
+  NAMES fftw3xc_gnu fftw3xc_gnu.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64"
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64_mac" "lib/intel64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_GNU_LIBRARIES
-  NAMES libfftw3xc_gnu libfftw3xc_gnu.a
+  NAMES fftw3xc_gnu fftw3xc_gnu.a
   )
 
 if(EXISTS ${FFTWWrappers_GNU_LIBRARIES})
@@ -65,25 +66,48 @@ endif()
 
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES libfftw3xc_intel libfftw3xc_intel.a
+  NAMES fftw3xc_intel fftw3xc_intel.a
   PATHS ${FFTWWrappers_ROOT}
   PATH_SUFFIXES "lib" "lib64"
   NO_DEFAULT_PATH
   )
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES libfftw3xc_intel libfftw3xc_intel.a
+  NAMES fftw3xc_intel fftw3xc_intel.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin"
+  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
 )
 find_library(
   FFTWWrappers_INTEL_LIBRARIES
-  NAMES libfftw3xc_intel libfftw3xc_intel.a
+  NAMES fftw3xc_intel fftw3xc_intel.a
 )
 
 if(EXISTS ${FFTWWrappers_INTEL_LIBRARIES})
   get_filename_component(FFTWWrappers_LIBRARY_DIR ${FFTWWrappers_INTEL_LIBRARIES} DIRECTORY)
+endif()
+
+find_library(
+  FFTWWrappers_MSVS_LIBRARIES
+  NAMES fftw3xc_msvs
+  PATHS ${FFTWWrappers_ROOT}
+  PATH_SUFFIXES "lib" "lib64"
+  NO_DEFAULT_PATH
+  )
+find_library(
+  FFTWWrappers_MSVS_LIBRARIES
+  NAMES fftw3xc_msvs
+  PATHS ${MKLROOT}
+  PATH_SUFFIXES "lib/intel64_win" "lib/intel64"
+  NO_DEFAULT_PATH
+  )
+find_library(
+  FFTWWrappers_MSVS_LIBRARIES
+  NAMES fftw3xc_msvs
+  )
+
+if(EXISTS ${FFTWWrappers_MSVS_LIBRARIES})
+  get_filename_component(FFTWWrappers_LIBRARY_DIR ${FFTWWrappers_MSVS_LIBRARIES} DIRECTORY)
 endif()
 
 ######################################### MKL related #####################################
@@ -104,44 +128,44 @@ endif()
 
 find_library(
   MKL_INTEL_LP64
-  NAMES libmkl_intel_lp64 libmkl_intel_lp64.a
+  NAMES mkl_intel_lp64 mkl_intel_lp64.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
+  PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
 if(EXISTS ${MKL_INTEL_LP64})
   list(APPEND FFTWWrappers_MKL_LIBRARIES "${MKL_INTEL_LP64}")
 else()
-  message( "FFTWWrappers was not able to find libmkl_intel_lp64.a in ${MKLROOT}")
+  message( "FFTWWrappers was not able to find mkl_intel_lp64 in ${MKLROOT}")
 endif()
 
 find_library(
   MKL_INTEL_THREAD
-  NAMES libmkl_intel_thread libmkl_intel_thread.a
+  NAMES mkl_intel_thread mkl_intel_thread.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
+  PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
 if(EXISTS ${MKL_INTEL_THREAD})
   list(APPEND FFTWWrappers_MKL_LIBRARIES "${MKL_INTEL_THREAD}")
 else()
-  message( "FFTWWrappers was not able to find libmkl_intel_thread.a in ${MKLROOT}")
+  message( "FFTWWrappers was not able to find mkl_intel_thread in ${MKLROOT}")
 endif()
 
 find_library(
   MKL_CORE
-  NAMES libmkl_core libmkl_core.a
+  NAMES mkl_core mkl_core.a
   PATHS ${MKLROOT}
-  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64"
+  PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64"
   NO_DEFAULT_PATH
   )
 
 if(EXISTS ${MKL_CORE})
   list(APPEND FFTWWrappers_MKL_LIBRARIES "${MKL_CORE}")
 else()
-  message("FFTWWrappers was not able to find libmkl_core.a in ${MKLROOT}")
+  message("FFTWWrappers was not able to find mkl_core in ${MKLROOT}")
 endif()
 
 list(APPEND FFTWWrappers_MKL_LIBRARY_DIRS "${MKLROOT}/../compiler/lib/intel64")
@@ -149,9 +173,9 @@ list(APPEND FFTWWrappers_MKL_LIBRARY_DIRS "${MKLROOT}/../tbb/lib/intel64/gcc4.4"
 
 find_library(
   MKL_IOMP5
-  NAMES iomp5 libiomp5 libiomp5.a
+  NAMES iomp5 libiomp5.a libiomp5md
   PATHS ${MKLROOT} ${MKLROOT}/../compiler ${MKLROOT}/../tbb
-  PATH_SUFFIXES "lib/intel64_lin" "lib/intel64" "lib/intel64/gcc4.4"
+  PATH_SUFFIXES "lib" "lib/intel64_lin" "lib/intel64_mac" "lib/intel64_win" "lib/intel64" "lib/intel64/gcc4.4"
   NO_DEFAULT_PATH
   )
 
@@ -161,12 +185,14 @@ else()
 
 endif()
 
-list(APPEND FFTWWrappers_MKL_LIBRARIES "m;dl")
+list(APPEND FFTWWrappers_MKL_LIBRARIES
+     $<$<NOT:$<C_COMPILER_ID:MSVC>>:m> "${CMAKE_DL_LIBS}")
 
 if(NOT FFTWWrappers_FIND_QUIETLY)
   message("++ FindFFTWWrappers")
   message("++ FFTWWrappers_GNU_LIBRARIES    : ${FFTWWrappers_GNU_LIBRARIES}")
   message("++ FFTWWrappers_INTEL_LIBRARIES  : ${FFTWWrappers_INTEL_LIBRARIES}")
+  message("++ FFTWWrappers_MSVS_LIBRARIES   : ${FFTWWrappers_MSVS_LIBRARIES}")
   message("++ FFTWWrappers_LIBRARY_DIR      : ${FFTWWrappers_LIBRARY_DIR}")
   message("++ FFTWWrappers_MKL_LIBRARIES    : ${FFTWWrappers_MKL_LIBRARIES}")
   message("++ FFTWWrappers_MKL_LIBRARY_DIRS : ${FFTWWrappers_MKL_LIBRARY_DIRS}")
@@ -185,15 +211,20 @@ if(FFTWWrappers_GNU_LIBRARIES)
     REQUIRED_VARS FFTWWrappers_MKL_INCLUDE_DIR
     )
   set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
-
-else()
+elseif(FFTWWrappers_INTEL_LIBRARIES)
   find_package_handle_standard_args(FFTWWrappers
     REQUIRED_VARS FFTWWrappers_INTEL_LIBRARIES
     REQUIRED_VARS FFTWWrappers_MKL_LIBRARIES
     REQUIRED_VARS FFTWWrappers_MKL_INCLUDE_DIR
     )
   set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
-
+elseif(FFTWWrappers_MSVS_LIBRARIES)
+  find_package_handle_standard_args(FFTWWrappers
+    REQUIRED_VARS FFTWWrappers_MSVS_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_LIBRARIES
+    REQUIRED_VARS FFTWWrappers_MKL_INCLUDE_DIR
+    )
+  set(FFTWWrappers_LIBRARIES "${FFTWWrappers_MSVS_LIBRARIES}")
 endif()
 
 
@@ -201,6 +232,7 @@ mark_as_advanced(
   FFTWWrappers_LIBRARIES
   FFTWWrappers_GNU_LIBRARIES
   FFTWWrappers_INTEL_LIBRARIES
+  FFTWWrappers_MSVS_LIBRARIES
   FFTWWrappers_LIBRARY_DIR
   FFTWWrappers_MKL_LIBRARIES
   FFTWWrappers_MKL_LIBRARY_DIR
