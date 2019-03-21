@@ -1,5 +1,6 @@
-#ifndef FFTW_HPP_
-#define FFTW_HPP_
+//http://www.fftw.org/fftw3_doc/Guru-Interface.html
+#ifndef GURUFFTW_HPP_
+#define GURUFFTW_HPP_
 
 #include "core/types.hpp"
 #include "core/options.hpp"
@@ -749,4 +750,4 @@ namespace fftw {
 } // namespace gearshifft
 
 
-#endif /* FFTW_HPP_ */
+#endif /* GURUFFTW_HPP_ */
