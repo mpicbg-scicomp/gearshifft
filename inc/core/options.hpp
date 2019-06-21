@@ -2,8 +2,11 @@
 #define OPTIONS_HPP_
 
 #include "types.hpp"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <boost/program_options.hpp>
 #include <boost/core/noncopyable.hpp>
+#pragma GCC diagnostic pop
 #include <string>
 #include <vector>
 

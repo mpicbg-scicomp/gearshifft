@@ -8,7 +8,11 @@
 
 #include "gearshifft_version.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <boost/asio.hpp>
+#pragma GCC diagnostic pop
 
 #include <ctime>
 #include <vector>
