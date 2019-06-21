@@ -1,6 +1,12 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
+// https://github.com/mpicbg-scicomp/gearshifft/issues/145
+#include <boost/predef.h>
+#if BOOST_VERSION < 106600
+#define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #include "complex-half.hpp"
 
 #include <boost/mpl/list.hpp>
