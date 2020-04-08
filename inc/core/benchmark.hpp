@@ -52,7 +52,7 @@ namespace gearshifft {
     int run() {
       if(Context::options().getListDevices())
         return 0;
-      if(configured_==false)
+      if(!configured_)
         return 1;
 
       AppT::getInstance().createContext();
