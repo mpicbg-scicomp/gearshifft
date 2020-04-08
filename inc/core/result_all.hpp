@@ -2,17 +2,22 @@
 #define RESULT_ALL_HPP_
 
 #include "result_benchmark.hpp"
+#include "result_writer.hpp"
 #include "traits.hpp"
 #include "types.hpp"
 
-#include <sstream>
 #include <fstream>
 #include <iostream>
-#include <iomanip>
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <mutex>
+#include <atomic>
 
+
+#ifndef GEARSHIFFT_DUMP_FREQUENCY
+#define GEARSHIFFT_DUMP_FREQUENCY 1
+#endif
 
 namespace gearshifft {
 
@@ -21,11 +26,30 @@ namespace gearshifft {
            int T_NumberValues // recorded values per run
            >
   class ResultAll {
-  public:
+
+    friend class ResultWriter<T_NumberRuns, T_NumberWarmups, T_NumberValues>;
+
     using ResultBenchmarkT = ResultBenchmark<T_NumberRuns, T_NumberValues>;
+    using ResultWriterT = ResultWriter<T_NumberRuns, T_NumberWarmups, T_NumberValues>;
+
+  public:
+
+    ResultAll() : writer_(*this), done_(false) {}
+
+    ~ResultAll() {
+      done_ = true;
+      writer_.notify();
+    }
 
     void add(const ResultBenchmarkT& result) {
+      std::unique_lock<std::mutex> l(resultsMutex_);
       results_.push_back(result);
+      auto size = results_.size();
+      l.unlock();
+
+      if (size % DUMP_FREQUENCY == 0) {
+        writer_.notify();
+      }
     }
 
     /*
@@ -60,50 +84,12 @@ namespace gearshifft {
                const std::string& dev_infos,
                double timerContextCreate,
                double timerContextDestroy) {
-      std::stringstream ss;
-      ss << "; " << dev_infos << "\n"
-         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
-         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";
-      ss << apptitle
-         << ", RunsPerBenchmark="<<T_NumberRuns
-         << "\n";
+
+      writer_.printHeader(stream, apptitle, dev_infos, timerContextCreate, timerContextDestroy);
 
       for(auto& result : results_) {
-        int nruns = T_NumberRuns;
-        std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
-        std::string complex = result.isComplex() ? "Complex" : "Real";
-
-        ss << std::setfill('-') << std::setw(70) <<"-"<< "\n";
-        ss << inplace
-           << ", "<<complex
-           << ", "<<result.getPrecision()
-           << ", Dim="<<result.getDim()
-           << ", Kind="<<result.getDimKindStr()<<" ("<<result.getDimKind()<<")"
-           << ", Ext="<<result.getExtents()
-           << "\n";
-        if(result.hasError()) {
-          ss << " Error at run="<<result.getErrorRun()
-             << ": "<<result.getError()
-             << "\n";
-          nruns = result.getErrorRun()+1;
-        }
-        ss << std::setfill('-') << std::setw(70) <<"-"<< "\n";
-        ss << std::setfill(' ');
-        double sum;
-        for(int ival=0; ival<T_NumberValues; ++ival) {
-          sum = 0.0;
-          for(int run=T_NumberWarmups; run<nruns; ++run) {
-            result.setRun(run);
-            sum += result.getValue(ival);
-          }
-          ss << std::setw(28)
-            << static_cast<RecordType>(ival)
-             << ": " << std::setw(16) << sum/(T_NumberRuns-T_NumberWarmups)
-             << " [avg]"
-             << "\n";
-        }
+        writer_.printResult(stream, result);
       }
-      stream << ss.str() << std::endl; // "\n" with flush
     }
 
     /**
@@ -171,7 +157,11 @@ namespace gearshifft {
     } // write
 
   private:
+    static constexpr unsigned int DUMP_FREQUENCY = GEARSHIFFT_DUMP_FREQUENCY;
+    ResultWriterT writer_;
     std::vector< ResultBenchmarkT > results_;
+    std::mutex resultsMutex_;
+    std::atomic<bool> done_;
 
   };
 
