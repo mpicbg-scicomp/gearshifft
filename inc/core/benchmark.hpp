@@ -55,6 +55,7 @@ namespace gearshifft {
       if(!configured_)
         return 1;
 
+      AppT::getInstance().startWriter();
       AppT::getInstance().createContext();
 
       auto init_function = []() {
@@ -68,7 +69,7 @@ namespace gearshifft {
                                                   boost_vargv_.data() );
 
       AppT::getInstance().destroyContext();
-      AppT::getInstance().dumpResults();
+      AppT::getInstance().stopWriter();
       return r;
     }
 
