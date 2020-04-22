@@ -30,6 +30,10 @@
 #define GEARSHIFFT_ERROR_BOUND 0.00001
 #endif
 
+#ifndef GEARSHIFFT_DUMP_FREQUENCY
+#define GEARSHIFFT_DUMP_FREQUENCY 1
+#endif
+
 namespace gearshifft {
 
   inline
@@ -45,8 +49,10 @@ namespace gearshifft {
     static constexpr int NR_WARM_RUNS = GEARSHIFFT_NUMBER_WARM_RUNS;
     static constexpr int NR_WARMUP_RUNS = GEARSHIFFT_NUMBER_WARMUPS;
     static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
-    using ResultAllT = ResultAll<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
-    using ResultT    = ResultBenchmark<NR_RUNS, NR_RECORDS>;
+    static constexpr unsigned int DUMP_FREQUENCY = GEARSHIFFT_DUMP_FREQUENCY;
+    using ResultAllT    = ResultAll<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
+    using ResultWriterT = ResultWriter<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
+    using ResultT       = ResultBenchmark<NR_RUNS, NR_RECORDS>;
     /// Boost tests will fail when deviation(iFFT(FFT(data)),data) returns a greater value
     static constexpr double ERROR_BOUND = GEARSHIFFT_ERROR_BOUND;
 
@@ -77,9 +83,15 @@ namespace gearshifft {
 
     void addRecord(ResultT r) {
       resultAll_.add(r);
+      auto size = resultAll_.size();
+
+      if (size % DUMP_FREQUENCY == 0) {
+        resultWriter_.update(size);
+      }
     }
 
-    void dumpResults() {
+    void startWriter() {
+
       std::time_t now = std::time(nullptr);
       std::stringstream meta_information;
       meta_information << context_.get_used_device_properties()
@@ -90,21 +102,23 @@ namespace gearshifft {
                        << ",\"CurrentTime\"," << now
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
                        << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
-                       << ",\"gearshifft\",\"" << gearshifft::version() << "\""
-        ;
-      if(T_Context::options().getVerbose()) {
-        resultAll_.print(std::cout,
-                         T_Context::title(),
-                         meta_information.str(),
-                         timeContextCreate_,
-                         timeContextDestroy_);
-      }
+                       << ",\"gearshifft\",\"" << gearshifft::version() << "\"";
+
+      resultWriter_.start(&resultAll_,
+                          T_Context::title(),
+                          meta_information.str(),
+                          T_Context::options().getVerbose());
+    }
+
+    void stopWriter() {
+
+      resultWriter_.stop(timeContextCreate_, timeContextDestroy_);
 
       std::string fname = T_Context::options().getOutputFile();
       resultAll_.sort();
       resultAll_.saveCSV(fname,
                          T_Context::title(),
-                         meta_information.str(),
+                         /*meta_information.str(),*/ "blub",      // TODO
                          timeContextCreate_,
                          timeContextDestroy_);
       std::cout << "Results dumped to " << fname << std::endl;
@@ -114,7 +128,7 @@ namespace gearshifft {
     T_Context context_;
     bool context_created_ = false;
     ResultAllT resultAll_;
-    ResultT result_;
+    ResultWriterT resultWriter_;
     double timeContextCreate_ = 0.0;
     double timeContextDestroy_ = 0.0;
 

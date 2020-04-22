@@ -11,13 +11,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <mutex>
-#include <atomic>
 
-
-#ifndef GEARSHIFFT_DUMP_FREQUENCY
-#define GEARSHIFFT_DUMP_FREQUENCY 1
-#endif
 
 namespace gearshifft {
 
@@ -30,26 +24,11 @@ namespace gearshifft {
     friend class ResultWriter<T_NumberRuns, T_NumberWarmups, T_NumberValues>;
 
     using ResultBenchmarkT = ResultBenchmark<T_NumberRuns, T_NumberValues>;
-    using ResultWriterT = ResultWriter<T_NumberRuns, T_NumberWarmups, T_NumberValues>;
 
   public:
 
-    ResultAll() : writer_(*this), done_(false) {}
-
-    ~ResultAll() {
-      done_ = true;
-      writer_.notify();
-    }
-
     void add(const ResultBenchmarkT& result) {
-      std::unique_lock<std::mutex> l(resultsMutex_);
       results_.push_back(result);
-      auto size = results_.size();
-      l.unlock();
-
-      if (size % DUMP_FREQUENCY == 0) {
-        writer_.notify();
-      }
     }
 
     /*
@@ -77,19 +56,6 @@ namespace gearshifft {
           else
             return false;
         });
-    }
-
-    void print(std::ostream& stream,
-               const std::string& apptitle,
-               const std::string& dev_infos,
-               double timerContextCreate,
-               double timerContextDestroy) {
-
-      writer_.printHeader(stream, apptitle, dev_infos, timerContextCreate, timerContextDestroy);
-
-      for(auto& result : results_) {
-        writer_.printResult(stream, result);
-      }
     }
 
     /**
@@ -156,12 +122,12 @@ namespace gearshifft {
       fs.close();
     } // write
 
+    std::size_t size() {
+      return results_.size();
+    }
+
   private:
-    static constexpr unsigned int DUMP_FREQUENCY = GEARSHIFFT_DUMP_FREQUENCY;
-    ResultWriterT writer_;
     std::vector< ResultBenchmarkT > results_;
-    std::mutex resultsMutex_;
-    std::atomic<bool> done_;
 
   };
 
