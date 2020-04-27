@@ -83,10 +83,9 @@ namespace gearshifft {
 
     void addRecord(ResultT r) {
       resultAll_.add(r);
-      auto size = resultAll_.size();
 
-      if (size % DUMP_FREQUENCY == 0) {
-        resultWriter_.update(size);
+      if (resultAll_.size() % DUMP_FREQUENCY == 0) {
+        resultWriter_.update();
       }
     }
 
@@ -105,23 +104,14 @@ namespace gearshifft {
                        << ",\"gearshifft\",\"" << gearshifft::version() << "\"";
 
       resultWriter_.start(&resultAll_,
+                          T_Context::options().getOutputFile(),
                           T_Context::title(),
                           meta_information.str(),
                           T_Context::options().getVerbose());
     }
 
     void stopWriter() {
-
       resultWriter_.stop(timeContextCreate_, timeContextDestroy_);
-
-      std::string fname = T_Context::options().getOutputFile();
-      resultAll_.sort();
-      resultAll_.saveCSV(fname,
-                         T_Context::title(),
-                         /*meta_information.str(),*/ "blub",      // TODO
-                         timeContextCreate_,
-                         timeContextDestroy_);
-      std::cout << "Results dumped to " << fname << std::endl;
     }
 
   private:

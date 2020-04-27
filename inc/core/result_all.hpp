@@ -31,6 +31,10 @@ namespace gearshifft {
       results_.push_back(result);
     }
 
+    std::size_t size() const {
+      return results_.size();
+    }
+
     /*
      * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz
      */
@@ -56,74 +60,6 @@ namespace gearshifft {
           else
             return false;
         });
-    }
-
-    /**
-     * Store results in csv file.
-     * If verbosity flag is set, then std::cout receives result view.
-     */
-    void saveCSV(const std::string& fname,
-                 const std::string& apptitle,
-                 const std::string& meta_information,
-                 double timerContextCreate,
-                 double timerContextDestroy) {
-      std::ofstream fs;
-      const char sep=',';
-
-      fs.open(fname, std::ofstream::out);
-      fs.precision(11);
-      fs << "; " << meta_information <<"\n"
-         << "; \"Time_ContextCreate [ms]\", " << timerContextCreate << "\n"
-         << "; \"Time_ContextDestroy [ms]\", " << timerContextDestroy  << "\n";
-      // header
-      fs << "\"library\",\"inplace\",\"complex\",\"precision\",\"dim\",\"kind\""
-         << ",\"nx\",\"ny\",\"nz\",\"run\",\"id\",\"success\"";
-      for(auto ival=0; ival<T_NumberValues; ++ival) {
-        fs << sep << '"' << static_cast<RecordType>(ival) << '"';
-      }
-      fs << "\n";
-
-      // data
-      for(auto& result : results_) {
-        std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
-        std::string complex = result.isComplex() ? "Complex" : "Real";
-        for(auto run=0; run<T_NumberRuns; ++run) {
-          result.setRun(run);
-          fs << "\"" << apptitle << "\"" << sep
-             << "\"" << inplace  << "\"" << sep
-             << "\"" << complex  << "\"" << sep
-             << "\"" << result.getPrecision() << "\"" << sep
-             << result.getDim() << sep
-             << "\"" << result.getDimKindStr() << "\"" << sep
-             << result.getExtents()[0] << sep
-             << result.getExtents()[1] << sep
-             << result.getExtents()[2] << sep
-             << run << sep
-             << result.getID();
-          // was run successfull?
-          if(result.hasError() && result.getErrorRun()<=run) {
-            if(result.getErrorRun()==run)
-              fs << sep << "\"" <<result.getError() << "\"";
-            else
-              fs << sep << "\"Skipped\""; // subsequent runs did not run
-          } else {
-            if(run<T_NumberWarmups)
-              fs << sep << "\"" << "Warmup" << "\"";
-            else
-              fs << sep << "\"" << "Success" << "\"";
-          }
-          // measured time and size values
-          for(auto ival=0; ival<T_NumberValues; ++ival) {
-            fs << sep << result.getValue(ival);
-          }
-          fs << "\n";
-        } // run
-      } // result
-      fs.close();
-    } // write
-
-    std::size_t size() {
-      return results_.size();
     }
 
   private:
