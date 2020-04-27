@@ -133,8 +133,10 @@ namespace gearshifft {
       auto stopLoop = StopLoop::No;
       while (stopLoop == StopLoop::No) {
         std::unique_lock<std::mutex> l(cursorEndMutex_);
-        update_.wait(l);
-        stopLoop = stopLoop_;
+        update_.wait(l, [&](){
+          stopLoop = stopLoop_;
+          return cursor_ < cursorEnd_ || stopLoop == StopLoop::Yes;
+        });
 
         std::stringstream ss;
         std::ofstream fs(fnameBak_, std::ostream::app);
