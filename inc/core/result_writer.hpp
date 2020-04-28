@@ -41,14 +41,14 @@ namespace gearshifft {
       verbose_   = verbose;
 
       if (verbose_) {
-          headerOut();
+        headerOut();
       }
 
       std::ofstream fs(fnameBak_, std::ofstream::out);
       fs.precision(PREC);
       headerToStreamCSV(fs, PrintContextTimes::No); // Context times not known yet
 
-      t_ = std::thread(&ResultWriter::loop, this);
+      thread_ = std::thread(&ResultWriter::loop, this);
     }
 
     void stop(double timeContextCreate,
@@ -57,18 +57,19 @@ namespace gearshifft {
       timeContextDestroy_ = timeContextDestroy;
 
       updateInternal(StopLoop::Yes);
-      t_.join();
+      thread_.join();
 
       if (verbose_) {
         footerOut();
       }
       std::ofstream fs(fnameBak_, std::ofstream::app);
+      fs.precision(PREC);
       footerToStreamCSV(fs);
       fs.close();
 
       resultAll_->sort();
       saveCSV();
-      std::cout << "Results written to " << fname_ << std::endl;
+      std::cout << "\nResults written to " << fname_ << std::endl;
 
       std::remove(fnameBak_.c_str()); // delete backup file
     }
@@ -103,6 +104,7 @@ namespace gearshifft {
     static constexpr char BAK_SUFFIX[] = "~";
     static constexpr char SEP = ',';
     static constexpr std::streamsize PREC = 11;
+    static constexpr std::ostream& OUT = std::cout;
 
     ResultAllT* resultAll_ = nullptr;
     StopLoop stopLoop_     = StopLoop::No;
@@ -115,16 +117,15 @@ namespace gearshifft {
     std::string fnameBak_;
     std::string apptitle_;
     std::string dev_infos_;
-    std::ostream& verboseOutput_ = std::cout; // TODO: Make configurable
-    std::thread t_;
-    std::mutex cursorEndMutex_; // used for condition variable update_ and mutual exclusion on cursorEnd_ and stop_
+    std::thread thread_;
+    std::mutex mutex_; // for condition_variable update_; mutual exclusion on cursorEnd_, stopLoop_
     std::condition_variable update_;
 
     void updateInternal(StopLoop stopLoop) {
-      std::unique_lock<std::mutex> l(cursorEndMutex_);
+      std::unique_lock<std::mutex> l(mutex_);
       stopLoop_  = stopLoop;
       cursorEnd_ = resultAll_->size();
-      l.unlock();     // unlock before notifying so that the woken up thread doesn't have to wait for mutex again
+      l.unlock(); // unlock before notifying -> notified thread doesn't have to wait for mutex
       update_.notify_one();
     }
 
@@ -132,7 +133,7 @@ namespace gearshifft {
 
       auto stopLoop = StopLoop::No;
       while (stopLoop == StopLoop::No) {
-        std::unique_lock<std::mutex> l(cursorEndMutex_);
+        std::unique_lock<std::mutex> l(mutex_);
         update_.wait(l, [&](){
           stopLoop = stopLoop_;
           return cursor_ < cursorEnd_ || stopLoop == StopLoop::Yes;
@@ -154,7 +155,7 @@ namespace gearshifft {
         }
 
         if (verbose_) {
-          verboseOutput_ << ss.str() << std::flush;
+          OUT << ss.str() << std::flush;
         }
 
         l.unlock();
@@ -166,11 +167,11 @@ namespace gearshifft {
       ss << "; " << dev_infos_ << "\n"
          << apptitle_ << ", RunsPerBenchmark=" << T_NumberRuns << "\n";
 
-      verboseOutput_ << ss.str() << std::flush;
+      OUT << ss.str() << std::flush;
     }
 
     void resultToStreamOut(std::stringstream& stream,
-                              ResultBenchmarkT& result) const {
+                           ResultBenchmarkT& result) const {
       int nruns = T_NumberRuns;
       std::string inplace = result.isInplace() ? "Inplace" : "Outplace";
       std::string complex = result.isComplex() ? "Complex" : "Real";
@@ -211,7 +212,7 @@ namespace gearshifft {
       ss << "; \"Time_ContextCreate [ms]\", " << timeContextCreate_ << "\n"
          << "; \"Time_ContextDestroy [ms]\", " << timeContextDestroy_  << "\n";
 
-      verboseOutput_ << ss.str() << std::flush;
+      OUT << ss.str() << std::flush;
     }
 
     void headerToStreamCSV(std::ostream& stream,
