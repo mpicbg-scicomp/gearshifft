@@ -7,7 +7,11 @@
 #include "benchmark_data.hpp"
 #include "types.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#pragma GCC diagnostic pop
 
 #include <type_traits>
 #include <cmath>

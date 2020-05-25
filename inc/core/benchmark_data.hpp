@@ -4,10 +4,15 @@
 #include "types.hpp"
 
 // http://www.boost.org/doc/libs/1_56_0/doc/html/align/tutorial.html
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <boost/align/aligned_allocator.hpp>
 #include <boost/range/counting_range.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/noncopyable.hpp>
+#pragma GCC diagnostic pop
 
 #include <numeric>
 #include <vector>
