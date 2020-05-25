@@ -341,3 +341,24 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - in case the Boost version (e.g. 1.62.0) you have is more recent than your `cmake` (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 - Windows or MacOS is not supported yet, feel free to add a pull-request
 - cufft float16 transforms overflow at >=1048576 elements
+
+# Citation
+
+```
+@InProceedings{10.1007/978-3-319-58667-0_11,
+author="Steinbach, Peter
+and Werner, Matthias",
+editor="Kunkel, Julian M.
+and Yokota, Rio
+and Balaji, Pavan
+and Keyes, David",
+title="gearshifft -- The FFT Benchmark Suite for Heterogeneous Platforms",
+booktitle="High Performance Computing",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="199--216",
+abstract="Fast Fourier Transforms (FFTs) are exploited in a wide variety of fields ranging from computer science to natural sciences and engineering. With the rising data production bandwidths of modern FFT applications, judging best which algorithmic tool to apply, can be vital to any scientific endeavor. As tailored FFT implementations exist for an ever increasing variety of high performance computer hardware, choosing the best performing FFT implementation has strong implications for future hardware purchase decisions, for resources FFTs consume and for possibly decisive financial and time savings ahead of the competition. This paper therefor presents gearshifft, which is an open-source and vendor agnostic benchmark suite to process a wide variety of problem sizes and types with state-of-the-art FFT implementations (fftw, clFFT and cuFFT). gearshifft provides a reproducible, unbiased and fair comparison on a wide variety of hardware to explore which FFT variant is best for a given problem size.",
+isbn="978-3-319-58667-0"
+}
+```
