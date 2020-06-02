@@ -12,6 +12,8 @@
 #include <clFFT.h>
 #include <array>
 #include <algorithm>
+#include <numeric>
+#include <regex>
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp> // iequals
 #include <boost/algorithm/string.hpp> // split, is_any_of

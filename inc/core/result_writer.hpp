@@ -51,8 +51,7 @@ namespace gearshifft {
       thread_ = std::thread(&ResultWriter::loop, this);
     }
 
-    void stop(double timeContextCreate,
-              double timeContextDestroy) {
+    void stop(double timeContextCreate, double timeContextDestroy) {
       timeContextCreate_  = timeContextCreate;
       timeContextDestroy_ = timeContextDestroy;
 
@@ -84,6 +83,7 @@ namespace gearshifft {
 
       headerToStreamCSV(fs, PrintContextTimes::Yes);
 
+      std::lock_guard<std::mutex> g(resultAll_->resultsMutex_);
       for(auto& result : resultAll_->results_) {
         resultToStreamCSV(fs, result);
       }
@@ -118,14 +118,13 @@ namespace gearshifft {
     std::string apptitle_;
     std::string dev_infos_;
     std::thread thread_;
-    std::mutex mutex_; // for condition_variable update_; mutual exclusion on cursorEnd_, stopLoop_
+    std::mutex writer_mutex_; // for condition_variable update_; mutual exclusion on cursorEnd_, stopLoop_
     std::condition_variable update_;
 
     void updateInternal(StopLoop stopLoop) {
-      std::unique_lock<std::mutex> l(mutex_);
+      std::lock_guard<std::mutex> g(writer_mutex_);
       stopLoop_  = stopLoop;
       cursorEnd_ = resultAll_->size();
-      l.unlock(); // unlock before notifying -> notified thread doesn't have to wait for mutex
       update_.notify_one();
     }
 
@@ -133,7 +132,7 @@ namespace gearshifft {
 
       auto stopLoop = StopLoop::No;
       while (stopLoop == StopLoop::No) {
-        std::unique_lock<std::mutex> l(mutex_);
+        std::unique_lock<std::mutex> l(writer_mutex_);
         update_.wait(l, [&](){
           stopLoop = stopLoop_;
           return cursor_ < cursorEnd_ || stopLoop == StopLoop::Yes;
@@ -143,15 +142,18 @@ namespace gearshifft {
         std::ofstream fs(fnameBak_, std::ostream::app);
         fs.precision(PREC);
 
-        while (cursor_ < cursorEnd_) {
-          auto& result = resultAll_->results_[cursor_];
+        {
+          std::lock_guard<std::mutex> g(resultAll_->resultsMutex_);
+          while (cursor_ < cursorEnd_) {
+            auto& result = resultAll_->results_[cursor_];
 
-          if (verbose_) {
-            resultToStreamOut(ss, result);
+            if (verbose_) {
+              resultToStreamOut(ss, result);
+            }
+            resultToStreamCSV(fs, result);
+
+            cursor_++;
           }
-          resultToStreamCSV(fs, result);
-
-          cursor_++;
         }
 
         if (verbose_) {
@@ -282,6 +284,5 @@ namespace gearshifft {
   template<int T_NumberRuns, int T_NumberWarmups, int T_NumberValues>
   constexpr char ResultWriter<T_NumberRuns, T_NumberWarmups, T_NumberValues>::BAK_SUFFIX[];
 }
-
 
 #endif

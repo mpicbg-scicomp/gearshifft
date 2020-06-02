@@ -1,0 +1,103 @@
+stages:
+    - test
+
+image: ubuntu:bionic
+
+before_script: &base_setup
+    - apt-get update -qq
+    - apt-get install -yqq cmake make g++ clang
+    - apt-get install -yqq libboost-{program-options,filesystem,system,test}-dev
+
+.use_gcc: &use_gcc
+    CC: gcc
+    CXX: g++
+
+.use_clang: &use_clang
+    CC: clang
+    CXX: clang++
+
+.release_build: &release_build
+    GEARSHIFFT_BUILD_TYPE: Release
+
+.debug_build: &debug_build
+    GEARSHIFFT_BUILD_TYPE: Debug
+
+.keep_build: &keep_build
+    paths:
+        - build
+
+.generic_build_and_test: &generic_build_and_test
+- mkdir build && cd build
+- cmake -DCMAKE_BUILD_TYPE=$GEARSHIFFT_BUILD_TYPE -DCMAKE_VERBOSE_MAKEFILE=ON ..
+- make -j $(nproc)
+- ls -l
+- nproc
+- "export OMP_NUM_THREADS=$(($(nproc) < 4 ? $(nproc) : 4))"
+- make test
+
+fftw:
+    stage: test
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+        - sigs=(QUIT KILL TERM)   # don't send SIGABRT (is ignored by gearshifft)
+        - echo "Sending signals to gearshifft_fftw ...";
+        - for sig in "${sigs[@]}"; do
+              timeout -s "$sig" 10 ./gearshifft_fftw -e 16 32 64 128 256 512 -o myout.csv || true;
+              [[ $(wc -l < myout.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; };
+              rm myout.csv*;
+          done
+
+fftw_debug:
+    stage: test
+    variables:
+        <<: *use_gcc
+        <<: *debug_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+
+fftw_clang:
+    stage: test
+    variables:
+        <<: *use_clang
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+
+cufft:
+    stage: test
+    tags:
+        - intel
+        - cuda
+    image: nvidia/cuda:10.2-devel-ubuntu18.04
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    script:
+        - *generic_build_and_test
+
+clfft:
+    stage: test
+    tags:
+        - amd
+        - rocm
+    image: rocm/dev-ubuntu-18.04
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libclfft-dev
+    script:
+        - *generic_build_and_test
