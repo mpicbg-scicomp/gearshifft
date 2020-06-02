@@ -56,8 +56,8 @@ namespace gearshifft {
       if(!configured_)
         return 1;
 
-      AppT::getInstance().startWriter();
       AppT::getInstance().createContext();
+      AppT::getInstance().startWriter();
 
       auto init_function = []() {
         BenchmarkSuite<Context, T_FFT_Is_Normalized, T_FFTs, T_Precisions> instance;
