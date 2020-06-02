@@ -6,8 +6,9 @@
 #include "traits.hpp"
 #include "types.hpp"
 
-#include <vector>
 #include <algorithm>
+#include <mutex>
+#include <vector>
 
 
 namespace gearshifft {
@@ -25,6 +26,7 @@ namespace gearshifft {
   public:
 
     void add(const ResultBenchmarkT& result) {
+      std::lock_guard<std::mutex> g(resultsMutex_);
       results_.push_back(result);
     }
 
@@ -36,6 +38,7 @@ namespace gearshifft {
      * sort order:  fftkind -> dimkind -> dim -> nx*ny*nz
      */
     void sort() {
+      std::lock_guard<std::mutex> g(resultsMutex_);
       std::stable_sort(
         results_.begin( ), results_.end( ),
         [ ]( const ResultBenchmarkT& lhs, const ResultBenchmarkT& rhs )
@@ -60,6 +63,7 @@ namespace gearshifft {
     }
 
   private:
+    std::mutex resultsMutex_;
     std::vector< ResultBenchmarkT > results_;
 
   };

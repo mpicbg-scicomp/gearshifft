@@ -81,7 +81,7 @@ namespace gearshifft {
       context_created_ = false;
     }
 
-    void addRecord(ResultT r) {
+    void addRecord(const ResultT& r) {
       resultAll_.add(r);
 
       if (resultAll_.size() % DUMP_FREQUENCY == 0) {
