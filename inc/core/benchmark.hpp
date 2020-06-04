@@ -32,28 +32,34 @@ namespace gearshifft {
     }
 
     void configure(int argc, char* argv[]) {
-      configured_ = false;
       std::vector<char*> vargv(argv, argv+argc);
       boost_vargv_.clear();
       boost_vargv_.emplace_back(argv[0]); // [0] = name of application
-
-      if( Context::options().parse(vargv, boost_vargv_) ) {
-        if( Context::options().getListDevices() ) {
-          std::cout << Context::get_device_list() << std::endl;
-        }
+      auto parseResult = Context::options().parse(vargv, boost_vargv_);
+      switch (parseResult) {
+        case 0:  break;
+        case 1:  info_only_ = true; break;
+        default: parsing_failed_ = true;
       }
-      else
-        configured_ = true;
     }
 
     template<typename T_FFT_Is_Normalized,
              typename T_FFTs,
              typename T_Precisions>
     int run() {
-      if(Context::options().getListDevices())
-        return 0;
-      if(!configured_)
+      if (parsing_failed_) {
         return 1;
+      } else if (info_only_) {
+        if(Context::options().getListDevices()) {
+          std::cout << Context::get_device_list();
+        } else if (Context::options().getVersion()) {
+          std::cout << "gearshifft " << gearshifft::version() << '\n';
+        } else if (Context::options().getHelp()) {
+          std::cout << "gearshifft " << gearshifft::version() << '\n'
+                    << Context::options().getDescription();
+        }
+        return 0;
+      }
 
       AppT::getInstance().createContext();
       AppT::getInstance().startWriter();
@@ -74,7 +80,8 @@ namespace gearshifft {
     }
 
   private:
-    bool configured_ = false;
+    bool info_only_ = false;
+    bool parsing_failed_ = false;
     std::vector<char*> boost_vargv_;
   };
 
