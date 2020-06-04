@@ -23,8 +23,16 @@ namespace gearshifft {
     OptionsDefault();
     ~OptionsDefault();
 
+    bool getHelp() const {
+      return help_;
+    }
+
     bool getVerbose() const {
       return verbose_;
+    }
+
+    bool getVersion() const {
+      return version_;
     }
 
     bool getListDevices() const {
@@ -64,6 +72,10 @@ namespace gearshifft {
       return vector3D_;
     }
 
+    const boost::program_options::options_description& getDescription() {
+      return desc_;
+    }
+
   protected:
 
     template<typename T>
@@ -76,8 +88,10 @@ namespace gearshifft {
     std::string outputFile_;
     std::string device_;
     size_t ndevices_ = 0;
-    bool listDevices_ = false;
+    bool help_ = false;
     bool verbose_ = false;
+    bool version_ = false;
+    bool listDevices_ = false;
     char* tmp_ = nullptr;
 
     Extents1DVec vector1D_;

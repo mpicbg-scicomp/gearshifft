@@ -77,13 +77,11 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
                                ).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
     if( vm.count("version")  ) {
-      std::cout << "gearshifft " << gearshifft::version() << "\n";
+      version_ = true;
       return 1;
     }
     if( vm.count("help")  ) {
-      std::cout << "gearshifft " << gearshifft::version()
-                << desc_
-                << std::endl;
+      help_ = true;
       return 1;
     }
     if( vm.count("file")  ) {
