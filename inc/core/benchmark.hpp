@@ -63,7 +63,9 @@ namespace gearshifft {
       }
 
       AppT::getInstance().createContext();
-      AppT::getInstance().startWriter();
+      if (!Context::options().getListBenchmarks()) {
+        AppT::getInstance().startWriter();
+      }
 
       auto init_function = []() {
         BenchmarkSuite<Context, T_FFT_Is_Normalized, T_FFTs, T_Precisions> instance;
@@ -76,7 +78,9 @@ namespace gearshifft {
                                                   boost_vargv_.data() );
 
       AppT::getInstance().destroyContext();
-      AppT::getInstance().stopWriter();
+      if (!Context::options().getListBenchmarks()) {
+        AppT::getInstance().stopWriter();
+      }
       return r;
     }
 

@@ -35,6 +35,10 @@ namespace gearshifft {
       return version_;
     }
 
+    bool getListBenchmarks() const {
+      return listBenchmarks_;
+    }
+
     bool getListDevices() const {
       return listDevices_;
     }
@@ -91,6 +95,7 @@ namespace gearshifft {
     bool help_ = false;
     bool verbose_ = false;
     bool version_ = false;
+    bool listBenchmarks_ = false;
     bool listDevices_ = false;
     char* tmp_ = nullptr;
 
