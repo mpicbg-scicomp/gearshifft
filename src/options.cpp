@@ -126,6 +126,7 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
 
     // use Boost command line arguments
     if( vm.count("list-benchmarks") ){
+      listBenchmarks_ = true;
       _boost_vargv.emplace_back(const_cast<char*>("--list_content"));
     }
     if( vm.count("run-benchmarks") ){
