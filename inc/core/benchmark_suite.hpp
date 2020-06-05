@@ -80,7 +80,6 @@ namespace gearshifft {
                                          T_FFT_Normalized,
                                          T_FFTs,
                                          T_Precision>;
-        using App = Application<T_Context>;
         Factory factory;
         test_suite* sub_suite = BOOST_TEST_SUITE( ToString<T_Precision>::value() );
 
