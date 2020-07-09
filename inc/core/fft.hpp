@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <ostream>
 
+#include "scorep/SCOREP_User.h"
+
 namespace gearshifft {
 
   struct FFT_Inplace_Real {
@@ -98,10 +100,13 @@ namespace gearshifft {
       fft.upload(vec.data());
       result.setValue(RecordType::Upload, tdev.stopTimer());
 
-      // execute forward transform
-      tdev.startTimer();
-      fft.execute_forward();
-      result.setValue(RecordType::FFT, tdev.stopTimer());
+      {
+        // execute forward transform
+        SCOREP_USER_REGION("forward transform", SCOREP_USER_REGION_TYPE_COMMON)
+        tdev.startTimer();
+        fft.execute_forward();
+        result.setValue(RecordType::FFT, tdev.stopTimer());
+      }
 
       if(T_ReusePlan::value == true) {
         // init inverse plan
@@ -110,10 +115,13 @@ namespace gearshifft {
         result.setValue(RecordType::PlanInitInv, tcpu.stopTimer());
       }
 
-      // execute inverse transform
-      tdev.startTimer();
-      fft.execute_inverse();
-      result.setValue(RecordType::FFTInv, tdev.stopTimer());
+      {
+          // execute inverse transform
+          SCOREP_USER_REGION("backward transform", SCOREP_USER_REGION_TYPE_COMMON)
+          tdev.startTimer();
+          fft.execute_inverse();
+          result.setValue(RecordType::FFTInv, tdev.stopTimer());
+      }
 
       // download data
       tdev.startTimer();

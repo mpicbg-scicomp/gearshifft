@@ -113,7 +113,7 @@ namespace gearshifft {
     DevTransferSize,
     Deviation,
     Mismatches,
-    _NrRecords
+    NrRecords_
   };
 
   inline
@@ -133,7 +133,7 @@ namespace gearshifft {
     case RecordType::DevTransferSize: return os << "Size_DeviceTransfer [bytes]";
     case RecordType::Deviation: return os << "Error_StandardDeviation";
     case RecordType::Mismatches: return os << "Error_Mismatches";
-    case RecordType::_NrRecords:
+    case RecordType::NrRecords_:
     default:
       ;
     }

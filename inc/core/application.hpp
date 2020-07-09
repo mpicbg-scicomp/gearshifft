@@ -49,8 +49,8 @@ namespace gearshifft {
     static constexpr int NR_RUNS = GEARSHIFFT_NUMBER_RUNS;
     static constexpr int NR_WARM_RUNS = GEARSHIFFT_NUMBER_WARM_RUNS;
     static constexpr int NR_WARMUP_RUNS = GEARSHIFFT_NUMBER_WARMUPS;
-    static const int NR_RECORDS  = static_cast<int>(RecordType::_NrRecords);
-    static constexpr unsigned int DUMP_FREQUENCY = GEARSHIFFT_DUMP_FREQUENCY;
+    static constexpr int NR_RECORDS  = static_cast<int>(RecordType::NrRecords_);
+    static constexpr int DUMP_FREQUENCY = GEARSHIFFT_DUMP_FREQUENCY;
     using ResultAllT    = ResultAll<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
     using ResultWriterT = ResultWriter<NR_RUNS, NR_WARMUP_RUNS, NR_RECORDS>;
     using ResultT       = ResultBenchmark<NR_RUNS, NR_RECORDS>;

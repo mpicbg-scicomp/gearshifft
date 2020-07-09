@@ -55,17 +55,9 @@ namespace gearshifft {
                        (extents);
 
       int r;
-      if(result.getID()==0) {
-        // hidden initial warmup, which is not recorded (i.e. run=0 will be overwritten)
-        for(r=0; r<2*NR_RUNS; ++r) {
-          dataset.copyTo(data_buffer);
-          fft(result, data_buffer, extents);
-        }
-      }
-
       try {
         const double error_bound = ERROR_BOUND<0.0 ? ErrorBound<T_Precision>()() : ERROR_BOUND;
-        for(r=0; r<NR_RUNS; ++r)
+        for(r = 0; r < NR_RUNS; ++r)
         {
           result.setRun(r);
           dataset.copyTo(data_buffer);
