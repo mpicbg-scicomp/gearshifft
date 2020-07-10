@@ -63,6 +63,25 @@ cmake ..
 make
 ```
 
+To build the library with Score-P user instrumentation, use this recipe:
+```
+SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler"
+```
+This will instrument the forward and backward transforms.
+When running gearshifft, the Score-P environment will generate a directory `scorep_<date_time_id>`
+containing a Cube profile for each run.
+With Score-P you can e.g. read PAPI performance counters like this:
+```
+SCOREP_METRIC_PAPI=PAPI_SP_OPS ./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate
+cube_stat -m PAPI_SP_OPS scorep-20200710_1529_5458557632596/profile.cubex | grep transform
+```
+Output:
+```
+forward_transform,133896
+backward_transform,146136
+```
+
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.

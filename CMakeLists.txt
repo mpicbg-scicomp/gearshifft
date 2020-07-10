@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(gearshifft)
+project(gearshifft LANGUAGES CXX)
 
 set(GEARSHIFFT_VERSION_MAJOR 0)
 set(GEARSHIFFT_VERSION_MINOR 3)

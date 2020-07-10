@@ -38,6 +38,10 @@ function(add_exec Tlib)
     set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
   endif()
 
+  if (${CMAKE_CXX_COMPILER} MATCHES ".*scorep.*")
+    target_compile_definitions(${PROJECT_EXEC} PUBLIC -DGEARSHIFFT_SCOREP_INSTRUMENTATION)
+  endif()
+
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
   add_test(NAME ${PROJECT_EXEC} COMMAND ${PROJECT_EXEC} -e 64)
 
