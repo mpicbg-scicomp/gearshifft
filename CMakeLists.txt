@@ -145,6 +145,11 @@ target_compile_definitions(Common INTERFACE
   )
 #TODO: check paths
 
+# TODO: Is there no generator expression for string matching?
+if (${CMAKE_CXX_COMPILER} MATCHES ".*scorep.*")
+    target_compile_definitions(Common INTERFACE -DGEARSHIFFT_SCOREP_INSTRUMENTATION)
+endif()
+
 if(NOT Boost_VERSION VERSION_LESS 1.68.0)
   # https://github.com/boostorg/system/issues/26
   target_compile_definitions(Common INTERFACE BOOST_ERROR_CODE_HEADER_ONLY)

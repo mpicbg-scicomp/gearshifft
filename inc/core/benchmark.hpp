@@ -6,6 +6,7 @@
 
 #include "application.hpp"
 #include "benchmark_suite.hpp"
+#include "gearshifft_version.hpp"
 
 // see https://www.boost.org/doc/libs/1_65_1/libs/test/doc/html/boost_test/usage_variants.html
 // Single-header usage variant
@@ -53,9 +54,9 @@ namespace gearshifft {
         if(Context::options().getListDevices()) {
           std::cout << Context::get_device_list();
         } else if (Context::options().getVersion()) {
-          std::cout << "gearshifft " << gearshifft::version() << '\n';
+          std::cout << "gearshifft " << gearshifft_version() << '\n';
         } else if (Context::options().getHelp()) {
-          std::cout << "gearshifft " << gearshifft::version() << '\n'
+          std::cout << "gearshifft " << gearshifft_version() << '\n'
                     << Context::options().getDescription();
         }
         return 0;
