@@ -10,7 +10,9 @@
 #include <type_traits>
 #include <ostream>
 
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
 #include "scorep/SCOREP_User.h"
+#endif
 
 namespace gearshifft {
 
@@ -101,8 +103,10 @@ namespace gearshifft {
       result.setValue(RecordType::Upload, tdev.stopTimer());
 
       {
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+        SCOREP_USER_REGION("forward_transform", SCOREP_USER_REGION_TYPE_COMMON)
+#endif
         // execute forward transform
-        SCOREP_USER_REGION("forward transform", SCOREP_USER_REGION_TYPE_COMMON)
         tdev.startTimer();
         fft.execute_forward();
         result.setValue(RecordType::FFT, tdev.stopTimer());
@@ -116,11 +120,13 @@ namespace gearshifft {
       }
 
       {
-          // execute inverse transform
-          SCOREP_USER_REGION("backward transform", SCOREP_USER_REGION_TYPE_COMMON)
-          tdev.startTimer();
-          fft.execute_inverse();
-          result.setValue(RecordType::FFTInv, tdev.stopTimer());
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+        SCOREP_USER_REGION("backward_transform", SCOREP_USER_REGION_TYPE_COMMON)
+#endif
+        // execute inverse transform
+        tdev.startTimer();
+        fft.execute_inverse();
+        result.setValue(RecordType::FFTInv, tdev.stopTimer());
       }
 
       // download data
