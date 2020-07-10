@@ -38,8 +38,10 @@ function(add_exec Tlib)
     set(LIBS ${LIBS} -Wl,--start-group ${FFTWWrappers_MKL_LIBRARIES} -Wl,--end-group ${FFTWWrappers_LIBRARIES})
   endif()
 
-  if (${CMAKE_CXX_COMPILER} MATCHES ".*scorep.*")
+  # only instrument non-GPU benchmarks
+  if ((CMAKE_CXX_COMPILER MATCHES ".*scorep.*") AND (Tlib MATCHES "fftw.*"))
     target_compile_definitions(${PROJECT_EXEC} PUBLIC -DGEARSHIFFT_SCOREP_INSTRUMENTATION)
+    message(STATUS "Score-P user instrumentation enabled for target ${PROJECT_EXEC}")
   endif()
 
   target_link_libraries(${PROJECT_EXEC} ${Boost_LIBRARIES} ${LIBS} ${CMAKE_THREAD_LIBS_INIT})
