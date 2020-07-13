@@ -81,7 +81,7 @@ Output:
 forward_transform,133896
 backward_transform,146136
 ```
-
+The above reports that during the execution of `./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate`, the forward FFT tranform consumed `133896` single-precision arithmetic operations and the backward transform accumulated `146136` single-precision arithmetic operations.
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
