@@ -71,7 +71,7 @@ make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler" -j $(nproc)
 This will instrument the forward and backward transforms, i.e. those code paths that are also measured by `Time_FFT [ms]` (forward) and `Time_iFFT [ms]` (backward) columns in the output `csv` file.
 When running gearshifft, the Score-P environment will generate a directory `scorep_<date_time_id>`
 containing a Cube profile for each run.
-With Score-P you can e.g. read PAPI performance counters like this:
+With Score-P available in your terminal session you can e.g. read PAPI performance counters like this:
 ```
 SCOREP_METRIC_PAPI=PAPI_SP_OPS ./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate
 cube_stat -m PAPI_SP_OPS scorep-20200710_1529_5458557632596/profile.cubex | grep transform
