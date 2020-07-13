@@ -38,7 +38,13 @@ namespace gearshifft {
 
   inline
   std::string version() {
-    return std::to_string(GEARSHIFFT_VERSION_MAJOR) + "." + std::to_string(GEARSHIFFT_VERSION_MINOR) + "." + std::to_string(GEARSHIFFT_VERSION_PATCH);
+    return std::to_string(GEARSHIFFT_VERSION_MAJOR) + "."
+         + std::to_string(GEARSHIFFT_VERSION_MINOR) + "."
+         + std::to_string(GEARSHIFFT_VERSION_PATCH)
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+         + "-scorep"
+#endif
+            ;
   }
 
   template<typename T_Context>
