@@ -164,24 +164,87 @@ make install
 
 </details>
 
-To build the library with Score-P user instrumentation, use this recipe:
-```
+## Instrumented build with Score-P
+
+The following section illustrates how to build the benchmark with Score-P user instrumentation and
+how to make sense of the measurements.
+Note that you need a working Score-P installation available in your shell session.
+
+<details>
+
+```bash
 SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
-make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler"
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler --thread=none" -j $(nproc)
 ```
-This will instrument the forward and backward transforms.
-When running gearshifft, the Score-P environment will generate a directory `scorep_<date_time_id>`
-containing a Cube profile for each run.
-With Score-P you can e.g. read PAPI performance counters like this:
+
+This will instrument the forward and backward transforms, as well as the planning phases, i.e.
+code paths that are also measured by the following columns in the output `csv` file:
+
+- `Time_PlanInitFwd [ms]` -- `plan_forward`,
+- `Time_PlanInitInv [ms]` -- `plan_backward_reuse` or `plan_backward_no_reuse`,
+- `Time_FFT [ms]` -- `transform_forward`,
+- `Time_iFFT [ms]` -- `transform_backward`.
+
+On each execution of the gearshifft app, the Score-P environment will generate a new directory
+`scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
+More information about Cube profiles and available command line and GUI tools can be found
+[on the scalasca page](https://www.scalasca.org/software/cube-4.x/documentation.html).
+
+Score-P incorporates a variety of tools and libraries for performance analysis, one of which is
+[PAPI](https://icl.utk.edu/papi/), a library for reading out performance counters.
+Here is an example of how to use Score-P and PAPI to retrieve the number of executed single
+precision floating point operations:
+
+```bash
+export SCOREP_PROFILING_ENABLE_CLUSTERING=false     # always keep executions of the same region seperate
+export SCOREP_METRIC_PAPI=PAPI_SP_OPS               # set the desired performance counter
+./gearshifft/gearshifft_fftw -e 4096 -r Fftw/float/*/Inplace_Real --rigor=estimate  # run benchmark
+cube_info -m PAPI_SP_OPS scorep-20200722_1818_122049453456972/profile.cubex         # show results
 ```
-SCOREP_METRIC_PAPI=PAPI_SP_OPS ./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate
-cube_stat -m PAPI_SP_OPS scorep-20200710_1529_5458557632596/profile.cubex | grep transform
+
+The output might look something like this:
+
 ```
-Output:
+|     PAPI_SP_OPS | Diff-Calltree
+|         4512295 |  * gearshifft_fftw
+|         4311444 |  |  * fft_benchmark
+|         1337772 |  |  |  * plan_forward
+|          111481 |  |  |  |  * instance=1
+|          111481 |  |  |  |  * instance=2
+|          111481 |  |  |  |  * instance=3
+|          111481 |  |  |  |  * instance=4
+|          111481 |  |  |  |  * instance=5
+|          111481 |  |  |  |  * instance=6
+|          111481 |  |  |  |  * instance=7
+|          111481 |  |  |  |  * instance=8
+|          111481 |  |  |  |  * instance=9
+|          111481 |  |  |  |  * instance=10
+|          111481 |  |  |  |  * instance=11
+|          111481 |  |  |  |  * instance=12
+|         1306836 |  |  |  * plan_backward_no_reuse
+|          108903 |  |  |  |  * instance=1
+|          108903 |  |  |  |  * instance=2
+                       ...
+|         1137828 |  |  |  * transform_forward
+|           94819 |  |  |  |  * instance=1
+                       ...
+|          528948 |  |  |  * transform_backward
+|           44079 |  |  |  |  * instance=1
+                       ...
 ```
-forward_transform,133896
-backward_transform,146136
-```
+
+This report states that e.g. every executed forward transformation (`transform_forward`) consumed 94,819 single precision
+floating point operations (Flops).
+For the sake of precise time measurement, this also includes one operation that is caused by the
+timer implementation (as is the case with the other regions).
+The Flops in the planning stages are accumulated during calculation of twiddle factors.
+Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
+of their inner regions, are due to validation of the FFT results by gearshifft.
+
+More information on profiling and tracing with Score-P can be found
+[in the documentation](https://www.vi-hps.org/projects/score-p/).
+
+</details>
 
 ## Install
 
@@ -207,6 +270,13 @@ make gearshifft-package
 ## Testing
 
 The tests can be executed by `make test` after you have compiled the binaries.
+
+```bash
+cmake -DBUILD_TESTING=ON ..
+make -j
+cd gearshifft-build/ # because superbuild generates a build subfolder for gearshifft
+make test
+```
 
 ## Usage
 
@@ -331,7 +401,8 @@ To ease evaluation, the entries are sorted by columns
 
 See CSV header for column titles and meta-information (memory, number of runs, error-bound, hostname, timestamp, ...).
 
-During runtime, the results are stored in a backup file (suffixed with "~") in the order in which they occur.
+During runtime, the results are stored in a backup file (suffixed with "~") in the order in which
+they occur.
 The benchmark will accumulate a number of results before writing them to disk.
 This number can be set at compile time by defining `GEARSHIFFT_DUMP_FREQUENCY`.
 The default value is 1 which means every result will be written right away.
@@ -356,3 +427,24 @@ The default value is 1 which means every result will be written right away.
 - in case the Boost version (e.g. 1.62.0) you have is more recent than your `cmake` (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 - Windows or MacOS is not supported yet, feel free to add a pull-request
 - cufft float16 transforms overflow at >=1048576 elements
+
+# Citation
+
+```
+@InProceedings{10.1007/978-3-319-58667-0_11,
+author="Steinbach, Peter
+and Werner, Matthias",
+editor="Kunkel, Julian M.
+and Yokota, Rio
+and Balaji, Pavan
+and Keyes, David",
+title="gearshifft -- The FFT Benchmark Suite for Heterogeneous Platforms",
+booktitle="High Performance Computing",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="199--216",
+abstract="Fast Fourier Transforms (FFTs) are exploited in a wide variety of fields ranging from computer science to natural sciences and engineering. With the rising data production bandwidths of modern FFT applications, judging best which algorithmic tool to apply, can be vital to any scientific endeavor. As tailored FFT implementations exist for an ever increasing variety of high performance computer hardware, choosing the best performing FFT implementation has strong implications for future hardware purchase decisions, for resources FFTs consume and for possibly decisive financial and time savings ahead of the competition. This paper therefor presents gearshifft, which is an open-source and vendor agnostic benchmark suite to process a wide variety of problem sizes and types with state-of-the-art FFT implementations (fftw, clFFT and cuFFT). gearshifft provides a reproducible, unbiased and fair comparison on a wide variety of hardware to explore which FFT variant is best for a given problem size.",
+isbn="978-3-319-58667-0"
+}
+```
