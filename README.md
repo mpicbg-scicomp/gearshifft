@@ -68,7 +68,7 @@ To build the library with Score-P user instrumentation, use this recipe:
 SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
 make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler" -j $(nproc)
 ```
-This will instrument the forward and backward transforms.
+This will instrument the forward and backward transforms, i.e. those code paths that are also measured by `Time_FFT [ms]` (forward) and `Time_iFFT [ms]` (backward) columns in the output `csv` file.
 When running gearshifft, the Score-P environment will generate a directory `scorep_<date_time_id>`
 containing a Cube profile for each run.
 With Score-P you can e.g. read PAPI performance counters like this:
