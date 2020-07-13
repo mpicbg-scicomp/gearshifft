@@ -66,7 +66,7 @@ make
 To build the library with Score-P user instrumentation, use this recipe:
 ```
 SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
-make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler"
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler" -j $(nproc)
 ```
 This will instrument the forward and backward transforms.
 When running gearshifft, the Score-P environment will generate a directory `scorep_<date_time_id>`
