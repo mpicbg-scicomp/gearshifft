@@ -63,25 +63,73 @@ cmake ..
 make
 ```
 
-To build the library with Score-P user instrumentation, use this recipe:
-```
+To build the library with Score-P user instrumentation, use the following recipe.
+Note that you need a working Score-P installation availble in your shell session.
+
+```bash
 SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
-make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler" -j $(nproc)
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler --thread=none" -j $(nproc)
 ```
-This will instrument the forward and backward transforms, i.e. those code paths that are also measured by `Time_FFT [ms]` (forward) and `Time_iFFT [ms]` (backward) columns in the output `csv` file.
+
+This will instrument the forward and backward transforms, as well as the planning phases, i.e.
+those code paths that are also measured by the following columns in the output `csv` file:
+
+- `Time_PlanInitFwd [ms]` -- `plan_forward`,
+- `Time_PlanInitInv [ms]` -- `plan_backward_reuse` or `plan_backward_no_reuse`,
+- `Time_FFT [ms]` -- `transform_forward`,
+- `Time_iFFT [ms]` -- `transform_backward`.
+
 On each execution of the gearshifft app, the Score-P environment will generate a new directory
 `scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
-With Score-P available in your terminal session you can e.g. read PAPI performance counters like this:
+Here is an example of how to read the PAPI performance counter for single precision floating point
+operations:
+
+```bash
+export SCOREP_PROFILING_ENABLE_CLUSTERING=false     # always keep executions of the same region seperate
+export SCOREP_METRIC_PAPI=PAPI_SP_OPS               # set the desired performance counter
+./gearshifft_fftw -e 4096 -r Fftw/float/*/Inplace_Real --rigor=estimate         # run benchmark
+cube_info -m PAPI_SP_OPS scorep-20200722_1818_122049453456972/profile.cubex     # show results
 ```
-SCOREP_METRIC_PAPI=PAPI_SP_OPS ./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate
-cube_stat -m PAPI_SP_OPS scorep-20200710_1529_5458557632596/profile.cubex | grep transform
+
+The output might look something like this:
+
 ```
-Output:
+|     PAPI_SP_OPS | Diff-Calltree
+|         4512295 |  * gearshifft_fftw
+|         4311444 |  |  * fft_benchmark
+|         1337772 |  |  |  * plan_forward
+|          111481 |  |  |  |  * instance=1
+|          111481 |  |  |  |  * instance=2
+|          111481 |  |  |  |  * instance=3
+|          111481 |  |  |  |  * instance=4
+|          111481 |  |  |  |  * instance=5
+|          111481 |  |  |  |  * instance=6
+|          111481 |  |  |  |  * instance=7
+|          111481 |  |  |  |  * instance=8
+|          111481 |  |  |  |  * instance=9
+|          111481 |  |  |  |  * instance=10
+|          111481 |  |  |  |  * instance=11
+|          111481 |  |  |  |  * instance=12
+|         1306836 |  |  |  * plan_backward_no_reuse
+|          108903 |  |  |  |  * instance=1
+|          108903 |  |  |  |  * instance=2
+                       ...
+|         1137828 |  |  |  * transform_forward
+|           94819 |  |  |  |  * instance=1
+                       ...
+|          528948 |  |  |  * transform_backward
+|           44079 |  |  |  |  * instance=1
+                       ...
 ```
-forward_transform,133896
-backward_transform,146136
-```
-The above reports that during the execution of `./gearshifft_fftw -e 1024 -r Fftw/float/*/Inplace_Real --rigor=estimate`, the forward FFT tranform consumed `133896` single-precision arithmetic operations and the backward transform accumulated `146136` single-precision arithmetic operations.
+
+This report states that e.g. every executed forward transformation consumed 111,481 single precision
+floating point operations.
+For the sake of precise time measurement, this also includes one operation that is caused by the
+timer implementation (as is the case with the other regions).
+The FP operations in the planning stages are accumulated during calculation of twiddle factors.
+Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
+of their inner regions, are due to validation of the FFT results by gearshifft.
+
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
