@@ -130,6 +130,9 @@ The FP operations in the planning stages are accumulated during calculation of t
 Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
 of their inner regions, are due to validation of the FFT results by gearshifft.
 
+More information on profiling and tracing with Score-P can be found
+[in the documentation](https://www.vi-hps.org/projects/score-p/).
+
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
