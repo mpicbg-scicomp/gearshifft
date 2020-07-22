@@ -122,7 +122,7 @@ The output might look something like this:
                        ...
 ```
 
-This report states that e.g. every executed forward transformation consumed 111,481 single precision
+This report states that e.g. every executed forward transformation consumed 94,819 single precision
 floating point operations.
 For the sake of precise time measurement, this also includes one operation that is caused by the
 timer implementation (as is the case with the other regions).
