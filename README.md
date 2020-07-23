@@ -64,7 +64,7 @@ make
 ```
 
 The following recipe illustrates how to build the benchmark with Score-P user instrumentation.
-Note that you need a working Score-P installation availble in your shell session.
+Note that you need a working Score-P installation available in your shell session.
 
 ```bash
 SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
