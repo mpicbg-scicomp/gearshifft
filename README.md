@@ -63,7 +63,7 @@ cmake ..
 make
 ```
 
-To build the benchmark with Score-P user instrumentation, use the following recipe.
+The following recipe illustrates how to build the benchmark with Score-P user instrumentation.
 Note that you need a working Score-P installation availble in your shell session.
 
 ```bash
