@@ -83,8 +83,11 @@ On each execution of the gearshifft app, the Score-P environment will generate a
 `scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
 More information about Cube profiles and available command line and GUI tools can be found
 [on the scalasca page](https://www.scalasca.org/software/cube-4.x/documentation.html).
-Here is an example of how to read the PAPI performance counter for single precision floating point
-operations:
+
+Score-P incorporates a variety of tools and libraries for performance analysis, one of which is
+[PAPI](https://icl.utk.edu/papi/), a library for reading out performance counters.
+Here is an example of how to use Score-P and PAPI to retrieve the number of executed single
+precision floating point operations:
 
 ```bash
 export SCOREP_PROFILING_ENABLE_CLUSTERING=false     # always keep executions of the same region seperate
