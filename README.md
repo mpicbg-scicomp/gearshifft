@@ -63,6 +63,81 @@ cmake ..
 make
 ```
 
+The following recipe illustrates how to build the benchmark with Score-P user instrumentation.
+Note that you need a working Score-P installation available in your shell session.
+
+```bash
+SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler --thread=none" -j $(nproc)
+```
+
+This will instrument the forward and backward transforms, as well as the planning phases, i.e.
+code paths that are also measured by the following columns in the output `csv` file:
+
+- `Time_PlanInitFwd [ms]` -- `plan_forward`,
+- `Time_PlanInitInv [ms]` -- `plan_backward_reuse` or `plan_backward_no_reuse`,
+- `Time_FFT [ms]` -- `transform_forward`,
+- `Time_iFFT [ms]` -- `transform_backward`.
+
+On each execution of the gearshifft app, the Score-P environment will generate a new directory
+`scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
+More information about Cube profiles and available command line and GUI tools can be found
+[on the scalasca page](https://www.scalasca.org/software/cube-4.x/documentation.html).
+
+Score-P incorporates a variety of tools and libraries for performance analysis, one of which is
+[PAPI](https://icl.utk.edu/papi/), a library for reading out performance counters.
+Here is an example of how to use Score-P and PAPI to retrieve the number of executed single
+precision floating point operations:
+
+```bash
+export SCOREP_PROFILING_ENABLE_CLUSTERING=false     # always keep executions of the same region seperate
+export SCOREP_METRIC_PAPI=PAPI_SP_OPS               # set the desired performance counter
+./gearshifft_fftw -e 4096 -r Fftw/float/*/Inplace_Real --rigor=estimate         # run benchmark
+cube_info -m PAPI_SP_OPS scorep-20200722_1818_122049453456972/profile.cubex     # show results
+```
+
+The output might look something like this:
+
+```
+|     PAPI_SP_OPS | Diff-Calltree
+|         4512295 |  * gearshifft_fftw
+|         4311444 |  |  * fft_benchmark
+|         1337772 |  |  |  * plan_forward
+|          111481 |  |  |  |  * instance=1
+|          111481 |  |  |  |  * instance=2
+|          111481 |  |  |  |  * instance=3
+|          111481 |  |  |  |  * instance=4
+|          111481 |  |  |  |  * instance=5
+|          111481 |  |  |  |  * instance=6
+|          111481 |  |  |  |  * instance=7
+|          111481 |  |  |  |  * instance=8
+|          111481 |  |  |  |  * instance=9
+|          111481 |  |  |  |  * instance=10
+|          111481 |  |  |  |  * instance=11
+|          111481 |  |  |  |  * instance=12
+|         1306836 |  |  |  * plan_backward_no_reuse
+|          108903 |  |  |  |  * instance=1
+|          108903 |  |  |  |  * instance=2
+                       ...
+|         1137828 |  |  |  * transform_forward
+|           94819 |  |  |  |  * instance=1
+                       ...
+|          528948 |  |  |  * transform_backward
+|           44079 |  |  |  |  * instance=1
+                       ...
+```
+
+This report states that e.g. every executed forward transformation (`transform_forward`) consumed 94,819 single precision
+floating point operations (Flops).
+For the sake of precise time measurement, this also includes one operation that is caused by the
+timer implementation (as is the case with the other regions).
+The Flops in the planning stages are accumulated during calculation of twiddle factors.
+Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
+of their inner regions, are due to validation of the FFT results by gearshifft.
+
+More information on profiling and tracing with Score-P can be found
+[in the documentation](https://www.vi-hps.org/projects/score-p/).
+
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` and `GEARSHIFFT_INSTALL_CONFIG_PATH` as you wish, otherwise defaults are used.
