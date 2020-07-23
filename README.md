@@ -128,7 +128,7 @@ The output might look something like this:
 ```
 
 This report states that e.g. every executed forward transformation (`transform_forward`) consumed 94,819 single precision
-floating point operations.
+floating point operations (Flops).
 For the sake of precise time measurement, this also includes one operation that is caused by the
 timer implementation (as is the case with the other regions).
 The FP operations in the planning stages are accumulated during calculation of twiddle factors.
