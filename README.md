@@ -72,7 +72,7 @@ make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler --thread=none" -j $(
 ```
 
 This will instrument the forward and backward transforms, as well as the planning phases, i.e.
-those code paths that are also measured by the following columns in the output `csv` file:
+code paths that are also measured by the following columns in the output `csv` file:
 
 - `Time_PlanInitFwd [ms]` -- `plan_forward`,
 - `Time_PlanInitInv [ms]` -- `plan_backward_reuse` or `plan_backward_no_reuse`,
