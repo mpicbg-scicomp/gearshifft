@@ -81,6 +81,8 @@ code paths that are also measured by the following columns in the output `csv` f
 
 On each execution of the gearshifft app, the Score-P environment will generate a new directory
 `scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
+More information about Cube profiles and available command line and GUI tools can be found
+[on the scalasca page](https://www.scalasca.org/software/cube-4.x/documentation.html).
 Here is an example of how to read the PAPI performance counter for single precision floating point
 operations:
 
