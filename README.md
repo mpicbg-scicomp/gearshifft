@@ -131,7 +131,7 @@ This report states that e.g. every executed forward transformation (`transform_f
 floating point operations (Flops).
 For the sake of precise time measurement, this also includes one operation that is caused by the
 timer implementation (as is the case with the other regions).
-The FP operations in the planning stages are accumulated during calculation of twiddle factors.
+The Flops in the planning stages are accumulated during calculation of twiddle factors.
 Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
 of their inner regions, are due to validation of the FFT results by gearshifft.
 
