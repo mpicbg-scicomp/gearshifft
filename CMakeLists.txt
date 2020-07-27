@@ -417,6 +417,65 @@ if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
   endif()
 endif()
 
+#------------------------------------------------------------------------------
+# FFTW Wrappers for ESSL
+#------------------------------------------------------------------------------
+
+if(GEARSHIFFT_BACKEND_ESSL)
+
+  find_package(ESSL)
+
+  if(ESSL_FOUND)
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+
+    add_library(ESSL INTERFACE)
+    add_library(gearshifft::ESSL ALIAS ESSL)
+
+    target_compile_definitions(ESSL INTERFACE
+      FFTW_ENABLED
+      USE_ESSL
+      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS}
+    )
+
+    target_link_libraries(ESSL INTERFACE
+      ESSL::FFTW
+      Common
+    )
+
+    message(STATUS " gearshifft::ESSL enabled.")
+  endif()
+
+endif()
+
+#------------------------------------------------------------------------------
+# FFTW Wrappers for ARM Performance Library
+#------------------------------------------------------------------------------
+
+if(GEARSHIFFT_BACKEND_ARMPL)
+
+  find_package(ARMPL)
+
+  if(ARMPL_FOUND)
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+
+    add_library(ARMPL INTERFACE)
+    add_library(gearshifft::ARMPL ALIAS ARMPL)
+
+    target_compile_definitions(ARMPL INTERFACE
+      FFTW_ENABLED
+      USE_ARMPL
+      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS}
+    )
+
+    target_link_libraries(ARMPL INTERFACE
+      ARMPL::ARMPL
+      Common
+    )
+
+    message(STATUS " gearshifft::ARMPL enabled.")
+  endif()
+
+endif()
 
 #-------------------------------------------------------------------------------
 
@@ -425,6 +484,8 @@ if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::FFTW
     AND NOT TARGET gearshifft::FFTWWrappers
     AND NOT TARGET gearshifft::ROCFFT
+    AND NOT TARGET gearshifft::ESSL
+    AND NOT TARGET gearshifft::ARMPL
     )
   message(WARNING "No FFT backend found.")
 endif()

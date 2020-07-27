@@ -17,19 +17,26 @@
 #include <thread>
 #include <sstream>
 #include <type_traits>
+#ifdef USE_ESSL
+#include <fftw3_essl.h>
+#else
 #include <fftw3.h>
+#endif
 
 namespace gearshifft {
 namespace fftw {
 
   static inline bool native_fftw() {
-
+#if defined (USE_ESSL) || defined (USE_ARMPL)
+    return false;
+#else
     static std::string version = fftw_version;
     std::transform(version.begin(), version.end(), version.begin(), ::tolower);
 
     static bool value  = version.find("mkl") == std::string::npos;
 
     return value;
+#endif
   }
 
 
@@ -57,9 +64,20 @@ namespace fftw {
       if(rigor_ == "patient")
         return FFTW_PATIENT;
       if(rigor_ == "wisdom"){
-        if(!native_fftw())
+        if(!native_fftw()) {
+#if defined (USE_ESSL)
+          throw std::runtime_error("wisdom rigor not supported with ESSL wrappers.");
+#elif defined (USE_ARMPL)
+          // do nothing -- ARM PL supports wisdoms
+#else
           throw std::runtime_error("wisdom rigor not supported with mkl wrappers.");
+#endif
+        }
+#ifndef USE_ESSL
         return FFTW_WISDOM_ONLY;
+#else
+        return 0;   // FFTW_WISDOM_ONLY is not defined for ESSL -- but this line won't be reached.
+#endif
       }
       if(rigor_ == "exhaustive")
         return FFTW_EXHAUSTIVE;
@@ -134,13 +152,17 @@ namespace fftw {
     struct thread_api<double> {
 
       static int init_threads() {
+#ifndef USE_ESSL
         int res = fftw_init_threads();
         return res;
+#else
+        return 1;
+#endif
       }
 
       static void plan_with_threads(int nthreads = -1,
                                     double timelimit=FFTW_NO_TIMELIMIT){
-
+#ifndef USE_ESSL
         int av_procs = std::thread::hardware_concurrency();
 
         if(nthreads<1 || nthreads>av_procs)
@@ -148,12 +170,14 @@ namespace fftw {
 
         fftw_plan_with_nthreads(nthreads);
         fftw_set_timelimit(timelimit);
+#endif
       }
 
       static void cleanup_threads(){
+#ifndef USE_ESSL
         fftw_cleanup_threads();
+#endif
       }
-
     };
 
     template <>
@@ -161,13 +185,17 @@ namespace fftw {
 
 
       static int init_threads() {
+#ifndef USE_ESSL
         int res = fftwf_init_threads();
         return res;
+#else
+        return 1;
+#endif
       }
 
       static void plan_with_threads(int nthreads = -1,
                                     double timelimit=FFTW_NO_TIMELIMIT){
-
+#ifndef USE_ESSL
         int av_procs = std::thread::hardware_concurrency();
 
         if(nthreads<1 || nthreads>av_procs)
@@ -175,10 +203,13 @@ namespace fftw {
 
         fftwf_plan_with_nthreads(nthreads);
         fftwf_set_timelimit(timelimit);
+#endif
       }
 
       static void cleanup_threads(){
+#ifndef USE_ESSL
         fftwf_cleanup_threads();
+#endif
       }
 
     };
@@ -367,7 +398,11 @@ namespace fftw {
       if(native_fftw()){
         return "Fftw";}
       else{
-#ifdef __INTEL_COMPILER
+#if defined (USE_ESSL)
+        return "Fftw_ESSL";
+#elif defined (USE_ARMPL)
+        return "Fftw_ARMPL";
+#elif defined (__INTEL_COMPILER)
         return "Fftw_mkl_intelwrapper";
 #else
         return "Fftw_mkl_gnuwrapper";
@@ -426,6 +461,7 @@ namespace fftw {
       if(!native_fftw())
         throw std::runtime_error("Wisdom files are only supported by native fftw, unable to proceed");
 
+#ifndef USE_ESSL
       std::string filename = FftwContext::options().wisdom_file<T_Precision>();
       std::string source;
       std::ifstream ifs;
@@ -451,6 +487,7 @@ namespace fftw {
         imported = fftw_import_wisdom_from_string(source.c_str());
       if(!imported)
         throw std::runtime_error("Wisdom file could not be loaded.");
+#endif
     }
 
   }; // FftwWisdomLoader
@@ -547,9 +584,11 @@ namespace fftw {
         traits::thread_api<TPrecision>::plan_with_threads(FftwContext::options().getNumberDevices());
 #endif
 
+#ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY && native_fftw()) {
           ImportWisdom<TPrecision>()();
         }
+#endif
       }
 
     ~FftwImpl(){
@@ -579,9 +618,12 @@ namespace fftw {
                                                    traits::fftw_direction::forward,
                                                    plan_rigor_);
       if(!fwd_plan_) {
+#ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
           throw std::runtime_error("fftw forward plan could not be created as wisdom is not available for this problem.");
-        } else {
+        } else
+#endif
+        {
           throw std::runtime_error("fftw forward plan could not be created.");
         }
       }
@@ -595,9 +637,12 @@ namespace fftw {
                                                    traits::fftw_direction::inverse,
                                                    plan_rigor_);
       if(!bwd_plan_) {
+#ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
           throw std::runtime_error("fftw inverse plan could not be created as wisdom is not available for this problem.");
-        } else {
+        } else
+#endif
+        {
           throw std::runtime_error("fftw inverse plan could not be created.");
         }
       }
