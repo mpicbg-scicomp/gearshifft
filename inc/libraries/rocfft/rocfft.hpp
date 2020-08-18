@@ -170,7 +170,7 @@ namespace RocFFT {
     size_t       data_complex_size_ = 0;
 
     size_t       work_buffer_size_allocated_         = 0;
-
+/*
     RocFFTImpl(const Extent& cextents) {
       extents_ = interpret_as::column_major(cextents);
       extents_complex_ = extents_;
@@ -194,7 +194,31 @@ namespace RocFFT {
 
       CHECK_HIP(rocfft_setup());
     }
+*/
+	  RocFFTImpl(const Extent& cextents) {
+      extents_ = interpret_as::column_major(cextents);
+      extents_complex_ = extents_;
+      n_ = std::accumulate(extents_.begin(),
+                           extents_.end(),
+                           1,
+                           std::multiplies<size_t>());
 
+      if(IsComplex==false){
+        extents_complex_.front() = (extents_.front()/2 + 1);
+      }
+
+      n_complex_ = std::accumulate(extents_complex_.begin(),
+                                   extents_complex_.end(),
+                                   1,
+                                   std::multiplies<size_t>());
+
+      data_size_ = (IsInplaceReal? 2*n_complex_ : n_) * sizeof(value_type);
+      if(IsInplace==false)
+        data_complex_size_ = n_complex_ * sizeof(ComplexType);
+
+      CHECK_HIP(rocfft_setup());
+    }
+	
     ~RocFFTImpl() {
       destroy();
       CHECK_HIP(rocfft_cleanup());
@@ -343,7 +367,7 @@ namespace RocFFT {
         CHECK_HIP(rocfft_execute(plan_, (void**) &data_complex_, (void**) &data_, plan_info_));
 
     }
-
+/*
     template<typename THostData>
     void upload(THostData* input) {
 
@@ -356,7 +380,20 @@ namespace RocFFT {
         CHECK_HIP(hipMemcpy(data_, input, get_transfer_size(), hipMemcpyHostToDevice));
       }
     }
+*/
+	template<typename THostData>
+    void upload(THostData* input) {
 
+      if(IsInplaceReal && NDim>1) {
+        size_t w      = extents_[0] * sizeof(THostData);
+        size_t h      = n_ * sizeof(THostData) / w;
+        size_t pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
+        CHECK_HIP(hipMemcpy2D(data_, pitch, input, w, w, h, hipMemcpyHostToDevice));
+      }else{
+        CHECK_HIP(hipMemcpy(data_, input, get_transfer_size(), hipMemcpyHostToDevice));
+      }
+    }
+/*
     template<typename THostData>
     void download(THostData* output) {
 
@@ -369,7 +406,21 @@ namespace RocFFT {
         CHECK_HIP(hipMemcpy(output, data_, get_transfer_size(), hipMemcpyDeviceToHost));
       }
     }
+*/
 
+	template<typename THostData>
+    void download(THostData* output) {
+
+      if(IsInplaceReal && NDim>1) {
+        size_t w      = extents_[0] * sizeof(THostData);
+        size_t h      = n_ * sizeof(THostData) / w;
+        size_t pitch  = (extents_[0]/2+1) * sizeof(ComplexType);
+        CHECK_HIP(hipMemcpy2D(output, w, data_, pitch, w, h, hipMemcpyDeviceToHost));
+      }else{
+        CHECK_HIP(hipMemcpy(output, data_, get_transfer_size(), hipMemcpyDeviceToHost));
+      }
+    }
+	
     void destroy() {
       CHECK_HIP( hipFree(data_) );
       data_=nullptr;
