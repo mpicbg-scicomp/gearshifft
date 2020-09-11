@@ -95,7 +95,7 @@ script:
       sigs=(QUIT ABRT KILL TERM)
       echo "Sending signals to gearshifft_fftw ..."
       for sig in "${sigs[@]}"; do
-          timeout -s "$sig" 10 ./gearshifft_fftw -e 16 32 64 128 -o myout.csv || true
+          timeout -s "$sig" 10 ./gearshifft/gearshifft_fftw -e 16 32 64 128 -o myout.csv || true
           [[ $(wc -l < myout.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; }
           rm myout.csv*
       done
