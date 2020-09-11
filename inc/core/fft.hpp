@@ -63,6 +63,10 @@ namespace gearshifft {
                     T_Vector& vec,
                     const std::array<size_t,NDim>& extents
       ) const {
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+      SCOREP_USER_REGION("fft_benchmark", SCOREP_USER_REGION_TYPE_FUNCTION)
+#endif
+
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             T_FFT::IsComplex >::type;
       assert(vec.size());
@@ -85,12 +89,20 @@ namespace gearshifft {
       fft.allocate();
       result.setValue(RecordType::Allocation, tcpu.stopTimer());
 
-      // init forward plan
-      tcpu.startTimer();
-      fft.init_forward();
-      result.setValue(RecordType::PlanInitFwd, tcpu.stopTimer());
+      {
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+        SCOREP_USER_REGION("plan_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
+#endif
+        // init forward plan
+        tcpu.startTimer();
+        fft.init_forward();
+        result.setValue(RecordType::PlanInitFwd, tcpu.stopTimer());
+      }
 
-      if(T_ReusePlan::value == false) {
+      if(!T_ReusePlan::value) {
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+        SCOREP_USER_REGION("plan_backward_no_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
+#endif
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
@@ -104,7 +116,7 @@ namespace gearshifft {
 
       {
 #ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
-        SCOREP_USER_REGION("forward_transform", SCOREP_USER_REGION_TYPE_COMMON)
+        SCOREP_USER_REGION("transform_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
 #endif
         // execute forward transform
         tdev.startTimer();
@@ -112,7 +124,10 @@ namespace gearshifft {
         result.setValue(RecordType::FFT, tdev.stopTimer());
       }
 
-      if(T_ReusePlan::value == true) {
+      if(T_ReusePlan::value) {
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+        SCOREP_USER_REGION("plan_backward_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
+#endif
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
@@ -121,7 +136,7 @@ namespace gearshifft {
 
       {
 #ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
-        SCOREP_USER_REGION("backward_transform", SCOREP_USER_REGION_TYPE_COMMON)
+        SCOREP_USER_REGION("transform_backward", SCOREP_USER_REGION_TYPE_DYNAMIC)
 #endif
         // execute inverse transform
         tdev.startTimer();
