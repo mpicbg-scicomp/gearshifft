@@ -44,7 +44,7 @@ namespace gearshifft {
       return options;
     }
 
-    /// only enable method if T_Attributes is non-void
+    /// only enable context() method if T_Attributes is non-void
     template<typename T = T_Attributes>
     static
     typename std::enable_if<!std::is_void<T>::value, T>::type&

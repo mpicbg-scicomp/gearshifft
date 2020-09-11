@@ -35,7 +35,6 @@ namespace gearshifft {
   {
     typedef char one;
     typedef long two;
-    template <typename C> static one test( decltype(&C::title) ) ;
     template <typename C> static one test( decltype(&C::Title) ) ;
     template <typename C> static two test(...);
   public:

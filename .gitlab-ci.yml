@@ -47,7 +47,7 @@ fftw:
         - *generic_build_and_test
         - sigs=(QUIT KILL TERM)   # don't send SIGABRT (is ignored by gearshifft)
         - for sig in "${sigs[@]}"; do
-              timeout -s "$sig" 10 ./gearshifft_fftw -e 16 32 64 128 256 512 -o myout.csv &> /dev/null || true;
+              timeout -s "$sig" 10 ./gearshifft/gearshifft_fftw -e 16 32 64 128 256 512 -o myout.csv &> /dev/null || true;
               [[ $(wc -l < myout.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; };
               rm myout.csv*;
           done

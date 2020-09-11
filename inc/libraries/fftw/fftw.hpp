@@ -8,7 +8,8 @@
 #include "core/timer.hpp"
 #include "core/fft.hpp"
 #include "core/benchmark_suite.hpp"
-#include "core/get_memory_size.h"
+#include "core/get_memory_size.hpp"
+#include "core/unused.hpp"
 
 #include <string.h>
 #include <vector>
@@ -214,8 +215,9 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
         PlanType value = fftwf_plan_dft_r2c(NDims,
@@ -233,8 +235,9 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
         PlanType value = fftwf_plan_dft_c2r(NDims,
@@ -253,7 +256,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -295,8 +298,9 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -315,8 +319,9 @@ namespace fftw {
                              fftw_direction _dir = fftw_direction::forward,
                              unsigned plan_flags = FFTW_MEASURE){
 
+        gearshifft::ignore_unused(_dir);
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -336,7 +341,7 @@ namespace fftw {
                              unsigned plan_flags = FFTW_MEASURE){
 
         std::array<int,NDims> converted;
-        for(int i = 0;i < NDims;++i)
+        for(size_t i = 0;i < NDims;++i)
           converted[i] = _shape[i];
 
 
@@ -373,7 +378,7 @@ namespace fftw {
     static std::string get_device_list() {
       std::ostringstream msg;
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       int av_procs = std::thread::hardware_concurrency();
       msg << av_procs << " CPU Threads supported.\n";
 #else
@@ -385,7 +390,7 @@ namespace fftw {
 
     std::string get_used_device_properties() {
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       // Returns the number of supported concurrent threads of implementation
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = options().getNumberDevices();
@@ -466,7 +471,7 @@ namespace fftw {
     //////////////////////////////////////////////////////////////////////////////////////
     // COMPILE TIME FIELDS
 
-    using Extent = std::array<std::size_t,(int)NDim>;
+    using Extent = std::array<std::size_t, NDim>;
     using Api  = typename traits::plan<TPrecision>;
     using ComplexType = typename traits::plan<TPrecision>::ComplexType;
     using RealType = typename traits::plan<TPrecision>::RealType;
@@ -535,7 +540,7 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
@@ -550,13 +555,13 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-#if defined(GEARSHIFFT_FFTW_USE_THREADS) && GEARSHIFFT_FFTW_USE_THREADS==1
+#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
       traits::thread_api<TPrecision>::cleanup_threads();
 #else
       traits::no_thread_api<TPrecision>::cleanup();
 #endif
     }
-      
+
     /**
      * Returns allocated memory for FFT
      */
@@ -604,7 +609,7 @@ namespace fftw {
      get_plan_size() should return 0, Sizes of transform buffers are already returned by get_allocation_size().
     */
     size_t get_plan_size() {
-      
+
       return 0;
     }
 

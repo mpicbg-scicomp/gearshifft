@@ -1,7 +1,9 @@
 #define BOOST_TEST_MODULE TestClFFT
 
+#include "core/types.hpp"
 #include "libraries/clfft/clfft_helper.hpp"
-#include <boost/test/unit_test.hpp>
+
+#include <boost/test/included/unit_test.hpp> // Single-header usage variant
 #include <boost/mpl/list.hpp>
 
 using test_types = boost::mpl::list<float, double>;
@@ -61,8 +63,6 @@ BOOST_AUTO_TEST_CASE( CLFFT_2D_C2C )
   cl_command_queue queue = 0;
   cl_mem bufX;
   float *X;
-  cl_event event = NULL;
-  int ret = 0;
 
   const size_t N0 = 1024, N1 = 8192;
   char platform_name[128];
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( CLFFT_2D_C2C )
                         sizeof(device_name), device_name,
                         &ret_param_size);
 
-  props[1] = (cl_context_properties)platform;
+  props[1] = reinterpret_cast<cl_context_properties>(platform);
   ctx = clCreateContext( props, 1, &device, NULL, NULL, &err );
   queue = clCreateCommandQueue( ctx, device, 0, &err );
 
@@ -95,8 +95,8 @@ BOOST_AUTO_TEST_CASE( CLFFT_2D_C2C )
   err |= clfftInitSetupData(&fftSetup);
   err |= clfftSetup(&fftSetup);
 
-  size_t buffer_size  = N0 * N1 * 2 * sizeof(*X);
-  X = (float *)malloc(buffer_size);
+  size_t buffer_size  = N0 * N1 * 2 * sizeof(float);
+  X = new float[N0 * N1 * 2];
 
   size_t i, j;
   i = j = 0;
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( CLFFT_2D_C2C )
   err |= clEnqueueReadBuffer( queue, bufX, CL_TRUE, 0, buffer_size, X, 0, NULL, NULL );
 
   clReleaseMemObject( bufX );
-  free(X);
+  delete[] X;
 
   err |= clfftDestroyPlan( &planHandle );
 
@@ -144,8 +144,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CLFFT_1D_R2C_INPLACE, T, test_types )
   cl_command_queue queue = 0;
   cl_mem bufX;
   T *X = NULL;
-  cl_event event = NULL;
-  int ret = 0;
 
   size_t N = 2048;
 
@@ -175,7 +173,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CLFFT_1D_R2C_INPLACE, T, test_types )
   dist_complex = N/2+1;
 
   X = new T[dist];
-  for(int k=0; k<dist; ++k)
+  for(size_t k=0; k<dist; ++k)
     X[k] = 1.0;
 
 
@@ -223,8 +221,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CLFFT_1D_R2C_INPLACE, T, test_types )
   CHECK_CL( clReleaseCommandQueue( queue ) );
   CHECK_CL( clReleaseContext( ctx ) );
 
-  for(int k=0; k<dist; ++k)
-    BOOST_TEST(X[k] == 1.0, boost::test_tools::tolerance(0.0001f));
+  auto error_bound = gearshifft::ErrorBound<T>()();
+  for(size_t k=0; k<dist; ++k)
+    BOOST_TEST(X[k] == 1.0, boost::test_tools::tolerance(error_bound));
 
   delete[] X;
 }

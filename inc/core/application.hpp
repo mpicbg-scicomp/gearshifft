@@ -6,7 +6,13 @@
 #include "timer_cpu.hpp"
 #include "types.hpp"
 
+#include "gearshifft_version.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <boost/asio.hpp>
+#pragma GCC diagnostic pop
 
 #include <ctime>
 #include <vector>
@@ -35,17 +41,6 @@
 #endif
 
 namespace gearshifft {
-
-  inline
-  std::string version() {
-    return std::to_string(GEARSHIFFT_VERSION_MAJOR) + "."
-         + std::to_string(GEARSHIFFT_VERSION_MINOR) + "."
-         + std::to_string(GEARSHIFFT_VERSION_PATCH)
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
-         + "-scorep"
-#endif
-            ;
-  }
 
   template<typename T_Context>
   class Application {
@@ -107,7 +102,8 @@ namespace gearshifft {
                        << ",\"CurrentTime\"," << now
                        << ",\"CurrentTimeLocal\",\"" << strtok(ctime(&now), "\n") << "\""
                        << ",\"Hostname\",\"" << boost::asio::ip::host_name() << "\""
-                       << ",\"gearshifft\",\"" << gearshifft::version() << "\"";
+                       << ",\"gearshifft\",\"" << gearshifft_version() << "\""
+                       << ",\"tag\",\"" << T_Context::options().getTag() << "\"";
 
       resultWriter_.start(&resultAll_,
                           T_Context::options().getOutputFile(),

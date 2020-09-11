@@ -1,26 +1,9 @@
-#####################################################################
-# This file is part of libLiFFT.
-#
-# libLiFFT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# libLiFFT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with libLiFFT.  If not, see <www.gnu.org/licenses/>.
-#####################################################################
 
 dist: trusty
-
+os: linux
 language: cpp
+sudo: required
 
-sudo: false
-    
 branches:
     only:
         - master
@@ -28,25 +11,14 @@ branches:
 
 env:
     global:
-        - AMDAPPSDKROOT=${TRAVIS_BUILD_DIR}/deps/AMDAPPSDK
-        - BOOST_VERSION=1.60.0
         - CUDA_VERSION=8.0.61-1
         - CUDA_VERSION_SHORT=8.0
         #- GEARSHIFFT_CLFFT_VERSION=v2.12.2
         - CLANG_VERSION=3.8
-        - FFTW_CACHE_PATH=${TRAVIS_BUILD_DIR}/deps/fftw
-        #- AMDAPPSDK_VERSION=291
-#        - AMDAPPSDK_VERSION=300
 
-        
 cache:
     directories:
-        - ${TRAVIS_BUILD_DIR}/deps/cuda-${CUDA_VERSION_SHORT}
-        #- ${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
-        - ${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}
-        - ${TRAVIS_BUILD_DIR}/sources/
-        #- ${AMDAPPSDKROOT}
-        - ${FFTW_CACHE_PATH}
+        - ${TRAVIS_BUILD_DIR}/deps/
 
 addons:
     apt:
@@ -55,33 +27,27 @@ addons:
         packages:
             - clang-3.8
             - cmake
-            - libfftw3-dev
             - opencl-headers
-            
+
 matrix:
     include:
-        #  clang # Release
-        - os: linux
+        - name: Clang-3.8 CUDA-8.0.61 Boost-1.60.0 FFTW3 Release
           compiler: clang
           env: GEARSHIFFT_BUILD_TYPE=Release
-          sudo: required
-        #  gcc # Release
-        - os: linux
+        - name: g++-5 CUDA-8.0.61 Boost-1.60.0 FFTW3 Release
           compiler: gcc
           env: GEARSHIFFT_BUILD_TYPE=Release
-          sudo: required
-        #  gcc # Debug
-        - os: linux
+        - name: g++-5 CUDA-8.0.61 Boost-1.60.0 FFTW3 Debug
           compiler: gcc
           env: GEARSHIFFT_BUILD_TYPE=Debug
-          sudo: required
-  
+
 before_install:
     - set -e
     - travis_retry sudo apt-get install -qq g++-5
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
     - |
       CUDA_CACHE_PATH=${TRAVIS_BUILD_DIR}/deps/cuda-${CUDA_VERSION_SHORT}
+      mkdir -p ${CUDA_CACHE_PATH}
       if [[ -z "$(ls -A ${CUDA_CACHE_PATH})" ]]; then
         travis_retry wget https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1404-8-0-local-ga2_${CUDA_VERSION}_amd64-deb -q -O "${CUDA_CACHE_PATH}/cuda.deb";
       else
@@ -91,56 +57,17 @@ before_install:
       travis_retry sudo apt-get update -qq
       CUDA_APT=${CUDA_VERSION_SHORT/./-}
       travis_retry sudo apt-get install -qy cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT} cuda-cufft-${CUDA_APT} cuda-cufft-dev-${CUDA_APT}
-    # - bash .travis/install_amd_sdk.sh ${AMDAPPSDK_VERSION}
-    # - |
-    #   if [[ ${AMDAPPSDK_VERSION} == "300" ]]; then
-    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${LD_LIBRARY_PATH}
-    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64/sdk:${CMAKE_LIBRARY_PATH}
-    #   else # 291
-    #     export LD_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${LD_LIBRARY_PATH}
-    #     export CMAKE_LIBRARY_PATH=${AMDAPPSDKROOT}/lib/x86_64:${CMAKE_LIBRARY_PATH}
-    #   fi
-    #   export OPENCL_VENDOR_PATH=${AMDAPPSDKROOT}/etc/OpenCL/vendors
-    #   mkdir -p ${OPENCL_VENDOR_PATH};
-    #   echo libamdocl64.so > ${OPENCL_VENDOR_PATH}/amdocl64.icd;
-    # - ${AMDAPPSDKROOT}/bin/x86_64/clinfo
 
 install:
     - if [ "${CXX}" == "g++" ]; then export CXX=g++-5; export CC=${CXX/g++/gcc}; export GCOV=${CXX/g++/gcov}; fi
     - if [ "${CXX}" == "clang++" ]; then export CXX=clang++-${CLANG_VERSION}; export CC=clang-${CLANG_VERSION}; export GCOV="gcov"; fi
-    # Boost
-    - |
-        export BOOST_ROOT="${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}"
-        export CMAKE_PREFIX_PATH=${BOOST_ROOT}:${CMAKE_PREFIX_PATH}
-        if [[ -z "$(ls -A ${BOOST_ROOT})" ]]; then
-            BOOST_SRC=${TRAVIS_BUILD_DIR}/sources/boost
-            mkdir -p ${BOOST_SRC}
-            travis_retry wget http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.bz2 -nc -O ${BOOST_SRC}/../boost.tar.bz2
-            (cd ${BOOST_SRC}/../; tar jxf boost.tar.bz2 --strip-components=1 -C ${BOOST_SRC})
-            (cd ${BOOST_SRC}; ./bootstrap.sh --with-libraries=program_options,filesystem,system,test)
-            (cd ${BOOST_SRC}; ./b2 --prefix=$BOOST_ROOT -d0 install)
-        else
-            echo "Using cached boost version at $BOOST_ROOT"
-        fi
+    # Boost [is now done via gearshifft cmake]
     # CUDA
     - |
       export CUDA_ROOT=/usr/local/cuda-${CUDA_VERSION_SHORT}
       export LD_LIBRARY_PATH=${CUDA_ROOT}/lib64:${LD_LIBRARY_PATH}
       export PATH=${CUDA_ROOT}/bin:${PATH}
-      
-    # clfft
-    # - |
-    #   export CLFFT_ROOT=${TRAVIS_BUILD_DIR}/deps/clfft-${GEARSHIFFT_CLFFT_VERSION}
-    #   export CMAKE_PREFIX_PATH=${CLFFT_ROOT}:${CMAKE_PREFIX_PATH}
-    #   CLFFT_SRC=${TRAVIS_BUILD_DIR}/sources/clfft-${GEARSHIFFT_CLFFT_VERSION}
-            
-    #   if [[ -z "$(ls -A ${CLFFT_ROOT})" ]]; then
-    #     travis_retry git clone https://github.com/clMathLibraries/clFFT.git ${CLFFT_SRC}
-    #     (cd ${CLFFT_SRC}; git checkout ${GEARSHIFFT_CLFFT_VERSION})
-    #     (cd ${CLFFT_SRC}/src; cmake -DBUILD64=ON -DBUILD_CALLBACK_CLIENT=OFF -DBUILD_CLIENT=OFF -DBUILD_EXAMPLES=OFF -DBUILD_LOADLIBRARIES=ON -DBUILD_RUNTIME=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TEST=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${CLFFT_ROOT} -DSUFFIX_LIB=64 && make && make install)
-    #   else
-    #     echo "Using cached clfft version at $CLFFT_ROOT"
-    #   fi
+
     # Versions
     - $CXX --version
     - nvcc --version
@@ -149,23 +76,30 @@ install:
 script:
     - mkdir build && cd build
     - set -e
-    - cmake ../ -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} -DCMAKE_VERBOSE_MAKEFILE=ON
-    - make
-    # - |
-    #     echo "clFFT"
-    #     ./gearshifft_clfft -l
-    #     ./gearshifft_clfft -e 32
     - |
-        echo "FFTW"
-        ./gearshifft_fftw -l
-        ./gearshifft_fftw -e 32
-    - |
-        sigs=(QUIT ABRT KILL TERM)
-        echo "Sending signals to gearshifft_fftw ..."
-        for sig in "${sigs[@]}"; do
-            timeout -s "$sig" 10 ./gearshifft_fftw -e 16 32 64 128 -o myout.csv || true
-            [[ $(wc -l < myout.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; }
-            rm myout.csv*
-        done
+      cmake -DCMAKE_BUILD_TYPE=${GEARSHIFFT_BUILD_TYPE} \
+            -DGEARSHIFFT_VERBOSE=ON \
+            -DBUILD_TESTING=ON \
+            -DGEARSHIFFT_USE_SUPERBUILD=ON \
+            -DGEARSHIFFT_TESTS_ADD_CPU_ONLY=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_INBUILD=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_FFTW=ON \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_CLFFT=OFF \
+            -DGEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_ROCFFT=OFF \
+            -DGEARSHIFFT_USE_STATIC_LIBS=ON \
+            ..
+      make gearshifft
+      cd gearshifft-build
+      ctest --output-on-failure
+      sigs=(QUIT ABRT KILL TERM)
+      echo "Sending signals to gearshifft_fftw ..."
+      for sig in "${sigs[@]}"; do
+          timeout -s "$sig" 10 ./gearshifft/gearshifft_fftw -e 16 32 64 128 -o myout.csv || true
+          [[ $(wc -l < myout.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; }
+          rm myout.csv*
+      done
     - set +e
 
+notifications:
+    email: false

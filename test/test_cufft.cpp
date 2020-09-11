@@ -1,7 +1,8 @@
 #define BOOST_TEST_MODULE TestCuFFT
 
 #include "libraries/cufft/cufft_helper.hpp"
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <array>
 #include <iostream>
 
 using namespace gearshifft::CuFFT;
@@ -41,7 +42,6 @@ BOOST_AUTO_TEST_CASE( CuFFT_Single )
   for( auto extents : vec_extents ) {
     size_t data_size = extents[0]*sizeof(cufftComplex);
     size_t data_transform_size = extents[0]*sizeof(cufftComplex);
-    size_t s = 0;
 
     try {
       CHECK_CUDA( cudaMalloc(&data, data_size));
@@ -91,7 +91,6 @@ BOOST_AUTO_TEST_CASE( CuFFT_Double )
   for( auto extents : vec_extents ) {
     size_t data_size = extents[0]*sizeof(cufftDoubleComplex);
     size_t data_transform_size = extents[0]*sizeof(cufftDoubleComplex);
-    size_t s = 0;
 
     try {
       CHECK_CUDA( cudaMalloc(&data, data_size));

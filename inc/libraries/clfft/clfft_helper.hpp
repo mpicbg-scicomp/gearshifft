@@ -138,31 +138,31 @@ namespace gearshifft {
       cl_uint maxComputeUnits;
       // print device name
       clGetDeviceInfo(dev_id, CL_DEVICE_NAME, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_NAME, valueSize, value, NULL);
       values.emplace_back("Device", value);
-      free(value);
+      delete[] value;
 
       // print hardware device version
       clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_VERSION, valueSize, value, NULL);
       values.emplace_back("Hardware", value);
-      free(value);
+      delete[] value;
 
       // print software driver version
       clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DRIVER_VERSION, valueSize, value, NULL);
       values.emplace_back("Software", value);
-      free(value);
+      delete[] value;
 
       // print c version supported by compiler for device
       clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
-      value = (char*) malloc(valueSize);
+      value = new char[valueSize];
       clGetDeviceInfo(dev_id, CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
       values.emplace_back("OpenCL", value);
-      free(value);
+      delete[] value;
 
       // print parallel compute units
       clGetDeviceInfo(dev_id, CL_DEVICE_MAX_COMPUTE_UNITS,
@@ -254,8 +254,7 @@ namespace gearshifft {
                                   cl_device_id* device_id,
                                   cl_uint id_platform,
                                   cl_uint id_device) {
-      assert(id_platform>=0);
-      assert(id_device>=0);
+
       cl_uint num_of_platforms = 0;
       if(clGetPlatformIDs(0, NULL, &num_of_platforms) != CL_SUCCESS)
         throw std::runtime_error("Unable to get platform_id");

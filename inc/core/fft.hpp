@@ -47,7 +47,7 @@ namespace gearshifft {
  */
   template<typename T_FFT, // FFT_*_* [inplace.., real..]
            typename T_ReusePlan, // can plan be reused ?
-           template <typename,typename,size_t,typename... > typename T_Client, // user implementation FFT client
+           template <typename,typename,size_t,typename... > class T_Client, // user implementation FFT client
            typename T_DeviceTimer,
            typename... T_ClientArgs
            >

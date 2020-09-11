@@ -1,6 +1,8 @@
 #include "core/application.hpp"
 #include "core/options.hpp"
 
+#include <gearshifft_version.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -20,6 +22,7 @@ OptionsDefault::OptionsDefault() {
     ("file,f", po::value<std::vector<std::string>>()->multitoken()->
      composing(), "File with extents (row-wise csv) [>=1 nr. of args possible]")
     ("output,o", po::value<std::string>(&outputFile_)->default_value("result.csv"), "output csv file, will be overwritten!")
+    ("add-tag,t", po::value<std::string>(&tag_)->default_value(""), "Add custom tag to header of output file")
     ("verbose,v", "Prints benchmark statistics")
     ("version,V", "Prints gearshifft version")
     ("device,d", po::value<std::string>(&device_)->default_value("gpu"), "Compute device = (gpu|cpu|acc|<ID>). If device is not supported by FFT lib, then it is ignored and default is used.")

@@ -1,257 +1,472 @@
-cmake_minimum_required(VERSION 3.1)
-project(gearshifft)
+cmake_minimum_required(VERSION 3.7) # better language support, more features
+# https://cliutils.gitlab.io/modern-cmake/chapters/intro/newcmake.html
+# cmake configurations are inspired by VexCL
+# See: https://github.com/ddemidov/vexcl/
 
-set(GEARSHIFFT_VERSION_MAJOR 0)
-set(GEARSHIFFT_VERSION_MINOR 3)
-set(GEARSHIFFT_VERSION_PATCH 0)
-
-# cmake general setup
-
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
-
-set(CMAKE_COLOR_MAKEFILE ON)
-# And optionally
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-  message(SEND_ERROR "In-source builds are not allowed.")
-endif ()
-if (WIN32)
-  set(CMAKE_SHARED_LIBRARY_PREFIX "")
-endif ()
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-
-# set project build type
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE Release)
-endif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-message(">> Setting up ${CMAKE_BUILD_TYPE} build")
-
-# gearshifft cmake options
-
-option(GEARSHIFFT_CXX11_ABI "enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+" ON)
-option(GEARSHIFFT_FFTW_OPENMP "use OpenMP parallel fftw libraries if found" ON)
-option(GEARSHIFFT_FFTW_PTHREADS "use pthreads parallel fftw libraries if found" OFF)
-option(GEARSHIFFT_CUFFT "Compile gearshifft_cufft if available?" ON)
-option(GEARSHIFFT_CLFFT "Compile gearshifft_clfft if available?" ON)
-option(GEARSHIFFT_FFTW  "Compile gearshifft_fftw if available?" ON)
-option(GEARSHIFFT_HCFFT "< Not implemented yet >" OFF)
-option(GEARSHIFFT_FLOAT16_SUPPORT "Enable float16 data type (cufft and ComputeCapability 5.3+ only)" OFF)
-
-set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
-set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
-set(GEARSHIFFT_ERROR_BOUND "0.00001" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
-set(GEARSHIFFT_INSTALL_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/share/gearshifft/" CACHE STRING "Default install path of config files.")
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-if(GEARSHIFFT_FLOAT16_SUPPORT)
-  set(GEARSHIFFT_FLOAT16_SUPPORT_ 1)
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-  set(GEARSHIFFT_FLOAT16_SUPPORT_ 0)
+  cmake_policy(VERSION 3.12)
+endif()
+#-------------------------------------------------------------------------------
+if(NOT GEARSHIFFT_ROOT)
+  set(GEARSHIFFT_ROOT "${CMAKE_SOURCE_DIR}")
 endif()
 
-add_definitions(-DGEARSHIFFT_VERSION_MAJOR=${GEARSHIFFT_VERSION_MAJOR}
-  -DGEARSHIFFT_VERSION_MINOR=${GEARSHIFFT_VERSION_MINOR}
-  -DGEARSHIFFT_VERSION_PATCH=${GEARSHIFFT_VERSION_PATCH}
-  -DGEARSHIFFT_FLOAT16_SUPPORT=${GEARSHIFFT_FLOAT16_SUPPORT_})
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if(${GEARSHIFFT_CXX11_ABI})
-    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
-    message(">> CXX11_ABI enabled.")
-  else()
-    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-    message(">> CXX11_ABI disabled.")
-  endif()
+# cmake module path with additional finders
+list(APPEND CMAKE_MODULE_PATH
+  ${GEARSHIFFT_ROOT}/cmake
+  ${GEARSHIFFT_ROOT}/cmake/modules
+  )
+#-------------------------------------------------------------------------------
+# guard against in-source builds and default build-type
+include(safeguards)
+include(init_build_type)
+#-------------------------------------------------------------------------------
 
-  if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0
-        OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0))
-    message(FATAL_ERROR "gearshifft requires g++ 5.0 or greater.")
-  endif()
-  #gcc4.8+ uses dwarf-4. If you have gdb <7.5 then use this line
-  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2")
-  #gdb 7.0-7.5 may require
-  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fvar-tracking-assignments")
-endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+# gearshifft cmake options (requires GEARSHIFFT_ROOT)
+include(gearshifft_options)
 
-set(CMAKE_CXX_STANDARD 14)
+# Superbuild
+option(GEARSHIFFT_USE_SUPERBUILD "Invokes gearshifft superbuild" OFF)
 
-#------------------------------------------------------------------------------
-# half-code
-#------------------------------------------------------------------------------
+if(GEARSHIFFT_USE_SUPERBUILD)
+  project(GEARSHIFFT_SUPERBUILD C CXX) # .. NONE would overwrite CMAKE_CXX_COMPILER flag
 
+  # execute the superbuild (this script will be invoked again without the
+  # USE_SUPERBUILD option this time)
+  include(superbuild)
+
+  return()                      # <-- STOP processing this file further
+
+endif()
+
+#-------------------------------------------------------------------------------
+
+project(gearshifft
+  VERSION 0.4.1
+  LANGUAGES C CXX)
+
+# half-code for half precision data type
 if(GEARSHIFFT_FLOAT16_SUPPORT)
-  message(STATUS "half-precision support enabled.")
-  message(STATUS " 'make' will check out half-code library for half-precision data types.")
-  message(STATUS " If 'make' or 'make half-code' fails, then download half-code: 'http://sourceforge.net/projects/half/files/latest/download' to 'third-party/src/'.")
-  include(ExternalProject)
-  ExternalProject_Add(half-code
-    PREFIX ${CMAKE_BINARY_DIR}/third-party
-    URL https://downloads.sourceforge.net/project/half/half/1.12.0/half-1.12.0.zip
-    URL_MD5 86d023c0729abf3465bcd55665a39013
-    INSTALL_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE OFF
-    LOG_BUILD OFF
-    )
-  ExternalProject_Get_Property(half-code DOWNLOAD_DIR)
-  include_directories(${DOWNLOAD_DIR})
+  include(ext/half)
 endif()
 
+include(find_and_add_openmp)
+
 #------------------------------------------------------------------------------
-# Threads
-#------------------------------------------------------------------------------
-find_package( Threads )
+
+if(GEARSHIFFT_VERBOSE)
+  set(_QUIET "")
+else()
+  set(_QUIET "QUIET")
+endif()
 
 #------------------------------------------------------------------------------
 # Boost
 #------------------------------------------------------------------------------
 
-find_package(Boost 1.59 QUIET COMPONENTS system unit_test_framework program_options REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
+if(GEARSHIFFT_USE_STATIC_LIBS)
+  set(Boost_USE_STATIC_LIBS ON) # otherwise find libs automatically
+  message(STATUS "Static linking with Boost system libraries may give linker problems. Enable GEARSHIFFT_SUPERBUILD_EXT_DOWNLOAD_Boost then (requires GEARSHIFFT_USE_SUPERBUILD).")
+endif()
+find_package(Boost 1.59 REQUIRED ${_QUIET} COMPONENTS
+  system
+  unit_test_framework
+  program_options
+  )
+
+include(boost_targets)
+
+#----------------------------------------------------------------------------
+# Generic target
+#----------------------------------------------------------------------------
+
+add_library(Common INTERFACE)
+add_library(gearshifft::Common ALIAS Common)
+
+# setting language requirements for all targets
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+# TODO: in cmake 3.8+ use target_compile_features(myTarget PUBLIC cxx_std_11)
+
+target_include_directories(Common INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/inc>
+#  $<INSTALL_INTERFACE:include> # include dirs are not installed
+#  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> # include dirs are not installed
+  )
+
+# do not export this interface (only for internal usage requirements)
+target_compile_options(Common INTERFACE
+  # g++
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wall>>
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wextra>>
+  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wold-style-cast>>
+#  $<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wshadow>> # maybe too many false positives
+  # Clang
+  $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wall>>
+  $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wextra>>
+  $<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wshadow>> # see above, does better job than gcc
+  # MSVC
+  $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4003>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+  )
+
+# gearshifft version.
+# As this information is built as own library, targets only have to relink,
+# when version changes.
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/gearshifft_version.cpp.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/gearshifft_version.cpp"
+  @ONLY)
+
+add_library(gearshifft_version STATIC
+  "${CMAKE_CURRENT_BINARY_DIR}/gearshifft_version.cpp")
+
+target_link_libraries(gearshifft_version PUBLIC Common)
+
+# continue with Common interface used by all gearshifft targets
+target_compile_definitions(Common INTERFACE
+  $<$<CXX_COMPILER_ID:GNU>:_GLIBCXX_USE_CXX11_ABI=${GEARSHIFFT_CXX11_ABI}>
+  $<BUILD_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${CMAKE_SOURCE_DIR}/share/gearshifft/extents.conf>
+  $<INSTALL_INTERFACE:GEARSHIFFT_INSTALL_CONFIG_FILE=${GEARSHIFFT_INSTALL_CONFIG_PATH}/extents.conf>
+  GEARSHIFFT_FLOAT16_SUPPORT=${GEARSHIFFT_FLOAT16_SUPPORT}
+  GEARSHIFFT_PRECISION_HALF_ONLY=${GEARSHIFFT_PRECISION_HALF_ONLY}
+  GEARSHIFFT_PRECISION_SINGLE_ONLY=${GEARSHIFFT_PRECISION_SINGLE_ONLY}
+  GEARSHIFFT_PRECISION_DOUBLE_ONLY=${GEARSHIFFT_PRECISION_DOUBLE_ONLY}
+  GEARSHIFFT_DUMP_FREQUENCY=${GEARSHIFFT_DUMP_FREQUENCY}
+  BOOST_ALL_NO_LIB=1
+  )
+#TODO: check paths
+
+# TODO: Is there no generator expression for string matching?
+if (${CMAKE_CXX_COMPILER} MATCHES ".*scorep.*")
+    target_compile_definitions(Common INTERFACE -DGEARSHIFFT_SCOREP_INSTRUMENTATION)
 endif()
 
+if(NOT Boost_VERSION VERSION_LESS 1.68.0)
+  # https://github.com/boostorg/system/issues/26
+  target_compile_definitions(Common INTERFACE BOOST_ERROR_CODE_HEADER_ONLY)
+endif()
+
+target_link_libraries(Common INTERFACE
+  gearshifft_version
+  Boost::system
+  Boost::unit_test_framework
+  Boost::program_options
+  Boost::thread
+  ${CMAKE_DL_LIBS}
+  )
+
+if(GEARSHIFFT_FLOAT16_SUPPORT)
+  target_link_libraries(Common INTERFACE half)
+endif()
 #------------------------------------------------------------------------------
-# CUDA+CUFFT
+# Find gearshifft back-ends
 #------------------------------------------------------------------------------
 
-find_package(CUDA)
-if(CUDA_FOUND AND GEARSHIFFT_CUFFT)
-  include(FindCUDA)
-  include_directories(${CUDA_INCLUDE_DIRS})
-  list(APPEND FFTLIBS "cufft") # register fft lib client for compilation
-  message(">> cuFFT -> " ${CUDA_CUFFT_LIBRARIES})
-else()
-  message("<< cuFFT benchmark disabled.")
+# CUDA+CUFFT
+if(GEARSHIFFT_BACKEND_CUFFT)
+  find_package(CUDA ${_QUIET}) # no imported targets, will be language in cmake >= 3.10
+  if(CUDA_FOUND)
+
+    add_library(CUFFT INTERFACE)
+    add_library(gearshifft::CUFFT ALIAS CUFFT)
+
+    target_include_directories(CUFFT INTERFACE ${CUDA_INCLUDE_DIRS})
+    target_compile_definitions(CUFFT INTERFACE CUFFT_ENABLED)
+    target_link_libraries(CUFFT INTERFACE
+      Common
+      ${CUDA_LIBRARIES})
+
+    if(GEARSHIFFT_USE_STATIC_LIBS AND CUDA_VERSION VERSION_LESS 9.2)
+      message(WARNING "CUDA <9.2 and static cufft build not supported. Using shared linking for cufft.")
+    endif()
+    if(GEARSHIFFT_USE_STATIC_LIBS AND NOT CUDA_VERSION VERSION_LESS 9.2)
+      if(WIN32)
+        message(FATAL_ERROR "CuFFT does not support static linking under Windows.")
+      endif()
+
+      # Static library without callback support (to avoid separate device compile step with nvcc)
+      find_library(CUDA_CUFFT_STATIC_LIBRARY
+        NAMES cufft_static_nocallback
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+        NO_DEFAULT_PATH)
+      if(NOT CUDA_CUFFT_STATIC_LIBRARY)
+        message(FATAL_ERROR "Could not find static cufft library.")
+      endif()
+
+      find_library(CUDA_CULIBOS_LIBRARY
+        NAMES culibos
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+        NO_DEFAULT_PATH)
+      if(NOT CUDA_CULIBOS_LIBRARY)
+        message(FATAL_ERROR "Could not find culibos library.")
+      endif()
+      target_link_libraries(CUFFT INTERFACE ${CUDA_CUFFT_STATIC_LIBRARY} ${CUDA_CULIBOS_LIBRARY})
+    else()
+      target_link_libraries(CUFFT INTERFACE ${CUDA_CUFFT_LIBRARIES})
+    endif()
+
+    message(STATUS " gearshifft::CUFFT enabled.")
+
+  endif()
 endif()
 
 #------------------------------------------------------------------------------
 # OPENCL+CLFFT
 #------------------------------------------------------------------------------
 
-find_package(OpenCL)
-if(OpenCL_FOUND AND GEARSHIFFT_CLFFT)
-  find_package(clFFT)
-  if(CLFFT_FOUND)
-    include_directories(${OpenCL_INCLUDE_DIRS} ${CLFFT_INCLUDE_DIRS} )
-    list(APPEND FFTLIBS "clfft") # register fft lib client for compilation
-    string(REPLACE ";" " " local_clfft_libraries "${CLFFT_LIBRARIES}")
-    message(">> clFFT -> " ${local_clfft_libraries})
+if(GEARSHIFFT_BACKEND_CLFFT)
+  # can help to find opencl from nvidia
+  if(GEARSHIFFT_BACKEND_CUFFT AND NOT ENV{CUDA_PATH})
+    set(ENV{CUDA_PATH} ${CUDA_TOOLKIT_ROOT_DIR})
+  endif()
+
+  find_package(OpenCL ${_QUIET}) # cmake >= 3.7 provides imported targets
+  if(OpenCL_FOUND)
+    find_package(clFFT ${_QUIET})
+
+    if(clFFT_FOUND)
+
+      add_library(CLFFT INTERFACE)
+      add_library(gearshifft::CLFFT ALIAS CLFFT)
+
+      find_and_add_openmp(CLFFT ${_QUIET})
+
+      target_compile_definitions(CLFFT INTERFACE CLFFT_ENABLED)
+      target_link_libraries(CLFFT INTERFACE
+        Common
+        clFFT::clFFT
+        OpenCL::OpenCL
+        ${CMAKE_DL_LIBS}
+        )
+
+      message(STATUS " gearshifft::CLFFT enabled")
+    endif()
   endif()
 endif()
-
-if(NOT CLFFT_FOUND)
-  message("<< clFFT benchmark disabled.")
-endif()
-
 #------------------------------------------------------------------------------
-# ROCM+HCFFT
+# ROCM+ROCFFT
 #------------------------------------------------------------------------------
+if(GEARSHIFFT_BACKEND_ROCFFT)
+  find_package(rocfft ${_QUIET}) # TODO: config via rocfft lib, e.g., /opt/rocm/rocfft/lib/cmake/rocfft
+  if(rocfft_FOUND)
 
-find_package(hcFFT)
-if(HCFFT_FOUND AND GEARSHIFFT_HCFFT)
-  include_directories(${HCFFT_INCLUDE_DIRS})
-  list(APPEND FFTLIBS "hcfft") # register fft lib client for compilation
-  message(">> hcFFT -> " ${HCFFT_LIBRARIES} " " ${HCFFT_INCLUDE_DIRS})
-  message(">> Warning: no runner for hcfft implemented yet")
-endif()
+    find_package(hip ${_QUIET}) # needed for HC includes (target hip::hip_hcc does that)
 
-if(NOT HCFFT_FOUND)
-  message("<< hcFFT benchmark disabled.")
+    if(hip_FOUND AND hcc_DIR)
+      if(NOT CMAKE_CXX_COMPILER MATCHES "hipcc$|hcc$")
+        message(FATAL_ERROR "HCC required. Please rerun cmake with cmake -DCMAKE_CXX_COMPILER=hcc ... or disable ROCFFT backend.")
+      endif()
+      add_library(ROCFFT INTERFACE)
+      add_library(gearshifft::ROCFFT ALIAS ROCFFT)
+
+      # TODO: what is about that flag?
+      include(CheckCCompilerFlag)
+      include(CheckCXXCompilerFlag)
+      check_cxx_compiler_flag(-Wno-unused-command-line-argument HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+      if(HAS_NO_WIGNORE_UNUSED_CLI_FLAG)
+        target_compile_options( ROCFFT INTERFACE -Wno-unused-command-line-argument )
+      endif()
+
+      # find_and_add_openmp(ROCFFT ${_QUIET})
+      target_compile_definitions(ROCFFT INTERFACE ROCFFT_ENABLED)
+      target_link_libraries(ROCFFT INTERFACE
+        Common
+        roc::rocfft
+        hip::hip_hcc
+        # ${CMAKE_DL_LIBS} # TODO: needed?
+        )
+      message(STATUS " gearshifft::ROCFFT enabled.")
+    endif()
+  endif()
 endif()
 
 #------------------------------------------------------------------------------
 # FFTW
 #------------------------------------------------------------------------------
 
-find_package(FFTW COMPONENTS float double)
-if(FFTW_FOUND AND GEARSHIFFT_FFTW)
-  include_directories(${FFTW_INCLUDE_DIR})
-  link_directories(${FFTW_LIBRARY_DIR})
-  list(APPEND FFTLIBS fftw) # register fft lib client for compilation
-  find_package(OpenMP)
-
-  foreach(_LIBSTEM IN LISTS FFTW_SERIAL_LIBS)
-    list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
-  endforeach()
-
-  set(GEARSHIFFT_FFTW_USE_THREADS 0)
-  if(GEARSHIFFT_FFTW_OPENMP AND OPENMP_FOUND AND "${FFTW_LIBRARIES}" MATCHES ".*_omp.*")
-    foreach(_LIBSTEM IN LISTS FFTW_OPENMP_LIBS)
-      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
-    endforeach()
-    set(GEARSHIFFT_FFTW_USE_THREADS 1)
+if(GEARSHIFFT_BACKEND_FFTW)
+  if(GEARSHIFFT_USE_STATIC_LIBS)
+    set(FFTW_USE_STATIC_LIBS ON) # otherwise find libs automatically
   endif()
+  find_package(FFTW ${_QUIET})
 
-  if(GEARSHIFFT_FFTW_PTHREADS AND "${FFTW_LIBRARIES}" MATCHES ".*_threads.*")
-    foreach(_LIBSTEM IN LISTS FFTW_THREADS_LIBS)
-      list(APPEND FFTW_LIBS_TO_USE ${_LIBSTEM})
-    endforeach()
-    set(GEARSHIFFT_FFTW_USE_THREADS 1)
+  if(FFTW_FOUND)
+
+    add_library(FFTW INTERFACE)
+    add_library(gearshifft::FFTW ALIAS FFTW)
+
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 0)
+
+    if(GEARSHIFFT_BACKEND_FFTW_OPENMP)
+
+      if(FFTW_OPENMP_LIBS)
+
+        find_and_add_openmp(FFTW ${_QUIET})
+
+        if(TARGET OpenMP::OpenMP_CXX)
+          set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+        else()
+          message(WARNING "Could not find OpenMP")
+          set(GEARSHIFFT_BACKEND_FFTW_OPENMP OFF)
+        endif()
+      else()
+
+        message(WARNING "FFTW libraries for OpenMP not found")
+        set(GEARSHIFFT_BACKEND_FFTW_OPENMP OFF)
+      endif() # FFTW_OPENMP_LIBS
+    endif() # GEARSHIFFT_BACKEND_FFTW_OPENMP
+
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS)
+      if(FFTW_THREADS_LIBS)
+        find_package(Threads)
+        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+      else()
+        message(WARNING "FFTW libraries for pthreads not found")
+        set(GEARSHIFFT_BACKEND_FFTW_PTHREADS OFF)
+      endif()
+    endif()
+
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS AND GEARSHIFFT_BACKEND_FFTW_OPENMP)
+      message(FATAL_ERROR "FFTW: Cannot use both OpenMP and pthreads, please disable one")
+    endif()
+
+    if(GEARSHIFFT_BACKEND_FFTW_PTHREADS
+        OR GEARSHIFFT_BACKEND_FFTW_OPENMP
+        OR FFTW_SERIAL_LIBS)
+
+      target_include_directories(FFTW INTERFACE ${FFTW_INCLUDE_DIR})
+      target_compile_definitions(FFTW INTERFACE
+        FFTW_ENABLED
+        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
+      target_link_libraries(FFTW INTERFACE
+        Common
+        $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
+        $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_PTHREADS},ON>:${FFTW_THREADS_LIBS}>
+        ${FFTW_SERIAL_LIBS}
+        $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+        )
+      message(STATUS " gearshifft::FFTW enabled.")
+    endif()
   endif()
-
-  set(FFTW_LIBRARIES ${FFTW_LIBS_TO_USE})
-  message(">> FFTW -> ${FFTW_LIBRARIES} ${FFTW_INCLUDES}")
-else()
-  message("<< FFTW benchmark disabled.")
 endif()
 
 #------------------------------------------------------------------------------
 # FFTW Wrappers of MKL
 #------------------------------------------------------------------------------
 
-find_package(FFTWWrappers)
-if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if(FFTWWrappers_GNU_LIBRARIES)
-      # gcc and fftwwrappers gnu libraries found
+if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
+  find_package(FFTWWrappers ${_QUIET})
+  if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
 
-      set(FFTWWrappers_LIBRARIES "${FFTWWrappers_GNU_LIBRARIES}")
-    endif()
+    if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+        AND FFTWWrappers_INTEL_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+      message(WARNING "Compiler does not match found FFTWWrappers")
+    else()
 
-  elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    if(FFTWWrappers_INTEL_LIBRARIES)
-      # intel and fftwwrappers intel libraries found
+      add_library(FFTWWrappers INTERFACE)
+      add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
 
-      set(FFTWWrappers_LIBRARIES "${FFTWWrappers_INTEL_LIBRARIES}")
-    endif()
+      # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
+      find_and_add_openmp(FFTWWrappers ${_QUIET})
 
-  else()
-    message(WARNING "Could not detect GNU or Intel compiler.")
+      if(TARGET OpenMP::OpenMP_CXX)
+        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+      endif()
+
+      target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
+      target_compile_definitions(FFTWWrappers INTERFACE
+        FFTW_ENABLED
+        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
+      target_link_libraries(FFTWWrappers INTERFACE
+        Common
+        #      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+        )
+
+      if(FFTWWrappers_GNU_LIBRARIES)
+        target_link_libraries(FFTWWrappers INTERFACE
+          $<$<CXX_COMPILER_ID:GNU>:${FFTWWrappers_GNU_LIBRARIES}>
+          $<$<CXX_COMPILER_ID:Clang>:${FFTWWrappers_GNU_LIBRARIES}>
+          )
+      endif()
+
+      if(FFTWWrappers_INTEL_LIBRARIES)
+        target_link_libraries(FFTWWrappers INTERFACE
+          $<$<CXX_COMPILER_ID:Intel>:${FFTWWrappers_INTEL_LIBRARIES}>
+          )
+      endif()
+
+      target_link_libraries(FFTWWrappers INTERFACE
+        $<$<CXX_COMPILER_ID:GNU>:-Wl,--start-group>
+        ${FFTWWrappers_MKL_LIBRARIES}
+        $<$<CXX_COMPILER_ID:GNU>:-Wl,--end-group>
+        )
+      message(STATUS " gearshifft::FFTWWrappers enabled.")
+
+    endif() # compiler match fftwwrappers
+
   endif()
-
-#  link_directories(${FFTWWrappers_LIBRARY_DIR})
-endif(FFTWWrappers_FOUND)
-
-if(FFTWWrappers_LIBRARIES)
-  # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
-  find_package( OpenMP )
-  if(OpenMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-  endif()
-  set(GEARSHIFFT_FFTW_USE_THREADS 1) #
-
-  list(APPEND FFTLIBS fftwwrappers)
-  message(">> FFTWWrappers -> ${FFTWWrappers_LIBRARIES}")
-else()
-  message("<< FFTWWrappers benchmark disabled.")
 endif()
 
-if(NOT FFTLIBS)
-  message(FATAL_ERROR ">> No FFT library for benchmark found !!!")
+
+#-------------------------------------------------------------------------------
+
+if(NOT TARGET gearshifft::CUFFT
+    AND NOT TARGET gearshifft::CLFFT
+    AND NOT TARGET gearshifft::FFTW
+    AND NOT TARGET gearshifft::FFTWWrappers
+    AND NOT TARGET gearshifft::ROCFFT
+    )
+  message(WARNING "No FFT backend found.")
 endif()
 
-enable_testing()
+#-------------------------------------------------------------------------------
 
-add_subdirectory(src)
-add_subdirectory(test)
+add_subdirectory(src gearshifft)
+
+include(CTest) # defines: BUILD_TESTING, default is ON
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
+
+#-------------------------------------------------------------------------------
+
+# installs config extents files
+
+install(
+  DIRECTORY share/gearshifft
+  DESTINATION share
+  COMPONENT config
+  FILES_MATCHING
+  PATTERN *.conf
+  PERMISSIONS OWNER_READ OWNER_WRITE
+              GROUP_READ
+              WORLD_READ
+  )
+install(
+  FILES README.md
+  DESTINATION doc
+  COMPONENT doc
+  PERMISSIONS OWNER_READ OWNER_WRITE
+              GROUP_READ
+              WORLD_READ
+  )
+
+#-------------------------------------------------------------------------------
+
+# packaging
+# check that we are in top-level CMakeLists
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  add_subdirectory(packaging)
+  # include(CPack) will happen in here
+endif()

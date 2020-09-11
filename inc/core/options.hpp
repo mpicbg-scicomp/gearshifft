@@ -2,8 +2,11 @@
 #define OPTIONS_HPP_
 
 #include "types.hpp"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <boost/program_options.hpp>
 #include <boost/core/noncopyable.hpp>
+#pragma GCC diagnostic pop
 #include <string>
 #include <vector>
 
@@ -51,6 +54,10 @@ namespace gearshifft {
       return device_;
     }
 
+    const std::string& getTag() const {
+      return tag_;
+    }
+
     size_t getNumberDevices() const {
       return ndevices_;
     }
@@ -91,6 +98,8 @@ namespace gearshifft {
 
     std::string outputFile_;
     std::string device_;
+    std::string tag_;
+
     size_t ndevices_ = 0;
     bool help_ = false;
     bool verbose_ = false;

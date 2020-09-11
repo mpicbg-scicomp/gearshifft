@@ -1,0 +1,26 @@
+#include "gearshifft_version.hpp"
+
+namespace gearshifft {
+
+  std::string gearshifft_version()
+  {
+    return "@gearshifft_VERSION@";
+  }
+  unsigned gearshifft_version_major()
+  {
+    return @gearshifft_VERSION_MAJOR@;
+  }
+  unsigned gearshifft_version_minor()
+  {
+    return @gearshifft_VERSION_MINOR@ +0;
+  }
+  unsigned gearshifft_version_patch()
+  {
+    return @gearshifft_VERSION_PATCH@ +0;
+  }
+  unsigned gearshifft_version_tweak()
+  {
+    return @gearshifft_VERSION_TWEAK@ +0;
+  }
+
+}
