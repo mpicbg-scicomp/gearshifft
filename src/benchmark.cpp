@@ -3,8 +3,6 @@
 
 #include <cstdlib>
 
-#include <cstdlib>
-
 // ----------------------------------------------------------------------------
 template<typename... Types>
 using List = gearshifft::List<Types...>;
