@@ -50,11 +50,12 @@ set(GEARSHIFFT_PRECISION_DOUBLE_ONLY "0" CACHE STRING "Compile benchmarks in dou
 set_property(CACHE GEARSHIFFT_PRECISION_DOUBLE_ONLY PROPERTY STRINGS "0;1")
 
 
-# benchmark setting
+# benchmark settings
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
 set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
+set(GEARSHIFFT_DUMP_FREQUENCY "1" CACHE STRING "Number of benchmarks results to collect before dumping to backup file.")
 
 #-------------------------------------------------------------------------------
 
