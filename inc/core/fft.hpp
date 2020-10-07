@@ -12,6 +12,8 @@
 
 #ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
 #include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_REGION(...)
 #endif
 
 namespace gearshifft {
@@ -63,9 +65,7 @@ namespace gearshifft {
                     T_Vector& vec,
                     const std::array<size_t,NDim>& extents
       ) const {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
       SCOREP_USER_REGION("fft_benchmark", SCOREP_USER_REGION_TYPE_FUNCTION)
-#endif
 
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             T_FFT::IsComplex >::type;
@@ -90,9 +90,7 @@ namespace gearshifft {
       result.setValue(RecordType::Allocation, tcpu.stopTimer());
 
       {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
         SCOREP_USER_REGION("plan_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
-#endif
         // init forward plan
         tcpu.startTimer();
         fft.init_forward();
@@ -100,9 +98,7 @@ namespace gearshifft {
       }
 
       if(!T_ReusePlan::value) {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
         SCOREP_USER_REGION("plan_backward_no_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
-#endif
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
@@ -115,9 +111,7 @@ namespace gearshifft {
       result.setValue(RecordType::Upload, tdev.stopTimer());
 
       {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
         SCOREP_USER_REGION("transform_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
-#endif
         // execute forward transform
         tdev.startTimer();
         fft.execute_forward();
@@ -125,9 +119,7 @@ namespace gearshifft {
       }
 
       if(T_ReusePlan::value) {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
         SCOREP_USER_REGION("plan_backward_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
-#endif
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
@@ -135,9 +127,7 @@ namespace gearshifft {
       }
 
       {
-#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
         SCOREP_USER_REGION("transform_backward", SCOREP_USER_REGION_TYPE_DYNAMIC)
-#endif
         // execute inverse transform
         tdev.startTimer();
         fft.execute_inverse();
