@@ -5,6 +5,7 @@ include(CMakeDependentOption)
 option(GEARSHIFFT_VERBOSE "Verbose output during build generation." OFF)
 option(GEARSHIFFT_USE_STATIC_LIBS "Force static linking Boost and FFTW (use libraries' cmake variables otherwise)." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
+option(GEARSHIFFT_FLUSH_CACHE "Attempt to flush the cache before each plan and execution step. (Experimental)" OFF)
 
 set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
 set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
@@ -60,6 +61,8 @@ set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an F
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
 set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
 set(GEARSHIFFT_DUMP_FREQUENCY "1" CACHE STRING "Number of benchmarks results to collect before dumping to backup file.")
+set(GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES "32" CACHE STRING "Size of the processor's last level cache in MiB.")
+set(GEARSHIFFT_FLUSH_CL_SIZE_BYTES "64" CACHE STRING "Size of the processor's cache Lines in B.")
 
 #-------------------------------------------------------------------------------
 

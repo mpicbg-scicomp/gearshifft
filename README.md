@@ -246,6 +246,17 @@ More information on profiling and tracing with Score-P can be found
 
 </details>
 
+## Flush caches
+
+The benchmark can also be configured to flush the cashes before each plan and execution step.
+You can enable this option by passing `-DGEARSHIFFT_FLUSH_CACHE=On` to `cmake`.
+The attempt to flush the caches is made by writing/reading to/from a `volatile char` array four
+times the size of the last level cache.
+You can set the cache and cache line sizes of your hardware by defining the variables
+`GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES` (last level cache size in MiB, default: 32) and
+`GEARSHIFFT_FLUSH_CL_SIZE_BYTES` (cache line size in B, default: 64).
+This feature is still experimental.
+
 ## Install
 
 Set `CMAKE_INSTALL_PREFIX` as you wish, otherwise defaults are used.
