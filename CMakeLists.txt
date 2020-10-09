@@ -299,7 +299,8 @@ if(GEARSHIFFT_BACKEND_FFTW)
     add_library(FFTW INTERFACE)
     add_library(gearshifft::FFTW ALIAS FFTW)
 
-    set(GEARSHIFFT_BACKEND_FFTW_THREADS 0)
+    # set initial value to 0
+    set(GEARSHIFFT_INTERNAL_FFTWX_THREADED 0)
 
     if(GEARSHIFFT_BACKEND_FFTW_OPENMP)
 
@@ -308,7 +309,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
         find_and_add_openmp(FFTW ${_QUIET})
 
         if(TARGET OpenMP::OpenMP_CXX)
-          set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+          set(GEARSHIFFT_INTERNAL_FFTWX_THREADED 1)
         else()
           message(WARNING "Could not find OpenMP")
           set(GEARSHIFFT_BACKEND_FFTW_OPENMP OFF)
@@ -323,7 +324,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
     if(GEARSHIFFT_BACKEND_FFTW_PTHREADS)
       if(FFTW_THREADS_LIBS)
         find_package(Threads)
-        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+        set(GEARSHIFFT_INTERNAL_FFTWX_THREADED 1)
       else()
         message(WARNING "FFTW libraries for pthreads not found")
         set(GEARSHIFFT_BACKEND_FFTW_PTHREADS OFF)
@@ -341,7 +342,7 @@ if(GEARSHIFFT_BACKEND_FFTW)
       target_include_directories(FFTW INTERFACE ${FFTW_INCLUDE_DIR})
       target_compile_definitions(FFTW INTERFACE
         FFTW_ENABLED
-        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
+        GEARSHIFFT_INTERNAL_FFTWX_THREADED=${GEARSHIFFT_INTERNAL_FFTWX_THREADED})
       target_link_libraries(FFTW INTERFACE
         Common
         $<$<STREQUAL:${GEARSHIFFT_BACKEND_FFTW_OPENMP},ON>:${FFTW_OPENMP_LIBS}>
@@ -359,7 +360,11 @@ endif()
 #------------------------------------------------------------------------------
 
 if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
+  if(GEARSHIFFT_USE_STATIC_LIBS)
+    set(FFTWWrappers_USE_STATIC_LIBS ON) # otherwise find libs automatically
+  endif()
   find_package(FFTWWrappers ${_QUIET})
+
   if(FFTWWrappers_FOUND) # found FFTWWrappers for GNU or Intel
 
     if(FFTWWrappers_GNU_LIBRARIES AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU"
@@ -371,19 +376,22 @@ if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
       add_library(gearshifft::FFTWWrappers ALIAS FFTWWrappers)
 
       # if compiler supports OpenMP then add flag, as FFTWWrappers might need it
+      # set initial value to 0
+      set(GEARSHIFFT_INTERNAL_FFTWX_THREADED 0)
+
       find_and_add_openmp(FFTWWrappers ${_QUIET})
 
       if(TARGET OpenMP::OpenMP_CXX)
-        set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+        set(GEARSHIFFT_INTERNAL_FFTWX_THREADED 1)
       endif()
 
       target_include_directories(FFTWWrappers INTERFACE ${FFTWWrappers_MKL_INCLUDE_DIR})
       target_compile_definitions(FFTWWrappers INTERFACE
         FFTW_ENABLED
-        GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS})
+        GEARSHIFFT_INTERNAL_FFTWX_THREADED=${GEARSHIFFT_INTERNAL_FFTWX_THREADED})
       target_link_libraries(FFTWWrappers INTERFACE
         Common
-        #      $<$<BOOL:${Threads_FOUND}>:Threads::Threads>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:m>
         )
 
       if(FFTWWrappers_GNU_LIBRARIES)

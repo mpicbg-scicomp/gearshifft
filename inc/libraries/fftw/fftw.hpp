@@ -38,11 +38,14 @@ namespace fftw {
   public:
 
     FftwOptions() : OptionsDefault() {
-      add_options()
-        ("rigor", value(&rigor_)->default_value("measure"), "FFTW rigor (measure, estimate, wisdom, patient or exhaustive)")
-        ("wisdom_sp", value(&wisdom_sp_), "Wisdom file for single-precision.")
-        ("wisdom_dp", value(&wisdom_dp_), "Wisdom file for double-precision.")
-        ("plan_timelimit", value(&plan_timelimit_)->default_value(-1.0), "Timelimit in seconds for planning in FFTW.");
+      // following options are available in FFTW only
+      if(native_fftw()) {
+        add_options()
+          ("rigor", value(&rigor_)->default_value("measure"), "FFTW rigor (measure, estimate, wisdom, patient or exhaustive)")
+          ("wisdom_sp", value(&wisdom_sp_), "Wisdom file for single-precision.")
+          ("wisdom_dp", value(&wisdom_dp_), "Wisdom file for double-precision.")
+          ("plan_timelimit", value(&plan_timelimit_)->default_value(-1.0), "Timelimit in seconds for planning in FFTW.");
+      }
     }
 
     double plan_timelimit() const {
@@ -50,20 +53,26 @@ namespace fftw {
     }
 
     unsigned plan_rigor() const {
-      if(rigor_ == "measure")
-        return FFTW_MEASURE;
-      if(rigor_ == "estimate")
+
+      if(!native_fftw()) {
+        // MKL always uses the same algorithm regardless of given plan parameter
+        // see: https://software.intel.com/en-us/mkl-developer-reference-c-using-fftw3-wrappers
         return FFTW_ESTIMATE;
-      if(rigor_ == "patient")
-        return FFTW_PATIENT;
-      if(rigor_ == "wisdom"){
-        if(!native_fftw())
-          throw std::runtime_error("wisdom rigor not supported with mkl wrappers.");
-        return FFTW_WISDOM_ONLY;
+
+      } else {
+        if(rigor_ == "measure")
+          return FFTW_MEASURE;
+        if(rigor_ == "estimate")
+          return FFTW_ESTIMATE;
+        if(rigor_ == "patient")
+          return FFTW_PATIENT;
+        if(rigor_ == "wisdom")
+          return FFTW_WISDOM_ONLY;
+        if(rigor_ == "exhaustive")
+          return FFTW_EXHAUSTIVE;
+
+        throw std::runtime_error("Invalid FFTW rigor.");
       }
-      if(rigor_ == "exhaustive")
-        return FFTW_EXHAUSTIVE;
-      throw std::runtime_error("Invalid FFTW rigor.");
     }
 
     std::string plan_rigor_str() const {
@@ -378,9 +387,10 @@ namespace fftw {
     static std::string get_device_list() {
       std::ostringstream msg;
 
-#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
+// if identifier is undefined, it evaluates to zero as well, so check it separately with defined()
+#if defined(GEARSHIFFT_INTERNAL_FFTWX_THREADED) && GEARSHIFFT_INTERNAL_FFTWX_THREADED==1
       int av_procs = std::thread::hardware_concurrency();
-      msg << av_procs << " CPU Threads supported.\n";
+      msg << av_procs << " CPU Threads supported (might ignore job settings from SLURM, ..).\n";
 #else
       msg << "FFTW thread support disabled.\n";
 #endif
@@ -390,7 +400,7 @@ namespace fftw {
 
     std::string get_used_device_properties() {
 
-#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
+#if defined(GEARSHIFFT_INTERNAL_FFTWX_THREADED) && GEARSHIFFT_INTERNAL_FFTWX_THREADED==1
       // Returns the number of supported concurrent threads of implementation
       size_t maxndevs = std::thread::hardware_concurrency();
       size_t ndevs = options().getNumberDevices();
@@ -406,13 +416,16 @@ namespace fftw {
       std::ostringstream msg;
       msg << "\"SupportedThreads\"," << maxndevs
           << ",\"UsedThreads\"," << ndevs
-          << ",\"TotalMemory\"," << getMemorySize()
-          << ",\"PlanRigor\",\"" << options().plan_rigor_str();
-      double plan_timelimit = options().plan_timelimit();
-      if(plan_timelimit > 0.0)
-        msg << "\",\"PlanTimeLimit [s]\"," << plan_timelimit;
-      else
-        msg << "\",\"PlanTimeLimit [s]\"," << "\"None\"";
+          << ",\"TotalMemory\"," << getMemorySize();
+
+      if(native_fftw()) {
+        msg << ",\"PlanRigor\",\"" << options().plan_rigor_str();
+        double plan_timelimit = options().plan_timelimit();
+        if(plan_timelimit > 0.0)
+          msg << "\",\"PlanTimeLimit [s]\"," << plan_timelimit;
+        else
+          msg << "\",\"PlanTimeLimit [s]\"," << "\"None\"";
+      }
       return msg.str();
     }
 
@@ -540,7 +553,7 @@ namespace fftw {
           throw std::runtime_error("FFT data exceeds physical memory. "+ss.str());
         }
 
-#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
+#if defined(GEARSHIFFT_INTERNAL_FFTWX_THREADED) && GEARSHIFFT_INTERNAL_FFTWX_THREADED==1
         if( traits::thread_api<TPrecision>::init_threads()==0 )
           throw std::runtime_error("fftw thread initialization failed.");
 
@@ -555,7 +568,7 @@ namespace fftw {
     ~FftwImpl(){
 
       destroy();
-#if defined(GEARSHIFFT_BACKEND_FFTW_THREADS) && GEARSHIFFT_BACKEND_FFTW_THREADS==1
+#if defined(GEARSHIFFT_INTERNAL_FFTWX_THREADED) && GEARSHIFFT_INTERNAL_FFTWX_THREADED==1
       traits::thread_api<TPrecision>::cleanup_threads();
 #else
       traits::no_thread_api<TPrecision>::cleanup();

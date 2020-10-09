@@ -13,14 +13,15 @@ set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
 option(GEARSHIFFT_BACKEND_CUFFT "Compile gearshifft_cufft if possible" ON)
 option(GEARSHIFFT_BACKEND_CLFFT "Compile gearshifft_clfft if possible" ON)
 option(GEARSHIFFT_BACKEND_ROCFFT "Compile gearshifft_rocfft if possible (requires HCC as compiler)" ON)
+
 option(GEARSHIFFT_BACKEND_FFTW  "Compile gearshifft_fftw if possible" ON)
 cmake_dependent_option(
   GEARSHIFFT_BACKEND_FFTW_OPENMP "Use OpenMP parallel FFTW libraries if found" ON
   "GEARSHIFFT_BACKEND_FFTW" ON)
 cmake_dependent_option(
   GEARSHIFFT_BACKEND_FFTW_PTHREADS "Use pthreads parallel FFTW libraries if found" OFF
-   "GEARSHIFFT_BACKEND_FFTW" ON
-  )
+  "GEARSHIFFT_BACKEND_FFTW" ON)
+
 option(GEARSHIFFT_BACKEND_FFTWWRAPPERS  "Compile gearshifft_fftwwrappers if possible" ON)
 
 # backend-disabler
