@@ -14,11 +14,20 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 
 - cmake 3.7+
 - C++14 capable compiler
-- CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
+- Any of the supported FFT libraries:
+  - cuFFT 8.0+ (CUDA)
+  - clFFT 2.12.0+ (OpenCL)
+  - rocFFT (ROCm)
+  - FFTW 3.3.4+
+  - Intel Math Kernel Library (MKL)¹
+  - IBM Engineering and Scientific Subroutine Library (ESSL)¹
+  - ARM Performance Libraries (ArmPL)¹
 - Boost version 1.59+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
+
+¹) The respective FFTW-style wrapper library is needed.
 
 ## Build
 
