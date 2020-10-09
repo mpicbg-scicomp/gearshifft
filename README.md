@@ -244,8 +244,15 @@ The output might look something like this:
 
 This report states that e.g. every executed forward transformation (`transform_forward`) consumed 94,819 single precision
 floating point operations (Flops).
-For the sake of precise time measurement, this also includes one operation that is caused by the
-timer implementation (as is the case with the other regions).
+To keep gearshifft's own time measurement as precise as possible, the Score-P user region wraps
+gearshifft's timer implementation, too.
+In the case of FFTW which is measured using the `chrono` library, this accounts for some integer
+operations and a double precision floating point assignment per `instance` per region.
+Since in this example we were counting single precision operations, the timer overhead is not
+included in the output.
+Should you decide to measure integer or double precision FP operations or use a GPU library that
+uses [a different timer](https://github.com/mpicbg-scicomp/gearshifft/tree/master/inc/core), their
+operations will be counted, as well.
 The Flops in the planning stages are accumulated during calculation of twiddle factors.
 Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
 of their inner regions, are due to validation of the FFT results by gearshifft.
