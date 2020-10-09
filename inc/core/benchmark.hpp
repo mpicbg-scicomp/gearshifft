@@ -6,6 +6,7 @@
 
 #include "application.hpp"
 #include "benchmark_suite.hpp"
+#include "gearshifft_version.hpp"
 
 // see https://www.boost.org/doc/libs/1_65_1/libs/test/doc/html/boost_test/usage_variants.html
 // Single-header usage variant
@@ -32,30 +33,39 @@ namespace gearshifft {
     }
 
     void configure(int argc, char* argv[]) {
-      configured_ = false;
       std::vector<char*> vargv(argv, argv+argc);
       boost_vargv_.clear();
       boost_vargv_.emplace_back(argv[0]); // [0] = name of application
-
-      if( Context::options().parse(vargv, boost_vargv_) ) {
-        if( Context::options().getListDevices() ) {
-          std::cout << Context::get_device_list() << std::endl;
-        }
+      auto parseResult = Context::options().parse(vargv, boost_vargv_);
+      switch (parseResult) {
+        case 0:  break;
+        case 1:  info_only_ = true; break;
+        default: parsing_failed_ = true;
       }
-      else
-        configured_ = true;
     }
 
     template<typename T_FFT_Is_Normalized,
              typename T_FFTs,
              typename T_Precisions>
     int run() {
-      if(Context::options().getListDevices())
-        return 0;
-      if(configured_==false)
+      if (parsing_failed_) {
         return 1;
+      } else if (info_only_) {
+        if(Context::options().getListDevices()) {
+          std::cout << Context::get_device_list();
+        } else if (Context::options().getVersion()) {
+          std::cout << "gearshifft " << gearshifft_version() << '\n';
+        } else if (Context::options().getHelp()) {
+          std::cout << "gearshifft " << gearshifft_version() << '\n'
+                    << Context::options().getDescription();
+        }
+        return 0;
+      }
 
       AppT::getInstance().createContext();
+      if (!Context::options().getListBenchmarks()) {
+        AppT::getInstance().startWriter();
+      }
 
       auto init_function = []() {
         BenchmarkSuite<Context, T_FFT_Is_Normalized, T_FFTs, T_Precisions> instance;
@@ -68,12 +78,15 @@ namespace gearshifft {
                                                   boost_vargv_.data() );
 
       AppT::getInstance().destroyContext();
-      AppT::getInstance().dumpResults();
+      if (!Context::options().getListBenchmarks()) {
+        AppT::getInstance().stopWriter();
+      }
       return r;
     }
 
   private:
-    bool configured_ = false;
+    bool info_only_ = false;
+    bool parsing_failed_ = false;
     std::vector<char*> boost_vargv_;
   };
 

@@ -141,9 +141,25 @@ target_compile_definitions(Common INTERFACE
   GEARSHIFFT_PRECISION_HALF_ONLY=${GEARSHIFFT_PRECISION_HALF_ONLY}
   GEARSHIFFT_PRECISION_SINGLE_ONLY=${GEARSHIFFT_PRECISION_SINGLE_ONLY}
   GEARSHIFFT_PRECISION_DOUBLE_ONLY=${GEARSHIFFT_PRECISION_DOUBLE_ONLY}
+  GEARSHIFFT_DUMP_FREQUENCY=${GEARSHIFFT_DUMP_FREQUENCY}
+
   BOOST_ALL_NO_LIB=1
   )
 #TODO: check paths
+
+# TODO: Is there no generator expression for string matching?
+if (${CMAKE_CXX_COMPILER} MATCHES ".*scorep.*")
+    target_compile_definitions(Common INTERFACE GEARSHIFFT_SCOREP_INSTRUMENTATION)
+endif()
+
+if (GEARSHIFFT_FLUSH_CACHE)
+  target_compile_definitions(Common INTERFACE
+    GEARSHIFFT_FLUSH_CACHE
+    GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES=${GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES}
+    GEARSHIFFT_FLUSH_CL_SIZE_BYTES=${GEARSHIFFT_FLUSH_CL_SIZE_BYTES}
+  )
+  message(STATUS "Cache flush between runs enabled")
+endif()
 
 if(NOT Boost_VERSION VERSION_LESS 1.68.0)
   # https://github.com/boostorg/system/issues/26
@@ -411,6 +427,65 @@ if(GEARSHIFFT_BACKEND_FFTWWRAPPERS)
   endif()
 endif()
 
+#------------------------------------------------------------------------------
+# FFTW Wrappers for ESSL
+#------------------------------------------------------------------------------
+
+if(GEARSHIFFT_BACKEND_ESSL)
+
+  find_package(ESSL)
+
+  if(ESSL_FOUND)
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+
+    add_library(ESSL INTERFACE)
+    add_library(gearshifft::ESSL ALIAS ESSL)
+
+    target_compile_definitions(ESSL INTERFACE
+      FFTW_ENABLED
+      USE_ESSL
+      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS}
+    )
+
+    target_link_libraries(ESSL INTERFACE
+      ESSL::FFTW
+      Common
+    )
+
+    message(STATUS " gearshifft::ESSL enabled.")
+  endif()
+
+endif()
+
+#------------------------------------------------------------------------------
+# FFTW Wrappers for ARM Performance Library
+#------------------------------------------------------------------------------
+
+if(GEARSHIFFT_BACKEND_ARMPL)
+
+  find_package(ARMPL)
+
+  if(ARMPL_FOUND)
+    set(GEARSHIFFT_BACKEND_FFTW_THREADS 1)
+
+    add_library(ARMPL INTERFACE)
+    add_library(gearshifft::ARMPL ALIAS ARMPL)
+
+    target_compile_definitions(ARMPL INTERFACE
+      FFTW_ENABLED
+      USE_ARMPL
+      GEARSHIFFT_BACKEND_FFTW_THREADS=${GEARSHIFFT_BACKEND_FFTW_THREADS}
+    )
+
+    target_link_libraries(ARMPL INTERFACE
+      ARMPL::ARMPL
+      Common
+    )
+
+    message(STATUS " gearshifft::ARMPL enabled.")
+  endif()
+
+endif()
 
 #-------------------------------------------------------------------------------
 
@@ -419,6 +494,8 @@ if(NOT TARGET gearshifft::CUFFT
     AND NOT TARGET gearshifft::FFTW
     AND NOT TARGET gearshifft::FFTWWrappers
     AND NOT TARGET gearshifft::ROCFFT
+    AND NOT TARGET gearshifft::ESSL
+    AND NOT TARGET gearshifft::ARMPL
     )
   message(WARNING "No FFT backend found.")
 endif()

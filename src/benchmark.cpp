@@ -1,6 +1,8 @@
 #include "core/benchmark.hpp"
 #include "core/types.hpp"
 
+#include <cstdlib>
+
 // ----------------------------------------------------------------------------
 template<typename... Types>
 using List = gearshifft::List<Types...>;
@@ -58,6 +60,9 @@ using FFT_Is_Normalized = std::false_type;
 
 int main( int argc, char* argv[] )
 {
+  char reportLevel[] = "BOOST_TEST_REPORT_LEVEL=no";
+  putenv(reportLevel);
+
   int ret = 0;
   try {
     gearshifft::Benchmark<Context> benchmark;

@@ -5,6 +5,7 @@ include(CMakeDependentOption)
 option(GEARSHIFFT_VERBOSE "Verbose output during build generation." OFF)
 option(GEARSHIFFT_USE_STATIC_LIBS "Force static linking Boost and FFTW (use libraries' cmake variables otherwise)." OFF)
 option(GEARSHIFFT_TESTS_ADD_CPU_ONLY "Only add tests which run on CPU." OFF)
+option(GEARSHIFFT_FLUSH_CACHE "Attempt to flush the cache before each plan and execution step. (Experimental)" OFF)
 
 set(GEARSHIFFT_CXX11_ABI "1" CACHE STRING "Enable _GLIBCXX_USE_CXX11_ABI in GCC 5.0+")
 set_property(CACHE GEARSHIFFT_CXX11_ABI PROPERTY STRINGS "0;1")
@@ -22,6 +23,8 @@ cmake_dependent_option(
    "GEARSHIFFT_BACKEND_FFTW" ON
   )
 option(GEARSHIFFT_BACKEND_FFTWWRAPPERS  "Compile gearshifft_fftwwrappers if possible" ON)
+option(GEARSHIFFT_BACKEND_ESSL "Compile gearshifft_esslfftw if possible" ON)
+option(GEARSHIFFT_BACKEND_ARMPL "Compile gearshifft_armplfftw if possible" ON)
 
 # backend-disabler
 
@@ -30,6 +33,8 @@ option(GEARSHIFFT_BACKEND_CLFFT_ONLY "Disable all other backends" OFF)
 option(GEARSHIFFT_BACKEND_CUFFT_ONLY "Disable all other backends" OFF)
 option(GEARSHIFFT_BACKEND_FFTW_ONLY "Disable all other backends" OFF)
 option(GEARSHIFFT_BACKEND_FFTWWRAPPERS_ONLY "Disable all other backends" OFF)
+option(GEARSHIFFT_BACKEND_ESSL_ONLY "Disable all other backends" OFF)
+option(GEARSHIFFT_BACKEND_ARMPL_ONLY "Disable all other backends" OFF)
 
 # precisions
 
@@ -50,11 +55,14 @@ set(GEARSHIFFT_PRECISION_DOUBLE_ONLY "0" CACHE STRING "Compile benchmarks in dou
 set_property(CACHE GEARSHIFFT_PRECISION_DOUBLE_ONLY PROPERTY STRINGS "0;1")
 
 
-# benchmark setting
+# benchmark settings
 
 set(GEARSHIFFT_NUMBER_WARM_RUNS "10" CACHE STRING "Number of repetitions of an FFT benchmark after a warmup.")
 set(GEARSHIFFT_NUMBER_WARMUPS "2" CACHE STRING "Number of warmups of an FFT benchmark.")
 set(GEARSHIFFT_ERROR_BOUND "-1" CACHE STRING "Error-bound for FFT benchmarks (<0 for dynamic error bound).")
+set(GEARSHIFFT_DUMP_FREQUENCY "1" CACHE STRING "Number of benchmarks results to collect before dumping to backup file.")
+set(GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES "32" CACHE STRING "Size of the processor's last level cache in MiB.")
+set(GEARSHIFFT_FLUSH_CL_SIZE_BYTES "64" CACHE STRING "Size of the processor's cache Lines in B.")
 
 #-------------------------------------------------------------------------------
 
@@ -73,10 +81,16 @@ if(GEARSHIFFT_BACKEND_CUFFT_ONLY
     GEARSHIFFT_BACKEND_FFTW_ONLY
     OR
     GEARSHIFFT_BACKEND_FFTWWRAPPERS_ONLY
+    OR
+    GEARSHIFFT_BACKEND_ESSL_ONLY
+    OR
+    GEARSHIFFT_BACKEND_ARMPL_ONLY
     )
   set(GEARSHIFFT_BACKEND_CUFFT ${GEARSHIFFT_BACKEND_CUFFT_ONLY} CACHE BOOL "" FORCE)
   set(GEARSHIFFT_BACKEND_CLFFT ${GEARSHIFFT_BACKEND_CLFFT_ONLY} CACHE BOOL "" FORCE)
   set(GEARSHIFFT_BACKEND_ROCFFT ${GEARSHIFFT_BACKEND_ROCFFT_ONLY} CACHE BOOL "" FORCE)
   set(GEARSHIFFT_BACKEND_FFTW ${GEARSHIFFT_BACKEND_FFTW_ONLY} CACHE BOOL "" FORCE)
   set(GEARSHIFFT_BACKEND_FFTWWRAPPERS ${GEARSHIFFT_BACKEND_FFTWWRAPPERS_ONLY} CACHE BOOL "" FORCE)
+  set(GEARSHIFFT_BACKEND_ESSL ${GEARSHIFFT_BACKEND_ESSL_ONLY} CACHE BOOL "" FORCE)
+  set(GEARSHIFFT_BACKEND_ARMPL ${GEARSHIFFT_BACKEND_ARMPL_ONLY} CACHE BOOL "" FORCE)
 endif()

@@ -5,10 +5,32 @@
 #include "traits.hpp"
 #include "types.hpp"
 
-#include <assert.h>
 #include <array>
-#include <type_traits>
+#include <assert.h>
+#include <memory>
+#include <numeric>
 #include <ostream>
+#include <type_traits>
+
+#ifdef GEARSHIFFT_SCOREP_INSTRUMENTATION
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_REGION(...)
+#endif
+
+#ifdef GEARSHIFFT_FLUSH_CACHE
+#define FLUSH(...) flush()
+#else
+#define FLUSH(...)
+#endif
+
+#ifndef GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES
+#define GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES 32
+#endif
+
+#ifndef GEARSHIFFT_FLUSH_CL_SIZE_BYTES
+#define GEARSHIFFT_FLUSH_CL_SIZE_BYTES 64
+#endif
 
 namespace gearshifft {
 
@@ -59,6 +81,8 @@ namespace gearshifft {
                     T_Vector& vec,
                     const std::array<size_t,NDim>& extents
       ) const {
+      SCOREP_USER_REGION("fft_benchmark", SCOREP_USER_REGION_TYPE_FUNCTION)
+
       using PrecisionT = typename Precision<typename T_Vector::value_type,
                                             T_FFT::IsComplex >::type;
       assert(vec.size());
@@ -81,12 +105,18 @@ namespace gearshifft {
       fft.allocate();
       result.setValue(RecordType::Allocation, tcpu.stopTimer());
 
-      // init forward plan
-      tcpu.startTimer();
-      fft.init_forward();
-      result.setValue(RecordType::PlanInitFwd, tcpu.stopTimer());
+      {
+        FLUSH();
+        SCOREP_USER_REGION("plan_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
+        // init forward plan
+        tcpu.startTimer();
+        fft.init_forward();
+        result.setValue(RecordType::PlanInitFwd, tcpu.stopTimer());
+      }
 
-      if(T_ReusePlan::value == false) {
+      if(!T_ReusePlan::value) {
+        FLUSH();
+        SCOREP_USER_REGION("plan_backward_no_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
@@ -98,22 +128,32 @@ namespace gearshifft {
       fft.upload(vec.data());
       result.setValue(RecordType::Upload, tdev.stopTimer());
 
-      // execute forward transform
-      tdev.startTimer();
-      fft.execute_forward();
-      result.setValue(RecordType::FFT, tdev.stopTimer());
+      {
+        FLUSH();
+        SCOREP_USER_REGION("transform_forward", SCOREP_USER_REGION_TYPE_DYNAMIC)
+        // execute forward transform
+        tdev.startTimer();
+        fft.execute_forward();
+        result.setValue(RecordType::FFT, tdev.stopTimer());
+      }
 
-      if(T_ReusePlan::value == true) {
+      if(T_ReusePlan::value) {
+        FLUSH();
+        SCOREP_USER_REGION("plan_backward_reuse", SCOREP_USER_REGION_TYPE_DYNAMIC)
         // init inverse plan
         tcpu.startTimer();
         fft.init_inverse();
         result.setValue(RecordType::PlanInitInv, tcpu.stopTimer());
       }
 
-      // execute inverse transform
-      tdev.startTimer();
-      fft.execute_inverse();
-      result.setValue(RecordType::FFTInv, tdev.stopTimer());
+      {
+        FLUSH();
+        SCOREP_USER_REGION("transform_backward", SCOREP_USER_REGION_TYPE_DYNAMIC)
+        // execute inverse transform
+        tdev.startTimer();
+        fft.execute_inverse();
+        result.setValue(RecordType::FFTInv, tdev.stopTimer());
+      }
 
       // download data
       tdev.startTimer();
@@ -126,8 +166,40 @@ namespace gearshifft {
       result.setValue(RecordType::PlanDestroy, tcpu.stopTimer());
 
       result.setValue(RecordType::Total, tcpu_total.stopTimer());
+
+
+    }
+
+    static constexpr std::size_t flushBufferSize = 4 * GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES * (1 << 20);
+    static constexpr std::size_t flushStride     =     GEARSHIFFT_FLUSH_CL_SIZE_BYTES;
+    static std::unique_ptr<volatile char[]> flushBuffer;  // no std::byte in C++14
+    static volatile char flushSink;
+
+    static void flush() {
+      std::iota(flushBuffer.get(), flushBuffer.get() + flushBufferSize, 0x0);
+      for (std::size_t i = 0; i < flushBufferSize; i += flushStride) {
+        flushSink += flushBuffer[i];
+      }
     }
   };
+
+#ifdef GEARSHIFFT_FLUSH_CACHE
+  template<typename T_FFT,
+           typename T_ReusePlan,
+           template <typename,typename,size_t,typename... > class T_Client,
+           typename T_DeviceTimer,
+           typename... T_ClientArgs>
+  std::unique_ptr<volatile char[]>
+  FFT<T_FFT, T_ReusePlan, T_Client, T_DeviceTimer, T_ClientArgs...>::flushBuffer =
+      std::make_unique<volatile char[]>(flushBufferSize);
+
+  template<typename T_FFT,
+           typename T_ReusePlan,
+           template <typename,typename,size_t,typename... > class T_Client,
+           typename T_DeviceTimer,
+           typename... T_ClientArgs>
+  volatile char FFT<T_FFT, T_ReusePlan, T_Client, T_DeviceTimer, T_ClientArgs...>::flushSink = 'X';
+#endif
 
 }
 #endif /* FFT_HPP_ */

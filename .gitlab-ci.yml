@@ -1,0 +1,125 @@
+stages:
+    - test
+
+image: ubuntu:bionic
+
+before_script: &base_setup
+    - apt-get update -qq
+    - apt-get install -yqq cmake make pkg-config g++ clang
+    - apt-get install -yqq libboost-{program-options,filesystem,system,test}-dev
+
+.use_gcc: &use_gcc
+    CC: "gcc"
+    CXX: "g++"
+
+.use_clang: &use_clang
+    CC: "clang"
+    CXX: "clang++"
+
+.use_hipcc: &use_hipcc
+    CC: "clang"
+    CXX: "hipcc"
+
+.release_build: &release_build
+    CMAKE_BUILD_TYPE: "Release"
+    CMAKE_VERBOSE_MAKEFILE: "Off"
+    GEARSHIFFT_VERBOSE: "Off"
+
+.debug_build: &debug_build
+    CMAKE_BUILD_TYPE: "Debug"
+    CMAKE_VERBOSE_MAKEFILE: "On"
+    GEARSHIFFT_VERBOSE: "On"
+
+.generic_build_and_test: &generic_build_and_test
+- mkdir build
+- cd build
+- cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_VERBOSE_MAKEFILE=$CMAKE_VERBOSE_MAKEFILE -DGEARSHIFFT_VERBOSE=$GEARSHIFFT_VERBOSE ..
+- make -j $(nproc)
+- make test
+
+.signal_test: &signal_test
+- sigs=(QUIT KILL TERM)   # don't send SIGABRT (is ignored by gearshifft)
+- for sig in "${sigs[@]}"; do
+    timeout -s "$sig" 10 ./gearshifft/gearshifft_fftw -e 16 32 64 128 256 512 -o out.csv &> /dev/null || true;
+    [[ $(wc -l < out.csv~) -gt 2 ]] && echo "Test successful for SIG$sig" || { echo "Test failed for SIG$sig" && false; };
+    rm out.csv*;
+  done
+
+fftw:
+    stage: test
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+        - *signal_test
+
+fftw_debug:
+    stage: test
+    variables:
+        <<: *use_gcc
+        <<: *debug_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+
+fftw_clang:
+    stage: test
+    variables:
+        <<: *use_clang
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libfftw3-dev
+    script:
+        - *generic_build_and_test
+
+cufft:
+    stage: test
+    tags:
+        - intel
+        - cuda
+    image: nvidia/cuda:10.2-devel-ubuntu18.04
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    script:
+        - *generic_build_and_test
+
+clfft:
+    stage: test
+    tags:
+        - amd
+        - rocm
+    image: rocm/dev-ubuntu-18.04
+    variables:
+        <<: *use_gcc
+        <<: *release_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq libclfft-dev
+    script:
+        - *generic_build_and_test
+
+# TODO: Un-hide when this issue is resolved: https://github.com/RadeonOpenCompute/rocminfo/issues/38
+.rocfft:
+    stage: test
+    tags:
+        - amd
+        - rocm
+    image: rocm/dev-ubuntu-18.04
+    variables:
+        <<: *use_hipcc
+        <<: *debug_build
+    before_script:
+        - *base_setup
+        - apt-get install -yqq rocm-libs
+        - export PATH="/opt/rocm-3.8.0/bin:/opt/rocm-3.8.0/hip/bin:/opt/rocm-3.8.0/llvm/bin:$PATH"
+        - export CMAKE_PREFIX_PATH="$(echo /opt/rocm-*/lib/cmake/* /opt/rocm-*/hip/lib/cmake/* | tr ' ' ':')"
+    script:
+        - *generic_build_and_test

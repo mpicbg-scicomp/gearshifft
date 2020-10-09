@@ -14,11 +14,20 @@ If you want to just browse our results, see the [raw benchmark data](https://www
 
 - cmake 3.7+
 - C++14 capable compiler
-- CUDA FFT library cuFFT 8.0+ or clFFT 2.12.0+ (OpenCL) or FFTW 3.3.4+
+- Any of the supported FFT libraries:
+  - cuFFT 8.0+ (CUDA)
+  - clFFT 2.12.0+ (OpenCL)
+  - rocFFT (ROCm)
+  - FFTW 3.3.4+
+  - Intel Math Kernel Library (MKL)¹
+  - IBM Engineering and Scientific Subroutine Library (ESSL)¹
+  - ARM Performance Libraries (ArmPL)¹
 - Boost version 1.59+
   - should be compiled with same compiler version or ...
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
+
+¹) The respective FFTW-style wrapper library is required for the integration in gearshifft.
 
 ## Build
 
@@ -164,6 +173,105 @@ make install
 
 </details>
 
+## Instrumented build with Score-P
+
+The following section illustrates how to build the benchmark with Score-P user instrumentation and
+how to make sense of the measurements.
+Note that you need a working Score-P installation available in your shell session.
+
+<details>
+
+```bash
+SCOREP_WRAPPER=off cmake -DCMAKE_CXX_COMPILER=scorep-g++ ..
+make SCOREP_WRAPPER_INSTRUMENTER_FLAGS="--user --nocompiler --thread=none" -j $(nproc)
+```
+
+This will instrument the forward and backward transforms, as well as the planning phases, i.e.
+code paths that are also measured by the following columns in the output `csv` file:
+
+- `Time_PlanInitFwd [ms]` -- `plan_forward`,
+- `Time_PlanInitInv [ms]` -- `plan_backward_reuse` or `plan_backward_no_reuse`,
+- `Time_FFT [ms]` -- `transform_forward`,
+- `Time_iFFT [ms]` -- `transform_backward`.
+
+On each execution of the gearshifft app, the Score-P environment will generate a new directory
+`scorep_<date_time_id>` containing a corresponding Cube profile `profile.cubex`.
+More information about Cube profiles and available command line and GUI tools can be found
+[on the scalasca page](https://www.scalasca.org/software/cube-4.x/documentation.html).
+
+Score-P incorporates a variety of tools and libraries for performance analysis, one of which is
+[PAPI](https://icl.utk.edu/papi/), a library for reading out performance counters.
+Here is an example of how to use Score-P and PAPI to retrieve the number of executed single
+precision floating point operations:
+
+```bash
+export SCOREP_PROFILING_ENABLE_CLUSTERING=false     # always keep executions of the same region seperate
+export SCOREP_METRIC_PAPI=PAPI_SP_OPS               # set the desired performance counter
+./gearshifft/gearshifft_fftw -e 4096 -r Fftw/float/*/Inplace_Real --rigor=estimate  # run benchmark
+cube_info -m PAPI_SP_OPS scorep-20200722_1818_122049453456972/profile.cubex         # show results
+```
+
+The output might look something like this:
+
+```
+|     PAPI_SP_OPS | Diff-Calltree
+|         4512295 |  * gearshifft_fftw
+|         4311444 |  |  * fft_benchmark
+|         1337772 |  |  |  * plan_forward
+|          111481 |  |  |  |  * instance=1
+|          111481 |  |  |  |  * instance=2
+|          111481 |  |  |  |  * instance=3
+|          111481 |  |  |  |  * instance=4
+|          111481 |  |  |  |  * instance=5
+|          111481 |  |  |  |  * instance=6
+|          111481 |  |  |  |  * instance=7
+|          111481 |  |  |  |  * instance=8
+|          111481 |  |  |  |  * instance=9
+|          111481 |  |  |  |  * instance=10
+|          111481 |  |  |  |  * instance=11
+|          111481 |  |  |  |  * instance=12
+|         1306836 |  |  |  * plan_backward_no_reuse
+|          108903 |  |  |  |  * instance=1
+|          108903 |  |  |  |  * instance=2
+                       ...
+|         1137828 |  |  |  * transform_forward
+|           94819 |  |  |  |  * instance=1
+                       ...
+|          528948 |  |  |  * transform_backward
+|           44079 |  |  |  |  * instance=1
+                       ...
+```
+
+This report states that e.g. every executed forward transformation (`transform_forward`) consumed 94,819 single precision
+floating point operations (Flops).
+To keep gearshifft's own time measurement as precise as possible, the Score-P user region wraps
+gearshifft's timer implementation, too.
+In the case of FFTW which is measured using the `chrono` library, this accounts for some integer
+operations and a double precision floating point assignment per `instance` per region.
+Since in this example we were counting single precision operations, the timer overhead is not
+included in the output.
+Should you decide to measure integer or double precision FP operations or use a GPU library that
+uses [a different timer](https://github.com/mpicbg-scicomp/gearshifft/tree/master/inc/core), their
+operations will be counted, as well.
+The Flops in the planning stages are accumulated during calculation of twiddle factors.
+Any other operation counted in the `fft_benchmark` or `gearshifft_*` regions that exceed the amount
+of their inner regions, are due to validation of the FFT results by gearshifft.
+
+More information on profiling and tracing with Score-P can be found
+[in the documentation](https://www.vi-hps.org/projects/score-p/).
+
+</details>
+
+## Flush caches
+
+The benchmark can also be configured to flush the cashes before each plan and execution step.
+You can enable this option by passing `-DGEARSHIFFT_FLUSH_CACHE=On` to `cmake`.
+The attempt to flush the caches is made by writing/reading to/from a `volatile char` array four
+times the size of the last level cache.
+You can set the cache and cache line sizes of your hardware by defining the variables
+`GEARSHIFFT_FLUSH_LLC_SIZE_MEBIBYTES` (last level cache size in MiB, default: 32) and
+`GEARSHIFFT_FLUSH_CL_SIZE_BYTES` (cache line size in B, default: 64).
+This feature is still experimental.
 
 ## Install
 
@@ -320,6 +428,12 @@ To ease evaluation, the entries are sorted by columns
 
 See CSV header for column titles and meta-information (memory, number of runs, error-bound, hostname, timestamp, ...).
 
+During runtime, the results are stored in a backup file (suffixed with "~") in the order in which
+they occur.
+The benchmark will accumulate a number of results before writing them to disk.
+This number can be set at compile time by defining `GEARSHIFFT_DUMP_FREQUENCY`.
+The default value is 1 which means every result will be written right away.
+
 ## Tested on ...
 
 - linux (CentOS, RHEL, ArchLinux, Ubuntu, Fedora)
@@ -337,7 +451,6 @@ See CSV header for column titles and meta-information (memory, number of runs, e
 - clFFT seems to have lower transform size limits on CPU than on GPU (a complex 16384x16384 segfaults on clfft CPU, while it works on GPU). gearshifft marks these cases as "Unsupported lengths" and skips them.
 - rocFFT is currently only supported on the HCC platform (no support for rocFFT->cuFFT path)
 - At the moment this is for single-GPUs, batches are not considered
-- if `gearshifft` is killed before, no output is created, which might be an issue on a job scheduler system like slurm (exceeding memory assignment, out-of-memory killings)
 - in case the Boost version (e.g. 1.62.0) you have is more recent than your `cmake` (say 2.8.12.2), use `cmake -DBoost_ADDITIONAL_VERSIONS=1.62.0 -DBOOST_ROOT=/path/to/boost/1.62.0 <more flags>`
 - Windows or MacOS is not supported yet, feel free to add a pull-request
 - cufft float16 transforms overflow at >=1048576 elements
