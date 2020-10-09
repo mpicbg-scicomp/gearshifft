@@ -27,7 +27,7 @@ If you want to just browse our results, see the [raw benchmark data](https://www
   - ... disable the C++11 ABI for GCC with the `-DGEARSHIFFT_CXX11_ABI=OFF` cmake option
 - [half-code](http://half.sourceforge.net) by [Christian Rau](http://sourceforge.net/users/rauy) for float16 support (currently used for cufft half precision FFTs)
 
-¹) The respective FFTW-style wrapper library is needed.
+¹) The respective FFTW-style wrapper library is required for the integration in gearshifft.
 
 ## Build
 
