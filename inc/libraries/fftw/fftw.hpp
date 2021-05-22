@@ -11,12 +11,14 @@
 #include "core/get_memory_size.hpp"
 #include "core/unused.hpp"
 
-#include <string.h>
-#include <vector>
+#include <algorithm>
 #include <array>
-#include <thread>
+#include <cstring>
 #include <sstream>
+#include <thread>
 #include <type_traits>
+#include <vector>
+
 #ifdef USE_ESSL
 #include <fftw3_essl.h>
 #else
