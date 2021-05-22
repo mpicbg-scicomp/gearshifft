@@ -470,7 +470,7 @@ namespace fftw {
       std::stringstream ss;
       std::string line;
       ifs.open(filename.c_str(), std::ifstream::in);
-      if(ifs.good()==false)
+      if(!ifs.good())
         throw std::runtime_error("Wisdom file not accessable.");
 
       if(ifs.is_open()) {
@@ -524,7 +524,7 @@ namespace fftw {
     static constexpr
     bool IsComplex = TFFT::IsComplex;
     static constexpr
-    bool IsInplaceReal = IsInplace && IsComplex==false;
+    bool IsInplaceReal = IsInplace && !IsComplex;
 
     using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
@@ -559,7 +559,7 @@ namespace fftw {
                              1,
                              std::multiplies<std::size_t>());
 
-        if(IsComplex==false){
+        if(!IsComplex){
           extents_complex_.back() = (extents_.back()/2 + 1);
         }
 
@@ -569,7 +569,7 @@ namespace fftw {
                                      std::multiplies<size_t>());
 
         data_size_ = (IsInplaceReal ? 2*n_complex_ : n_) * sizeof(value_type);
-        if(IsInplace==false)
+        if(!IsInplace)
           data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
         //size_t total_mem = getMemorySize();
