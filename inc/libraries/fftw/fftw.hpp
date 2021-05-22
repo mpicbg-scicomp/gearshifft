@@ -110,10 +110,34 @@ namespace fftw {
   namespace traits{
 
     template <typename T>
-    struct memory_api {};
+    struct memory_api_impl {};
+
+    template <typename T>
+    struct memory_api {
+
+      // reinterpret_cast can be used to cast std::complex to FFTW's native type,
+      // see http://www.fftw.org/fftw3_doc/Complex-numbers.html.
+      template<typename S, typename D>
+      static D *memcpy(D *destination, const S *source, size_t size) {
+
+        // If source type is_array, i.e. fftw(f)_complex, reinterpret destination as array, too;
+        // otherwise keep the original type.
+        using R = std::conditional_t<std::is_array<S>::value, S, D>;
+
+        return static_cast<D *>(std::memcpy(reinterpret_cast<R *>(destination), source, size));
+      }
+
+      static void *malloc(size_t nbytes) {
+        return memory_api_impl<T>::malloc(nbytes);
+      }
+
+      static void free(void *p) {
+        memory_api_impl<T>::free(p);
+      }
+    };
 
     template <>
-    struct memory_api<float> {
+    struct memory_api_impl<float> {
 
       static void* malloc(size_t nbytes) { return fftwf_malloc(nbytes); }
 
@@ -121,7 +145,7 @@ namespace fftw {
     };
 
     template <>
-    struct memory_api<double> {
+    struct memory_api_impl<double> {
 
       static void* malloc(size_t nbytes) { return fftw_malloc(nbytes); }
 
@@ -698,9 +722,8 @@ namespace fftw {
     void upload(THostData* input) {
 
       if(!IsInplaceReal){
-        memcpy(data_,input,data_size_);
-      }
-      else{
+        MemoryAPI::memcpy(data_, input, data_size_);
+      } else {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
@@ -713,11 +736,9 @@ namespace fftw {
           for(std::size_t y = 0;y < max_y;++y){
             input_index = z*(max_y*max_x) + y*max_x;
             data_index = z*(max_y*allocated_x) + y*allocated_x;
-
-            memcpy(data_+data_index,
-                   input + input_index,
-                   max_x*sizeof(value_type));
-
+            MemoryAPI::memcpy(data_ + data_index,
+                              input + input_index,
+                              max_x * sizeof(value_type));
           }
         }
       }
@@ -727,9 +748,8 @@ namespace fftw {
     void download(THostData* output) {
 
       if(!IsInplaceReal){
-        memcpy(output,data_,data_size_);
-      }
-      else{
+        MemoryAPI::memcpy(output, data_, data_size_);
+      } else {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
@@ -742,9 +762,9 @@ namespace fftw {
           for(std::size_t y = 0;y < max_y;++y){
             output_index = z*(max_y*max_x) + y*max_x;
             data_index = z*(max_y*allocated_x) + y*allocated_x;
-            memcpy(output+output_index,
-                   data_+data_index,
-                   max_x*sizeof(value_type));
+            MemoryAPI::memcpy(output+output_index,
+                              data_ + data_index,
+                              max_x * sizeof(value_type));
           }
         }
       }
