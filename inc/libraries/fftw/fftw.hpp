@@ -511,10 +511,11 @@ namespace fftw {
     // COMPILE TIME FIELDS
 
     using Extent = std::array<std::size_t, NDim>;
-    using Api  = typename traits::plan<TPrecision>;
+    using PlanAPI = typename traits::plan<TPrecision>;
     using ComplexType = typename traits::plan<TPrecision>::ComplexType;
     using RealType = typename traits::plan<TPrecision>::RealType;
     using PlanType = typename traits::plan<TPrecision>::PlanType;
+    using MemoryAPI = typename traits::memory_api<TPrecision>;
 
     static_assert(NDim > 0 && NDim < 4, "[fftw.hpp]\treceived NDim not in [1,3], currently unsupported" );
 
@@ -614,11 +615,11 @@ namespace fftw {
     void init_forward() {
 
       //Note: these calls clear the content of data_ et al
-      fwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_,
-                                                   data_complex_,
-                                                   traits::fftw_direction::forward,
-                                                   plan_rigor_);
+      fwd_plan_ = PlanAPI::create(extents_,
+                                  data_,
+                                  data_complex_,
+                                  traits::fftw_direction::forward,
+                                  plan_rigor_);
       if(!fwd_plan_) {
 #ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
@@ -633,11 +634,11 @@ namespace fftw {
 
     //
     void init_inverse() {
-      bwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_complex_,
-                                                   data_,
-                                                   traits::fftw_direction::inverse,
-                                                   plan_rigor_);
+      bwd_plan_ = PlanAPI::create(extents_,
+                                  data_complex_,
+                                  data_,
+                                  traits::fftw_direction::inverse,
+                                  plan_rigor_);
       if(!bwd_plan_) {
 #ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
@@ -675,24 +676,22 @@ namespace fftw {
     // --- next methods are benchmarked ---
 
     void allocate() {
-      data_ = static_cast<value_type*>(traits::memory_api<TPrecision>::malloc(data_size_));
+      data_ = static_cast<value_type*>(MemoryAPI::malloc(data_size_));
       if(IsInplace){
         data_complex_ = reinterpret_cast<ComplexType*>(data_);
       }
       else{
-        data_complex_ = static_cast<ComplexType*>(traits::memory_api<TPrecision>::malloc(data_complex_size_));
+        data_complex_ = static_cast<ComplexType*>(MemoryAPI::malloc(data_complex_size_));
       }
     }
 
 
     void execute_forward() {
-
-      traits::plan<TPrecision>::execute(fwd_plan_);
+      PlanAPI::execute(fwd_plan_);
     }
 
     void execute_inverse() {
-
-      traits::plan<TPrecision>::execute(bwd_plan_);
+      PlanAPI::execute(bwd_plan_);
     }
 
     template<typename THostData>
@@ -755,19 +754,19 @@ namespace fftw {
     void destroy() {
 
       if(data_)
-        traits::memory_api<TPrecision>::free(data_);
+        MemoryAPI::free(data_);
       data_ = nullptr;
 
       if(data_complex_ && !IsInplace)
-        traits::memory_api<TPrecision>::free(data_complex_);
+        MemoryAPI::free(data_complex_);
       data_complex_ = nullptr;
 
       if(fwd_plan_)
-        traits::plan<TPrecision>::destroy(fwd_plan_);
+        PlanAPI::destroy(fwd_plan_);
       fwd_plan_ = nullptr;
 
       if(bwd_plan_)
-        traits::plan<TPrecision>::destroy(bwd_plan_);
+        PlanAPI::destroy(bwd_plan_);
       bwd_plan_ = nullptr;
 
     }
