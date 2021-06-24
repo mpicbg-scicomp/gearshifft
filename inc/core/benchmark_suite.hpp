@@ -8,7 +8,7 @@
 
 #include <array>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <boost/test/included/unit_test.hpp> // Single-header usage variant
 #include <boost/test/unit_test_suite.hpp>
