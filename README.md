@@ -6,7 +6,7 @@ This is a simple and easy extensible benchmark system to answer the question, wh
 Conditions are given by compute architecture, inplace or outplace as well as real or complex transforms, data precision, and so on.
 This project is still in development.
 
-If you want to just browse our results, see the [raw benchmark data](https://www.github.com/mpicbg-scicomp/gearshifft_results/) or our [online visualisation and comparison tool](https://www.kcod.de/gearshifft/).
+If you want to just browse our results, see the [raw benchmark data](https://www.github.com/mpicbg-scicomp/gearshifft_results/) or our [online visualisation and comparison tool](https://gearshifft.hzdr.de/).
 
 `gearshifft` was published at [ISC2017](https://link.springer.com/chapter/10.1007/978-3-319-58667-0_11). The respective preprint is available on the [arxiv](https://arxiv.org/abs/1702.00629).
 
