@@ -11,12 +11,13 @@
 
 #include <boost/mpl/list.hpp>
 
-#include <array>
-#include <vector>
-#include <iostream>
 #include <algorithm>
+#include <array>
 #include <complex>
+#include <iostream>
+#include <limits>
 #include <type_traits>
+#include <vector>
 
 namespace gearshifft {
   using Extents1D = std::array<size_t,1>;

@@ -40,7 +40,7 @@ add_library(ARMPL::ARMPL INTERFACE IMPORTED)
 set_target_properties(ARMPL::ARMPL
   PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTEGER32
              INTERFACE_INCLUDE_DIRECTORIES "${ARMPL_INCLUDE_DIRS}"
-             INTERFACE_LINK_LIBRARIES "${ARMPL_LIBRARIES};OpenMP::OpenMP_CXX"
+             INTERFACE_LINK_LIBRARIES "${ARMPL_LIBRARIES};$<$<CXX_COMPILER_ID:GNU>:gfortran>;OpenMP::OpenMP_CXX"
 )
 
 #------------------------------------------------------------------------------

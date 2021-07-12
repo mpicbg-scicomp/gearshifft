@@ -1,6 +1,8 @@
 #ifndef CLFFT_HELPER_HPP_
 #define CLFFT_HELPER_HPP_
 
+#define CL_TARGET_OPENCL_VERSION 120
+
 #include <CL/cl.h>
 #include <clFFT.h>
 #include <stdexcept>

@@ -11,12 +11,14 @@
 #include "core/get_memory_size.hpp"
 #include "core/unused.hpp"
 
-#include <string.h>
-#include <vector>
+#include <algorithm>
 #include <array>
-#include <thread>
+#include <cstring>
 #include <sstream>
+#include <thread>
 #include <type_traits>
+#include <vector>
+
 #ifdef USE_ESSL
 #include <fftw3_essl.h>
 #else
@@ -108,10 +110,34 @@ namespace fftw {
   namespace traits{
 
     template <typename T>
-    struct memory_api {};
+    struct memory_api_impl {};
+
+    template <typename T>
+    struct memory_api {
+
+      // reinterpret_cast can be used to cast std::complex to FFTW's native type,
+      // see http://www.fftw.org/fftw3_doc/Complex-numbers.html.
+      template<typename S, typename D>
+      static D *memcpy(D *destination, const S *source, size_t size) {
+
+        // If source type is_array, i.e. fftw(f)_complex, reinterpret destination as array, too;
+        // otherwise keep the original type.
+        using R = std::conditional_t<std::is_array<S>::value, S, D>;
+
+        return static_cast<D *>(std::memcpy(reinterpret_cast<R *>(destination), source, size));
+      }
+
+      static void *malloc(size_t nbytes) {
+        return memory_api_impl<T>::malloc(nbytes);
+      }
+
+      static void free(void *p) {
+        memory_api_impl<T>::free(p);
+      }
+    };
 
     template <>
-    struct memory_api<float> {
+    struct memory_api_impl<float> {
 
       static void* malloc(size_t nbytes) { return fftwf_malloc(nbytes); }
 
@@ -119,7 +145,7 @@ namespace fftw {
     };
 
     template <>
-    struct memory_api<double> {
+    struct memory_api_impl<double> {
 
       static void* malloc(size_t nbytes) { return fftw_malloc(nbytes); }
 
@@ -468,7 +494,7 @@ namespace fftw {
       std::stringstream ss;
       std::string line;
       ifs.open(filename.c_str(), std::ifstream::in);
-      if(ifs.good()==false)
+      if(!ifs.good())
         throw std::runtime_error("Wisdom file not accessable.");
 
       if(ifs.is_open()) {
@@ -509,10 +535,11 @@ namespace fftw {
     // COMPILE TIME FIELDS
 
     using Extent = std::array<std::size_t, NDim>;
-    using Api  = typename traits::plan<TPrecision>;
+    using PlanAPI = typename traits::plan<TPrecision>;
     using ComplexType = typename traits::plan<TPrecision>::ComplexType;
     using RealType = typename traits::plan<TPrecision>::RealType;
     using PlanType = typename traits::plan<TPrecision>::PlanType;
+    using MemoryAPI = typename traits::memory_api<TPrecision>;
 
     static_assert(NDim > 0 && NDim < 4, "[fftw.hpp]\treceived NDim not in [1,3], currently unsupported" );
 
@@ -521,7 +548,7 @@ namespace fftw {
     static constexpr
     bool IsComplex = TFFT::IsComplex;
     static constexpr
-    bool IsInplaceReal = IsInplace && IsComplex==false;
+    bool IsInplaceReal = IsInplace && !IsComplex;
 
     using value_type  = typename std::conditional<IsComplex,ComplexType,RealType>::type;
 
@@ -556,7 +583,7 @@ namespace fftw {
                              1,
                              std::multiplies<std::size_t>());
 
-        if(IsComplex==false){
+        if(!IsComplex){
           extents_complex_.back() = (extents_.back()/2 + 1);
         }
 
@@ -566,7 +593,7 @@ namespace fftw {
                                      std::multiplies<size_t>());
 
         data_size_ = (IsInplaceReal ? 2*n_complex_ : n_) * sizeof(value_type);
-        if(IsInplace==false)
+        if(!IsInplace)
           data_complex_size_ = n_complex_ * sizeof(ComplexType);
 
         //size_t total_mem = getMemorySize();
@@ -612,11 +639,11 @@ namespace fftw {
     void init_forward() {
 
       //Note: these calls clear the content of data_ et al
-      fwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_,
-                                                   data_complex_,
-                                                   traits::fftw_direction::forward,
-                                                   plan_rigor_);
+      fwd_plan_ = PlanAPI::create(extents_,
+                                  data_,
+                                  data_complex_,
+                                  traits::fftw_direction::forward,
+                                  plan_rigor_);
       if(!fwd_plan_) {
 #ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
@@ -631,11 +658,11 @@ namespace fftw {
 
     //
     void init_inverse() {
-      bwd_plan_ = traits::plan<TPrecision>::create(extents_,
-                                                   data_complex_,
-                                                   data_,
-                                                   traits::fftw_direction::inverse,
-                                                   plan_rigor_);
+      bwd_plan_ = PlanAPI::create(extents_,
+                                  data_complex_,
+                                  data_,
+                                  traits::fftw_direction::inverse,
+                                  plan_rigor_);
       if(!bwd_plan_) {
 #ifndef USE_ESSL
         if(plan_rigor_ == FFTW_WISDOM_ONLY) {
@@ -673,33 +700,30 @@ namespace fftw {
     // --- next methods are benchmarked ---
 
     void allocate() {
-      data_ = static_cast<value_type*>(traits::memory_api<TPrecision>::malloc(data_size_));
+      data_ = static_cast<value_type*>(MemoryAPI::malloc(data_size_));
       if(IsInplace){
         data_complex_ = reinterpret_cast<ComplexType*>(data_);
       }
       else{
-        data_complex_ = static_cast<ComplexType*>(traits::memory_api<TPrecision>::malloc(data_complex_size_));
+        data_complex_ = static_cast<ComplexType*>(MemoryAPI::malloc(data_complex_size_));
       }
     }
 
 
     void execute_forward() {
-
-      traits::plan<TPrecision>::execute(fwd_plan_);
+      PlanAPI::execute(fwd_plan_);
     }
 
     void execute_inverse() {
-
-      traits::plan<TPrecision>::execute(bwd_plan_);
+      PlanAPI::execute(bwd_plan_);
     }
 
     template<typename THostData>
     void upload(THostData* input) {
 
       if(!IsInplaceReal){
-        memcpy(data_,input,data_size_);
-      }
-      else{
+        MemoryAPI::memcpy(data_, input, data_size_);
+      } else {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
@@ -712,11 +736,9 @@ namespace fftw {
           for(std::size_t y = 0;y < max_y;++y){
             input_index = z*(max_y*max_x) + y*max_x;
             data_index = z*(max_y*allocated_x) + y*allocated_x;
-
-            memcpy(data_+data_index,
-                   input + input_index,
-                   max_x*sizeof(value_type));
-
+            MemoryAPI::memcpy(data_ + data_index,
+                              input + input_index,
+                              max_x * sizeof(value_type));
           }
         }
       }
@@ -726,9 +748,8 @@ namespace fftw {
     void download(THostData* output) {
 
       if(!IsInplaceReal){
-        memcpy(output,data_,data_size_);
-      }
-      else{
+        MemoryAPI::memcpy(output, data_, data_size_);
+      } else {
         const std::size_t max_z = (NDim >= 3 ? extents_[NDim-3] : 1);
         const std::size_t max_y = (NDim >= 2 ? extents_[NDim-2] : 1);
         const std::size_t max_x = extents_[NDim-1];
@@ -741,9 +762,9 @@ namespace fftw {
           for(std::size_t y = 0;y < max_y;++y){
             output_index = z*(max_y*max_x) + y*max_x;
             data_index = z*(max_y*allocated_x) + y*allocated_x;
-            memcpy(output+output_index,
-                   data_+data_index,
-                   max_x*sizeof(value_type));
+            MemoryAPI::memcpy(output+output_index,
+                              data_ + data_index,
+                              max_x * sizeof(value_type));
           }
         }
       }
@@ -753,19 +774,19 @@ namespace fftw {
     void destroy() {
 
       if(data_)
-        traits::memory_api<TPrecision>::free(data_);
+        MemoryAPI::free(data_);
       data_ = nullptr;
 
       if(data_complex_ && !IsInplace)
-        traits::memory_api<TPrecision>::free(data_complex_);
+        MemoryAPI::free(data_complex_);
       data_complex_ = nullptr;
 
       if(fwd_plan_)
-        traits::plan<TPrecision>::destroy(fwd_plan_);
+        PlanAPI::destroy(fwd_plan_);
       fwd_plan_ = nullptr;
 
       if(bwd_plan_)
-        traits::plan<TPrecision>::destroy(bwd_plan_);
+        PlanAPI::destroy(bwd_plan_);
       bwd_plan_ = nullptr;
 
     }
