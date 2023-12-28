@@ -14,9 +14,10 @@
 #include <boost/noncopyable.hpp>
 #pragma GCC diagnostic pop
 
+#include <algorithm>
+#include <cmath>
 #include <numeric>
 #include <vector>
-#include <cmath>
 
 namespace gearshifft {
 
@@ -108,18 +109,17 @@ namespace gearshifft {
         // (y[0] of FFT(x) is sum of input values)
         // Overflow leads to nan or inf values and iFFT(FFT()) cannot be validated
         // This method still leads to nan's when size_ >= (1<<20)
-        for( size_t i=0; i<size_; ++i )
-        {
-          if( i%(size_/limit16)==0 )
-            data_linear_[i] = 0.1;
-          else
-            data_linear_[i] = 0.0;
-        }
+        auto gen = [this]() {
+          static size_t i = 0;
+          return (i++ % (size_ / limit16) == 0) ? 0.1 : 0.0;
+        };
+        std::generate(data_linear_.begin(), data_linear_.end(), gen);
       } else {
-        for( size_t i=0; i<size_; ++i )
-        {
-          data_linear_[i] = 0.125*(i&7);
-        }
+        auto gen = []() {
+          static size_t i = 0;
+          return 0.125 * (i++ & 7);
+        };
+        std::generate(data_linear_.begin(), data_linear_.end(), gen);
       }
 
     }
@@ -134,4 +134,5 @@ namespace gearshifft {
 
   };
 } // gearshifft
+
 #endif
