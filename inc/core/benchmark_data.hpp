@@ -136,7 +136,6 @@ namespace gearshifft {
       } else {
         std::generate(data_linear_.begin(), data_linear_.end(), BenchmarkDataGenerator<RealType>{});
       }
-
     }
 
     BenchmarkData() = default;

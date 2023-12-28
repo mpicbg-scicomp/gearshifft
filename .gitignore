@@ -1,6 +1,7 @@
 *~
 debug*
 release*
+*.csv
 *.out
 *.err
 *.log
