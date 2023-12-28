@@ -21,6 +21,34 @@
 
 namespace gearshifft {
 
+  static constexpr size_t LIMIT16 = 1 << 15;
+
+  template <typename RealType>
+  struct BenchmarkDataGenerator {
+    constexpr RealType operator()() {
+      return 0.125 * (i_++ & 7);
+    }
+
+  private:
+    size_t i_ = 0;
+  };
+
+  // To avoid overflows float16 data non-zero points are limited (y[0] of FFT(x)
+  // is sum of input values). Overflow leads to nan or inf values and iFFT(FFT())
+  // cannot be validated. This method still leads to nan's when size_ >= (1<<20).
+  template <typename RealType>
+  struct BenchmarkDataGeneratorLimited {
+    BenchmarkDataGeneratorLimited(const size_t size) : size_(size) {}
+
+    constexpr RealType operator()() {
+      return (i_++ % (size_ / LIMIT16) == 0) ? 0.1 : 0.0;
+    }
+
+  private:
+    size_t i_ = 0;
+    const size_t size_;
+  };
+
 /**
  * Singleton test data helper and container.
  * Creates real and complex data on first access or when dimensions have changed.
@@ -103,23 +131,10 @@ namespace gearshifft {
       // allocate variables for all test cases
       data_linear_.resize(size_);
 
-      const size_t limit16 = 1<<15;
-      if(std::is_same<RealType, float16>::value && size_ > limit16) {
-        // To avoid overflows float16 data non-zero points are limited
-        // (y[0] of FFT(x) is sum of input values)
-        // Overflow leads to nan or inf values and iFFT(FFT()) cannot be validated
-        // This method still leads to nan's when size_ >= (1<<20)
-        auto gen = [this]() {
-          static size_t i = 0;
-          return (i++ % (size_ / limit16) == 0) ? 0.1 : 0.0;
-        };
-        std::generate(data_linear_.begin(), data_linear_.end(), gen);
+      if (std::is_same<RealType, float16>::value && size_ > LIMIT16) {
+        std::generate(data_linear_.begin(), data_linear_.end(), BenchmarkDataGeneratorLimited<RealType>{size_});
       } else {
-        auto gen = []() {
-          static size_t i = 0;
-          return 0.125 * (i++ & 7);
-        };
-        std::generate(data_linear_.begin(), data_linear_.end(), gen);
+        std::generate(data_linear_.begin(), data_linear_.end(), BenchmarkDataGenerator<RealType>{});
       }
 
     }
