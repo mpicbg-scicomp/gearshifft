@@ -21,11 +21,11 @@
 
 namespace gearshifft {
 
-  static constexpr size_t LIMIT16 = 1 << 15;
-
   template <typename RealType>
   struct BenchmarkDataGenerator {
-    constexpr RealType operator()() {
+    BenchmarkDataGenerator(const size_t) {}
+
+    RealType operator()() {
       return 0.125 * (i_++ & 7);
     }
 
@@ -36,17 +36,18 @@ namespace gearshifft {
   // To avoid overflows float16 data non-zero points are limited (y[0] of FFT(x)
   // is sum of input values). Overflow leads to nan or inf values and iFFT(FFT())
   // cannot be validated. This method still leads to nan's when size_ >= (1<<20).
-  template <typename RealType>
-  struct BenchmarkDataGeneratorLimited {
-    BenchmarkDataGeneratorLimited(const size_t size) : size_(size) {}
+  template <>
+  struct BenchmarkDataGenerator<float16> {
+    BenchmarkDataGenerator(const size_t size) : size_(size) {}
 
-    constexpr RealType operator()() {
-      return (i_++ % (size_ / LIMIT16) == 0) ? 0.1 : 0.0;
+    float16 operator()() {
+      return (i_++ % (size_ / LIMIT16) == 0) ? 0.1_h : 0.0_h;
     }
 
   private:
     size_t i_ = 0;
     const size_t size_;
+    static constexpr size_t LIMIT16 = 1 << 15;
   };
 
 /**
@@ -68,6 +69,7 @@ namespace gearshifft {
     using ComplexVector  = std::vector<ComplexType, boost::alignment::
                                        aligned_allocator<ComplexType,
                                                          alignof(ComplexType)> >;
+    using Generator = BenchmarkDataGenerator<RealType>;
 
 
     static const BenchmarkDataT& data(const Extent& extents) {
@@ -131,11 +133,7 @@ namespace gearshifft {
       // allocate variables for all test cases
       data_linear_.resize(size_);
 
-      if (std::is_same<RealType, float16>::value && size_ > LIMIT16) {
-        std::generate(data_linear_.begin(), data_linear_.end(), BenchmarkDataGeneratorLimited<RealType>{size_});
-      } else {
-        std::generate(data_linear_.begin(), data_linear_.end(), BenchmarkDataGenerator<RealType>{});
-      }
+      std::generate(data_linear_.begin(), data_linear_.end(), Generator{size_});
     }
 
     BenchmarkData() = default;
