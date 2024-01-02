@@ -23,14 +23,14 @@ namespace gearshifft {
 
   template <typename RealType>
   struct BenchmarkDataGenerator {
-    BenchmarkDataGenerator(const size_t) {}
+    BenchmarkDataGenerator(const std::size_t) {}
 
     RealType operator()() {
       return 0.125 * (i_++ & 7);
     }
 
   private:
-    size_t i_ = 0;
+    std::size_t i_ = 0;
   };
 
   // To avoid overflows float16 data non-zero points are limited (y[0] of FFT(x)
@@ -38,16 +38,16 @@ namespace gearshifft {
   // cannot be validated. This method still leads to nan's when size_ >= (1<<20).
   template <>
   struct BenchmarkDataGenerator<float16> {
-    BenchmarkDataGenerator(const size_t size) : size_(size) {}
+    BenchmarkDataGenerator(const std::size_t size) : size_(size) {}
 
     float16 operator()() {
       return (i_++ % (size_ / LIMIT16) == 0) ? 0.1_h : 0.0_h;
     }
 
   private:
-    size_t i_ = 0;
-    const size_t size_;
-    static constexpr size_t LIMIT16 = 1 << 15;
+    std::size_t i_ = 0;
+    const std::size_t size_;
+    static constexpr std::size_t LIMIT16 = 1 << 15;
   };
 
 /**
