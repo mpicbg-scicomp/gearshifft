@@ -5,7 +5,7 @@
 #include <hip/hip_vector_types.h>
 #include <rocfft.h>
 
-#include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <boost/test/unit_test.hpp>
 
 #include <cstdint>
 

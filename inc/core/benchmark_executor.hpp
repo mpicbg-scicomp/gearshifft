@@ -10,7 +10,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <boost/test/unit_test.hpp>
 #pragma GCC diagnostic pop
 
 #include <type_traits>
