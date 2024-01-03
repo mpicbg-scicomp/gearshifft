@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE TestCuFFT
 
 #include "libraries/cufft/cufft_helper.hpp"
-#include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <boost/test/unit_test.hpp>
 #include <array>
 #include <iostream>
 

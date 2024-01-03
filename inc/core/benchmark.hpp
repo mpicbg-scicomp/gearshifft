@@ -11,7 +11,7 @@
 // see https://www.boost.org/doc/libs/1_65_1/libs/test/doc/html/boost_test/usage_variants.html
 // Single-header usage variant
 // No BOOST_TEST_MODULE as entry point is customized
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace gearshifft {
 

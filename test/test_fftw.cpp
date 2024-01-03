@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE TestFFTW
 
 #include <fftw3.h>
-#include <boost/test/included/unit_test.hpp> // Single-header usage variant
+#include <boost/test/unit_test.hpp>
 #include <iostream>
 
 BOOST_AUTO_TEST_CASE( FFT1DSingle, * boost::unit_test::tolerance(0.0001f) )
