@@ -33,10 +33,10 @@ namespace gearshifft {
     }
 
     void configure(int argc, char* argv[]) {
-      std::vector<char*> vargv(argv, argv+argc);
       boost_vargv_.clear();
       boost_vargv_.emplace_back(argv[0]); // [0] = name of application
-      auto parseResult = Context::options().parse(vargv, boost_vargv_);
+
+      auto parseResult = Context::options().parse(argc, argv);
       switch (parseResult) {
         case 0:  break;
         case 1:  info_only_ = true; break;

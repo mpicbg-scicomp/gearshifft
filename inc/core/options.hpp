@@ -8,7 +8,6 @@
 #include <boost/core/noncopyable.hpp>
 #pragma GCC diagnostic pop
 #include <string>
-#include <vector>
 
 namespace gearshifft {
 
@@ -24,7 +23,6 @@ namespace gearshifft {
   public:
 
     OptionsDefault();
-    ~OptionsDefault();
 
     bool getHelp() const {
       return help_;
@@ -71,7 +69,7 @@ namespace gearshifft {
     void parseExtent( const std::string& extent );
 
     /// processes command line arguments and apply the values to the variables
-    int parse(std::vector<char*>&, std::vector<char*>&);
+    int parse(int, char *[]);
 
     const Extents1DVec& getExtents1D() const {
       return vector1D_;
@@ -106,7 +104,6 @@ namespace gearshifft {
     bool version_ = false;
     bool listBenchmarks_ = false;
     bool listDevices_ = false;
-    char* tmp_ = nullptr;
 
     Extents1DVec vector1D_;
     Extents2DVec vector2D_;
