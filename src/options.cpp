@@ -1,11 +1,9 @@
-#include "core/application.hpp"
 #include "core/options.hpp"
-
-#include <gearshifft_version.hpp>
 
 #include <iostream>
 #include <fstream>
-#include <algorithm>
+#include <string>
+
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -32,12 +30,6 @@ OptionsDefault::OptionsDefault() {
     ("run-benchmarks,r", po::value<std::string>(), "Run specific benchmarks (wildcards possible, e.g. ClFFT/float/*/Inplace_Real)")
     ;
 }
-
-OptionsDefault::~OptionsDefault() {
-  delete[] tmp_;
-  tmp_ = nullptr;
-}
-
 
 void OptionsDefault::parseFile(const std::string& file) {
   std::ifstream f(file);
@@ -70,14 +62,12 @@ void OptionsDefault::parseExtent( const std::string& extent ) {
 }
 
 /// processes command line arguments and apply the values to the variables
-int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_vargv) {
+int OptionsDefault::parse(int argc, char *argv[]) {
 
   po::variables_map vm;
   try {
     po::parsed_options parsed
-      = po::command_line_parser( _argv.size(),
-                                 _argv.data()
-                               ).options(desc_).allow_unregistered().run();
+      = po::command_line_parser(argc, argv).options(desc_).allow_unregistered().run();
     po::store(parsed, vm);
     if( vm.count("version")  ) {
       version_ = true;
@@ -124,20 +114,14 @@ int OptionsDefault::parse(std::vector<char*>& _argv, std::vector<char*>& _boost_
       }
     }
 
-    // use Boost command line arguments
+    // use Boost Test environment variables
+    setenv("BOOST_TEST_REPORT_LEVEL", "no", 0);
     if( vm.count("list-benchmarks") ){
       listBenchmarks_ = true;
-      _boost_vargv.emplace_back(const_cast<char*>("--list_content"));
+      setenv("BOOST_TEST_LIST_CONTENT", "", 0);
     }
     if( vm.count("run-benchmarks") ){
-      // C / C++ string madness
-      std::string str = "--run_test=" + vm["run-benchmarks"].as<std::string>();
-      if(tmp_)
-        throw std::runtime_error("This is not supposed to happen, the pointer should be null.");
-      tmp_ = new char[str.size()+1];
-      str.copy(tmp_, str.size());
-      tmp_[str.size()] = '\0';
-      _boost_vargv.emplace_back( tmp_ );
+      setenv("BOOST_TEST_RUN_FILTERS", vm["run-benchmarks"].as<std::string>().c_str(), 0);
     }
 
     po::notify(vm);
