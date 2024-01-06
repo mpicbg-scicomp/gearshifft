@@ -43,6 +43,7 @@ using FFTs              = List<Inplace_Real,
                                Outplace_Complex >;
 using Precisions        = gearshifft::DefaultPrecisionsWithoutHalfPrecision;
 using FFT_Is_Normalized = std::false_type;
+
 #elif defined(ROCFFT_ENABLED)
 #include "libraries/rocfft/rocfft.hpp"
 

@@ -14,11 +14,46 @@
 #include <boost/noncopyable.hpp>
 #pragma GCC diagnostic pop
 
+#include <algorithm>
+#include <cmath>
 #include <numeric>
 #include <vector>
-#include <cmath>
 
 namespace gearshifft {
+
+  template <typename RealType>
+  struct BenchmarkDataGenerator {
+    BenchmarkDataGenerator(const std::size_t) {}
+
+    RealType operator()() {
+      return 0.125 * (i_++ & 7);
+    }
+
+  private:
+    std::size_t i_ = 0;
+  };
+
+  // To avoid overflows float16 data non-zero points are limited (y[0] of FFT(x)
+  // is sum of input values). Overflow leads to nan or inf values and iFFT(FFT())
+  // cannot be validated. This method still leads to nan's when size_ >= (1<<20).
+  template <>
+  struct BenchmarkDataGenerator<float16> {
+    BenchmarkDataGenerator(const std::size_t size)
+    : sparse_values_(size > LIMIT16), quotient_(size / LIMIT16) {}
+
+    float16 operator()() {
+      if (sparse_values_) {
+        return static_cast<float16>((i_++ % quotient_ == 0) ? 0.1 : 0.0);
+      }
+      return static_cast<float16>(0.125 * (i_++ & 7));
+    }
+
+  private:
+    std::size_t i_ = 0;
+    const bool sparse_values_;
+    const std::size_t quotient_;
+    static constexpr std::size_t LIMIT16 = 1 << 15;
+  };
 
 /**
  * Singleton test data helper and container.
@@ -39,6 +74,7 @@ namespace gearshifft {
     using ComplexVector  = std::vector<ComplexType, boost::alignment::
                                        aligned_allocator<ComplexType,
                                                          alignof(ComplexType)> >;
+    using Generator = BenchmarkDataGenerator<RealType>;
 
 
     static const BenchmarkDataT& data(const Extent& extents) {
@@ -102,26 +138,7 @@ namespace gearshifft {
       // allocate variables for all test cases
       data_linear_.resize(size_);
 
-      const size_t limit16 = 1<<15;
-      if(std::is_same<RealType, float16>::value && size_ > limit16) {
-        // To avoid overflows float16 data non-zero points are limited
-        // (y[0] of FFT(x) is sum of input values)
-        // Overflow leads to nan or inf values and iFFT(FFT()) cannot be validated
-        // This method still leads to nan's when size_ >= (1<<20)
-        for( size_t i=0; i<size_; ++i )
-        {
-          if( i%(size_/limit16)==0 )
-            data_linear_[i] = 0.1;
-          else
-            data_linear_[i] = 0.0;
-        }
-      } else {
-        for( size_t i=0; i<size_; ++i )
-        {
-          data_linear_[i] = 0.125*(i&7);
-        }
-      }
-
+      std::generate(data_linear_.begin(), data_linear_.end(), Generator{size_});
     }
 
     BenchmarkData() = default;
@@ -134,4 +151,5 @@ namespace gearshifft {
 
   };
 } // gearshifft
+
 #endif
