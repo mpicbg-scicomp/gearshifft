@@ -38,15 +38,20 @@ namespace gearshifft {
   // cannot be validated. This method still leads to nan's when size_ >= (1<<20).
   template <>
   struct BenchmarkDataGenerator<float16> {
-    BenchmarkDataGenerator(const std::size_t size) : size_(size) {}
+    BenchmarkDataGenerator(const std::size_t size)
+    : sparse_values_(size > LIMIT16), quotient_(size / LIMIT16) {}
 
     float16 operator()() {
-      return (i_++ % (size_ / LIMIT16) == 0) ? 0.1_h : 0.0_h;
+      if (sparse_values_) {
+        return static_cast<float16>((i_++ % quotient_ == 0) ? 0.1 : 0.0);
+      }
+      return static_cast<float16>(0.125 * (i_++ & 7));
     }
 
   private:
     std::size_t i_ = 0;
-    const std::size_t size_;
+    const bool sparse_values_;
+    const std::size_t quotient_;
     static constexpr std::size_t LIMIT16 = 1 << 15;
   };
 

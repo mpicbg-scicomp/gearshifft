@@ -4,7 +4,6 @@
 #if GEARSHIFFT_FLOAT16_SUPPORT == 0
 
 struct float16 {};
-inline float16 operator""_h(long double) { return float16{}; }
 
 #else
 
@@ -13,7 +12,6 @@ inline float16 operator""_h(long double) { return float16{}; }
 #include <complex>
 
 using float16 = half_float::half;
-using namespace half_float::literal;
 
 namespace gearshifft {
 
